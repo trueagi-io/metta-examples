@@ -12,4 +12,6 @@
 (= (nTimes (, $x (S Z))) (Const $x))
 (= (nTimes (, $_ Z)) (Const 0))
 
-!((ana mapExpr nTimes) (, 3 (S (S Z))))
+!((ana mapExpr nTimes) (, 2 (S (S Z))))
+
+!((hylo mapExpr evalExpr nTimes) (, 3 (S (S (S Z)))))
