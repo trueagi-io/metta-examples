@@ -24,3 +24,9 @@
 (= (diff (Plus (, $x $_1) (, $y $_2))) (Plus $x $y))
 
 !((para mapExpr diff) (Fix (Plus (Fix (Var X)) (Fix (Const 1)))))
+
+(= (expand (1p $x)) (Plus (Bind (Const 1)) (Pure $x)))
+(= (expand (2t $x)) (Plus (Pure $x) (Pure $x)))
+(= (expand (Fix $x)) $x)
+
+!((futu mapExpr expand) (2t (1p (Fix (Var X)))))
