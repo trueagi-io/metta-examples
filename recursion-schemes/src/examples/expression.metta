@@ -29,4 +29,5 @@
 (= (expand (2t $x)) (Plus (Pure $x) (Pure $x)))
 (= (expand (Fix $x)) $x)
 
+!(match &self (= (expand $X) $Y) $X)
 !((futu mapExpr expand) (2t (1p (Fix (Var X)))))

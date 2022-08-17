@@ -1,5 +1,6 @@
 from hyperon import *
 import os
+from collections import Counter
 
 
 def match_op(space, pattern, templ_op):
@@ -223,6 +224,51 @@ def superpose_op(expr):
 
 
 superposeAtom = OperationAtom('superpose', superpose_op, unwrap=False)
+
+
+def color(t, c):
+    cmap = [90, 91, 31, 93, 92, 32, 36, 96, 94, 34, 35, 95, 38]
+    return f"\033[{cmap[c % len(cmap)]}m{t}\033[0m"
+
+
+def oblique(t):
+    return f"\033[3m{t}\033[0m"
+
+
+def underline(t):
+    return f"\033[4m{t}\033[0m"
+
+
+def expr_vars(expr):
+    if isinstance(expr, SymbolAtom):
+        return []
+    elif isinstance(expr, VariableAtom):
+        return [str(expr)]
+    elif isinstance(expr, ExpressionAtom):
+        return [e for c in expr.get_children() for e in expr_vars(c)]
+    elif isinstance(expr, GroundedAtom):
+        return []
+    else:
+        raise Exception("Unexpected sexpr type: " + str(type(expr)))
+
+
+def color_expr(expr, level=0, unif_vars=None):
+    name = str(expr)
+    if level == 0:
+        unif_vars = frozenset(e for e, c in Counter(expr_vars(expr)).items() if c > 1) \
+            if unif_vars is None else frozenset()
+    if isinstance(expr, SymbolAtom):
+        return name
+    elif isinstance(expr, VariableAtom):
+        return oblique(name) if name in unif_vars else name
+    elif isinstance(expr, ExpressionAtom):
+        return (color("(", level) +
+                " ".join(color_expr(c, level + 1, unif_vars) for c in expr.get_children()) +
+                color(")", level))
+    elif isinstance(expr, GroundedAtom):
+        return underline(name)
+    else:
+        raise Exception("Unexpected sexpr type: " + str(type(expr)))
 
 
 class MeTTa:
