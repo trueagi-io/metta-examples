@@ -16,14 +16,13 @@ def transfer_op(metta, fname):
     return []
 
 
-def newTransferOp(metta):
+def make_transfer_op(metta):
     return OperationAtom(
         'transfer!',
         lambda file: transfer_op(metta, file),
         unwrap=False)
 
-
-def newAllAtomsOp(metta):
+def make_all_atoms_op(metta):
     return OperationAtom(
         'all',
         lambda: metta.space.get_atoms(),
@@ -79,13 +78,13 @@ def print_op(atom):
     return []
 
 
-def assertResultsEqual(result, expected):
+def assert_results_equal(result, expected):
     report = "Expected: " + str(expected) + "\nGot: " + str(result)
     for r in result:
-        if not r in expected:
+        if r not in expected:
             raise RuntimeError(report + "\nExcessive result: " + str(r))
     for e in expected:
-        if not e in result:
+        if e not in result:
             raise RuntimeError(report + "\nMissed result: " + str(e))
     if len(expected) != len(result):
         # NOTE: (1 1 2) vs (1 2 2) will pass
@@ -93,18 +92,18 @@ def assertResultsEqual(result, expected):
     return []
 
 
-def newAssertEqualAtom(metta):
+def make_assert_equal_atom(metta):
     return OperationAtom(
         'assertEqual',
-        lambda e1, e2: assertResultsEqual(interpret(metta.space, e1), interpret(metta.space, e2)),
+        lambda e1, e2: assert_results_equal(interpret(metta.space, e1), interpret(metta.space, e2)),
         [AtomType.ATOM, AtomType.ATOM, AtomType.ATOM],
         unwrap=False)
 
 
-def newAssertEqualToResultAtom(metta):
+def make_assert_equal_to_result_atom(metta):
     return OperationAtom(
         'assertEqualToResult',
-        lambda expr, expected: assertResultsEqual(interpret(metta.space, expr), expected.get_children()),
+        lambda expr, expected: assert_results_equal(interpret(metta.space, expr), expected.get_children()),
         [AtomType.ATOM, AtomType.ATOM, AtomType.ATOM],
         unwrap=False)
 
@@ -137,7 +136,7 @@ matchAtom = OperationAtom('match', match_op,
 printAtom = OperationAtom('println!', print_op, [AtomType.UNDEFINED, 'IO'], unwrap=False)
 
 
-def newCallAtom(token):
+def make_call_atom(token):
     # NOTE: we could use "call" as a plain symbol (insted of "call:...")
     #       with the method name as the parameter of call_atom_op
     #       (but this parameter should be unwrapped)
@@ -181,7 +180,7 @@ def import_op(metta, space, fname):
     return metta2.import_file(fname.get_object().value)
 
 
-def newImportOp(metta):
+def make_import_op(metta):
     # unwrap=False, because space name can remain
     # an unresolved symbol atom
     return OperationAtom(
@@ -198,14 +197,14 @@ def pragma_op(metta, key, *args):
     return []
 
 
-def newPragmaOp(metta):
+def make_pragma_op(metta):
     return OperationAtom(
         'pragma!',
         lambda key, *args: pragma_op(metta, key, *args),
         unwrap=False)
 
 
-def newCollapseAtom(metta):
+def make_collapse_atom(metta):
     # FIXME? Calling interpreter inside the operation is not too good
     #        Could it be done via StepResult?
     return OperationAtom(
@@ -227,7 +226,6 @@ superposeAtom = OperationAtom('superpose', superpose_op, unwrap=False)
 
 
 class MeTTa:
-
     def __init__(self, space=None):
         self.space = GroundingSpace("&self") if space is None else space
         self.tokenizer = Tokenizer()
@@ -255,19 +253,19 @@ class MeTTa:
         self.add_token(r"True|False",
                        lambda token: ValueAtom(token == 'True', 'Bool'))
         self.add_atom(r"match", matchAtom)
-        self.add_atom(r"transfer!", newTransferOp(self))
-        self.add_atom(r"all", newAllAtomsOp(self))
-        self.add_token(r"call:[^\s]+", newCallAtom)
+        self.add_atom(r"transfer!", make_transfer_op(self))
+        self.add_atom(r"all", make_all_atoms_op(self))
+        self.add_token(r"call:[^\s]+", make_call_atom)
         self.add_atom(r"let", letAtom)
         self.add_atom(r"let\*", letrecAtom)
         self.add_atom(r"nop", nopAtom)
-        self.add_atom(r"assertEqual", newAssertEqualAtom(self))
-        self.add_atom(r"assertEqualToResult", newAssertEqualToResultAtom(self))
+        self.add_atom(r"assertEqual", make_assert_equal_atom(self))
+        self.add_atom(r"assertEqualToResult", make_assert_equal_to_result_atom(self))
         self.add_atom(r"println!", printAtom)
         self.add_atom(r"&self", SpaceAtom(self.space))
-        self.add_atom(r"import!", newImportOp(self))
-        self.add_atom(r"pragma!", newPragmaOp(self))
-        self.add_atom(r"collapse", newCollapseAtom(self))
+        self.add_atom(r"import!", make_import_op(self))
+        self.add_atom(r"pragma!", make_pragma_op(self))
+        self.add_atom(r"collapse", make_collapse_atom(self))
         self.add_atom(r"superpose", superposeAtom)
 
     def add_token(self, regexp, constr):
@@ -335,12 +333,14 @@ class MeTTa:
         return result
 
     def lazy_import_file(self, fname):
+        # NOTE: Doesn't change the cwd like `import_file`
         path = fname.split(os.sep)
         with open(os.sep.join(self.cwd + path), "r") as f:
             program = f.read()
         yield from self.lazy_run(program)
 
     def lazy_run(self, program):
+        # NOTE: Doesn't yet implement type-checking
         interpreting = False
         commented = False
         for expr in self._parse_all(program):
