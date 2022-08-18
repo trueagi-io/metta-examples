@@ -218,10 +218,9 @@ def make_collapse_atom(metta):
 # `superpose` receives one atom (expression) in order to make composition
 # `(superpose (collapse ...))` possible
 def superpose_op(expr):
-    if isinstance(expr, SymbolAtom):
-        return [expr]
-    return [arg for arg in expr.get_children()]
-
+    if isinstance(expr, ExpressionAtom):
+        return [arg for arg in expr.get_children()]
+    return [expr]
 
 superposeAtom = OperationAtom('superpose', superpose_op, unwrap=False)
 
