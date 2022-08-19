@@ -1,0 +1,92 @@
+(: Distribution (-> Type Type))
+(: Union (-> Type Type Type))
+(= (Union $t1 $t2) $t1)
+(= (Union $t1 $t2) $t2)
+(= (random $a $b) $a)
+(= (random $a $b) $b)
+(: sample (-> (Distribution $t1) $t1))
+(: thunk (-> Atom (Distribution $t1)))
+(= (sample (thunk $a)) $a)
+
+(: A Type)
+(: B Type)
+(: C Type)
+(: D Type)
+(: B A)
+(: A B)
+(: C A)
+(: C B)
+(: D C)
+(: A D)
+(: U_ABCD Type)
+(= (U_ABCD) A)
+(= (U_ABCD) B)
+(= (U_ABCD) C)
+(= (U_ABCD) D)
+
+(: a A)
+(= (a) (random B C))
+(: b B)
+(= (b) (random A C))
+(: c C)
+(= (c) D)
+(: d D)
+(= (d) A)
+
+;; mipdf formulation
+
+(: U_ABCD' Type)
+(: a' (Distribution U_ABCD'))
+(: b' (Distribution U_ABCD'))
+(: c' (Distribution U_ABCD'))
+(: d' (Distribution U_ABCD'))
+(= (Distribution U_ABCD') U_ABCD')
+(= (a') (thunk (g (a))))
+(= (b') (thunk (g (b))))
+(= (c') (thunk (g (c))))
+(= (d') (thunk (g (d))))
+;(: g (-> (U_ABCD) Distribution(U_ABCD')))
+(= (g A) a')
+(= (g B) b')
+(= (g C) c')
+(= (g D) d')
+
+!(sample (a'))
+!(assertEqualToResult
+  (sample (a'))
+  (b' b' c' c' c' b' b' c' c' c' b' b' c' c' c' b' b' c' c' c' b' b' c' c' c' b' b' c' c' c'))
+!(sample ((sample (a'))))
+!(assertEqualToResult
+  (sample ((sample (a'))))
+  (a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' d' d' d' d' d' d' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' d' d' d' d' d' d' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' d' d' d' d' d' d' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' d' d' d' d' d' d' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' d' d' d' d' d' d' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' a' a' a' c' c' c' d' d' d' d' d' d'))
+!(sample ((sample ((sample (a'))))))
+
+!(sample (c'))
+!(assertEqualToResult
+  (sample (c'))
+  (d' d'))
+!(sample ((sample (c'))))
+!(assertEqualToResult
+  (sample ((sample (c'))))
+  (a' a' a' a' a' a'))
+!(sample ((sample ((sample (c'))))))
+!(assertEqualToResult
+  (sample ((sample ((sample (c'))))))
+  (b' b' c' c' c' b' b' c' c' c' b' b' c' c' c' b' b' c' c' c' b' b' c' c' c' b' b' c' c' c' b' b' c' c' c' b' b' c' c' c' b' b' c' c' c' b' b' c' c' c' b' b' c' c' c' b' b' c' c' c' b' b' c' c' c' b' b' c' c' c' b' b' c' c' c' b' b' c' c' c' b' b' c' c' c' b' b' c' c' c' b' b' c' c' c' b' b' c' c' c' b' b' c' c' c' b' b' c' c' c' b' b' c' c' c' b' b' c' c' c' b' b' c' c' c' b' b' c' c' c' b' b' c' c' c' b' b' c' c' c' b' b' c' c' c' b' b' c' c' c' b' b' c' c' c' b' b' c' c' c' b' b' c' c' c' b' b' c' c' c' b' b' c' c' c' b' b' c' c' c'))
+
+!(match &self (: A $t) ($t))
+!(assertEqualToResult
+  (match &self (: A $t) ($t))
+  ((Type) (B) (B) (B) (B) (D) (D) (D) (D)))
+!(Distribution (Distribution U_ABCD'))
+!(assertEqualToResult
+  (Distribution (Distribution U_ABCD'))
+  (U_ABCD'))
+!(match &self (: a $t) ($t))
+!(assertEqualToResult
+  (match &self (: a $t) ($t))
+  ((A) (A) (A) (A) (A) (A) (A) (A) (A)))
+!(match &self (: a' $t) ($t))
+!(assertEqualToResult
+  (match &self (: a' $t) ($t))
+  ((U_ABCD')))
