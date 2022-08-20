@@ -389,7 +389,7 @@ class MeTTa:
         interpreting = False
         commented = False
         for expr in self._parse_all(program):
-            if expr == S('!'):
+            if expr == S('!') and not commented:
                 interpreting = True
             elif expr == S('/*'):
                 commented = True
