@@ -8,6 +8,12 @@ def match_op(space, pattern, templ_op):
     return space.subst(pattern, templ_op)
 
 
+def let_op(pattern, atom, templ):
+    space = GroundingSpace()
+    space.add_atom(atom)
+    return space.subst(pattern, templ)
+
+
 def transfer_op(metta, fname):
     metta2 = MeTTa()
     metta2.cwd = metta.cwd  # inherit current working directory
@@ -29,11 +35,6 @@ def make_all_atoms_op(metta):
         lambda: metta.space.get_atoms(),
         unwrap=False)
 
-
-def let_op(pattern, atom, templ):
-    space = GroundingSpace()
-    space.add_atom(atom)
-    return space.subst(pattern, templ)
 
 
 def letrec_op(subs, body):
