@@ -8,7 +8,7 @@ if __name__ == "__main__":
     t0 = monotonic_ns()
     metta = MeTTa()
     metta.cwd = ["src"]
-    for i, (expr, result_set) in enumerate(metta.lazy_import_file("examples/test.metta")):
+    for i, (expr, result_set) in enumerate(metta.lazy_import_file("examples/expression.metta")):
         if result_set:
             print(f"results of {color_expr(expr)}:")
             for result in result_set:

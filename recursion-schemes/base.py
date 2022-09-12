@@ -15,6 +15,9 @@ def let_op(pattern, atom, templ):
 
 
 def transfer_op(metta, fname):
+    """
+    Transfers all atoms from the specified file to the current Space.
+    """
     metta2 = MeTTa()
     metta2.cwd = metta.cwd  # inherit current working directory
     metta2.import_file(fname.get_object().value)

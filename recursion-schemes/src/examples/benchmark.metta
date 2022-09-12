@@ -1,4 +1,5 @@
 !(transfer! "schemes.metta")
+; A standard benchmark to test (naive) recursion scheme performance
 
 (= (mapExpr $f (Plus $x $y)) (Plus ($f $x) ($f $y)))
 (= (mapExpr $f (Const $x)) (Const $x))
@@ -20,4 +21,6 @@
 
 (= (peano $n) (if (== $n 0) Z (S (- $n 1))))
 
-!((hylo mapExpr evalExpr nTimes) (, 3 ((cata mapNat identity) ((ana mapNat peano) 10))))
+; Generates the peano number for 10, removes the Fix layers
+; Then generates the "add 3 10 times" expression, evaluates it to 30
+!((hylo mapExpr evalExpr nTimes) (, 3 ((hylo mapNat identity peano) 10)))
