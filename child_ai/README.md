@@ -39,24 +39,22 @@ In the process of completing tasks, actions are adjusted to achieve success. The
 Atoms (Nodes and Links) are the basis for gathering experience and structuring information in the brain. The transition to the next level of intelligence occurs after reaching a certain number of Atoms (Nodes and Links) of specific types.
 ## Source code examples
 Idea is on initial Proof of Concept (PoC) stage use Python as a simple and well known programming language with many Data Science libraries.
-[Current python source code](child_ai.py) is a simplified example of implementation of sensory perception exercise for child: Catching the toy from the hands of an adult. Child pays attention on the new toy by hearing the voice of an adult, then look at this toy and try to catch it by hand.
+[Current python source code](child_ai.py) is a simplified example of implementation of sensory perception exercise for child: Catching the toy from the hands of an adult. Child pays attention on the new toy by hearing the voice of an adult, then look at this toy and try to catch it by hand. This Python code is independent from Hyperon libraries.
 
 At this stage there are no all possible variants and steps implemented as this source code is a draft and not a final production version. Most of training data are hard-coded. Torch training dataset is used as an example of possible external environment and can be changed to the concrete tasks. Atom Key Code vector creation and Match Ratio algorithm are placeholders.
 I suggest Plan-Do-Check-Act approach to achieve the result from the goal and corresponding functions are developed. 
 
-Below are possible Atoms in MeTTa(5) format after execution of curiosity_behavior() function: <br/> 
-(: Need NodeType), (: Action NodeType), (: Reaction NodeType), (: Result NodeType), (: Object NodeType), <br/>
-(: ReactionVisual NodeType), (: ReactionHearing NodeType), (: ReactionTouch NodeType) <br/>
-(: Next LinkType), (: Previous LinkType), (: ObjectFor LinkType) <br/>
-((Need) (Next) (Action)), ((Action) (Next) (Reaction)), ((Action) (Next) (Result)), ((Result) (Previous) (Action)) <br/>
-((Object) (ObjectFor) (ReactionVisual)), ((Object) (ObjectFor) (ReactionHearing)), ((Object) (ObjectFor) (ReactionTouch))<br/>
-
 After concrete idea is proven or architecture is fixed we can move some functionality in Hyperon Rust library(5). It can increase performance and we can reuse Space / Atoms functionality. 
-I propose several functions to implement in Rust and its [Rust source code are placed here](https://github.com/h555yand/hyperon-experimental/blob/dd1b7b02f58ce1a072ab0f3834c6032b4fc5ff18/lib/src/child_ai/graph_kb.rs).
+I propose several functions to implement in Rust and its [Rust source code are placed here](graph_kb.rs).
 They duplicate similar functions in [Python](child_ai.py) and have the same names.
+This Rust code is dependent from Rust [Hyperon libraries](https://github.com/trueagi-io/hyperon-experimental). To run it you need:
+1) Create "child_ai" folder in hyperon-experimental/lib/src/ and place there graph_kb.rs file <br/>  
+2) Create mod.rs file with code "pub mod graph_kb;" <br/>
+3) Add "pub mod child_ai;" code in lib.rs file <br/>
+4) Add in Cargo.toml file: ndarray = "0.15.6"  <br/>
 
-I’ve made updates for Expression Atoms for Graph knowledge base task.
-The task is to demonstrate possible approaches how to use Graph knowledge base data with MeTTa.
+
+To demonstrate possible approaches how to use Graph knowledge base data with MeTTa I’ve made updates for Expression Atoms.
 Typical Graph knowledge base consists of Edges with Nodes, and they can have features to store information of different types (sparse distributed vectors for code and weights, IDs, Names, Types etc).
 Use case is to enter Edges with Nodes in MeTTa and then parse / interpret them in Graph knowledge base format that used in Child_AI idea.
 For Edges with Nodes the expression is used “((LinksEdge Link1) (MemoryNode Node1) (MemoryNode Node2))”.
@@ -70,6 +68,11 @@ To use interpretation we need to add special functions to work with Graph, simil
 We can return to MeTTa requested information from Grounded Atoms in addition to Symbol Names and execute requested actions (to find linked nodes for example).
 There are two test cases: (1) when Grounded Atoms (Link1, Node1, Node2) exist,
 (2) when Grounded Atoms (Link11, Node11, Node22) don't exist.
+
+Below are possible Atoms in MeTTa(5) format after execution of curiosity_behavior() function: <br/> 
+((LinksEdge Next) (MemoryNode Need) (MemoryNode Action)), ((LinksEdge Next) (MemoryNode Action) (MemoryNode Reaction)), ((LinksEdge Next) (MemoryNode Action) (MemoryNode Result)), ((LinksEdge Previous) (MemoryNode Result) (MemoryNode Action)) <br/>
+
+((LinksEdge ObjectFor) (MemoryNode Object) (MemoryNode ReactionVisual)), ((LinksEdge ObjectFor) (MemoryNode Object) (MemoryNode ReactionHearing)), ((LinksEdge ObjectFor) (MemoryNode Object) (MemoryNode ReactionTouch))<br/>
 
 
 Future architecture can look like: <br/>
