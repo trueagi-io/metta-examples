@@ -1,0 +1,11 @@
+# I said
+(@said-g :amr-set (say :ARG0 i :pos "VBD"))
+
+# Can you (please) repeat that/it?
+(@repeat :amr-set (possible :ARG1 (repeat :* *) :* *))
+# Repeat that/it (!)
+(@repeat :amr-set (repeat :ARG0 (you :* *) :* *))
+# Can you say that/it again (please)? TODO: Doesn't catch phrases
+# (@repeat :amr-set (possible :ARG1 (say :* *) :polarity (a / amr-unknown) :mod again :* *))
+# What did you say?
+(@repeat :amr-set (say :ARG0 (you :* *) :ARG1 (a / amr-unknown) :* *))

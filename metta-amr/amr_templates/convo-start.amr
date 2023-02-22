@@ -1,0 +1,65 @@
+#Where do you go on holiday?
+(@where-holiday?-g :amr-set (go
+    :ARG0 (y / you
+        :pos "PRP")
+    :ARG4 (a / amr-unknown)
+    :purpose (holiday
+        :ARG0 y
+        :pos "NN")
+   :pos "VB"))
+
+#Are you going on holiday this year?
+(@going-holiday?-g :amr-set (h / holiday-01
+   :polarity (a / amr-unknown)
+   :ARG0 (y / you
+            :pos "PRP")
+   :time (y2 / year
+             :mod (t / this
+                     :pos "DT")
+             :pos "NN")
+   :pos "NN"))
+
+#Do you have a close family?
+(@close-fam?-g :amr-set (h / have-03
+   :polarity (a / amr-unknown)
+   :ARG0 (y / you
+            :pos "PRP")
+   :ARG1 (f / family
+            :ARG1-of (c / close-10
+                        :pos "JJ")
+            :pos "NN")
+   :pos "VB"))
+
+# Do you like gardening?
+(@like-gardening?-g :amr-set (like
+   :ARG0 (y / you :pos "PRP")
+   :ARG1 (g / garden :pos "VBG")
+   :polarity (a / amr-unknown)
+   :pos "VB"))
+
+#Have you played any sports?
+(@played-sports?-g :amr-set (p / play-01
+    :polarity (a / amr-unknown)
+    :ARG0 (y / you)
+    :ARG1 (s / sport
+        :mod (a2 / any))
+    :pos "VBN"))
+
+(@convo-start-g :amr-set @like-gardening?-g)
+(@convo-start-g :amr-set @played-sports?-g)
+(@convo-start-g :amr-set @close-fam?-g)
+(@convo-start-g :amr-set @going-holiday?-g)
+(@convo-start-g :amr-set @where-holiday?-g)
+
+# Oh, by the way
+(@btw-g :amr-set (by-the-way :mod (oh :mode (expressive / -) :pos "UH")))
+
+#May I ask?
+(@may-ask-g :amr-set (p / permit-01
+   :polarity (a / amr-unknown)
+   :ARG1 (a2 / ask-01
+             :ARG0 (ii / i))))
+
+(@opener-g :amr-set @excuse-me-g)
+(@opener-g :amr-set @btw-g)
+(@opener-g :amr-set @may-ask-g)

@@ -1,0 +1,15 @@
+# I can see you are $condition today.
+(@general-condition-g :amr-set
+   (possible-01 :ARG1 (see-01 :ARG0 i :ARG1 $condition :ARG1 (you :pos "PRP") :time today)))
+
+(@positive-cond-adj :amr-set good)
+(@positive-cond-adj :amr-set great)
+(@positive-cond-adj :amr-set fine)
+
+# I'm @positive-cond-adj
+(@positive-condition-g :amr-set (@positive-cond-adj :ARG1 i))
+# I'm doing well
+(@positive-condition-g :amr-set (do :ARG1-of @positive-cond-adj :ARG0 i :pos "VBG"))
+
+# I'm NOT @positive-cond-adj
+(@negative-condition-g :amr-set (@positive-cond-adj :ARG1 i :polarity -))

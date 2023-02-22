@@ -1,0 +1,7 @@
+# Well, $person-name
+(@continuation :amr-set (p / person :name (p2 / $person-name) :mod well))
+
+# One more thing
+(@one-more-thing :amr-set (thing :quant 1 :mod more))
+
+(@continuation-g :amr-set @one-more-thing)

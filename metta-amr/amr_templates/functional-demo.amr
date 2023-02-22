@@ -1,0 +1,153 @@
+#######################################
+######### FACE-ID DEMO ################
+#######################################
+# Face recognition nouns
+(@feature-noun :amr-set function)
+(@feature-noun :amr-set functionality)
+(@feature-noun :amr-set capable)
+(@feature-noun :amr-set ability)
+
+# Face recognition verbs
+(@activate-verb :amr-set activate)
+(@activate-verb :amr-set demonstrate)
+(@activate-verb :amr-set show)
+
+
+# [Grace,] [please] activate/demonstrate/show  us/me your face recognition functionality/capability/abilities
+(@faceID-req-say :amr-set (say :ARG0 i
+                                   :ARG1 @faceID-req-sub
+                                   :* *))
+(@faceID-req-sub :amr-set (@activate-verb :* * :ARG1 (@feature-noun :* * :ARG1 (recognize :ARG1 face))))
+(@faceID-req-sub :amr-set (@activate-verb :* * :ARG1 (@feature-noun :* * :ARG2 (recognize :ARG1 face))))
+
+(@faceID-req :amr-set @faceID-req-say)
+(@faceID-req :amr-set @faceID-req-sub)
+
+#######################################
+######### FACE EMOTION DEMO ###########
+#######################################
+
+# [Grace,] [please] show us/me your emotion recognition functionality/capability/abilities
+(@faceemo-req-say :amr-set (say :ARG0 i
+                                   :ARG1 @faceemo-req-sub
+                                   :* *))
+(@faceemo-req-sub :amr-set (@activate-verb :* * :ARG1 (@feature-noun :* * :ARG1 @faceemo-sub)))
+(@faceemo-req-sub :amr-set (@activate-verb :* * :ARG1 (@feature-noun :* * :ARG2 @faceemo-sub)))
+
+(@faceemo-sub :amr-set (recognize :ARG1 emotion))
+
+(@faceemo-req :amr-set @faceemo-req-say)
+(@faceemo-req :amr-set @faceemo-req-sub)
+
+
+# You look $current-emotion
+(@report-emotion-g :amr-set (look-02 :ARG0 you :ARG1 $current-emotion :pos "VBP"))
+
+# That looks $current-emotion
+(@report-emotion-g :amr-set (look-02 :ARG0 that :ARG1 $current-emotion :pos "VBZ"))
+
+# $current-emotion
+(@report-emotion-g :amr-set (x / $current-emotion :pos "JJ"))
+
+
+#######################################
+######### Active-Speaker-ID DEMO ######
+#######################################
+# Intended sentence: Start active speaker mode
+#Start in active speech mode
+#Start active speaker mode
+#Start your active speaker mode
+#Grace, start active speaker mode
+#Grace, start your active speaker mode
+(@ASI-req-sub :amr-set (start
+   :* *
+   :ARG1 (mode
+            :* *
+            :mod (person
+                    :* *)
+            :ARG0-of speak)
+    :ARG1-of activity))
+(@ASI-req-sub :amr-set (start
+   :* *
+   :ARG1 (mode
+            :* *
+            :mod (person
+                    :* *
+                    :ARG0-of speak)
+            :ARG1-of activity)))
+
+(@ASI-req-say :amr-set (say :* * :ARG1 @ASI-req-sub))
+
+(@ASI-req-say :amr-set (say :* *
+                             :ARG0 i
+                             :ARG1 (@activate-verb :* *
+                                                  :ARG1 (@feature-noun :* *
+                                                                       :mod (identify :* *)
+                                                                       :ARG1-of activity))))
+(@ASI-req-say :amr-set (say :* *
+                             :ARG0 i
+                             :ARG1 (@activate-verb :* *
+                                                  :ARG1 (@feature-noun :* *
+                                                                       :mod (identify :* *
+                                                                                      :ARG1-of activity)))))
+(@ASI-req-say :amr-set (say :ARG0 i
+                               :ARG1 @ASI-req-sub
+                               :* *))
+
+(@ASI-req-sub :amr-set (@activate-verb :* *
+                                   :ARG1 (@feature-noun :* *
+                                                        :ARG1 (identify :* *)
+                                                        :ARG1-of activity)))
+
+(@ASI-req-sub :amr-set (@activate-verb :* *
+                                    :ARG1 (@feature-noun :* *
+                                                         :ARG2 (identify :* *
+                                                                         :ARG1-of activity))))
+(@ASI-req-sub :amr-set (@activate-verb :* *
+                                     :ARG1 (@feature-noun :* *
+                                                          :ARG2 (identify :* *)
+                                                          :ARG1-of activity)))
+
+
+(@ASI-req :amr-set @ASI-req-say)
+(@ASI-req :amr-set @ASI-req-sub)
+(@functional-demo :amr-set @ASI-req)
+
+
+#######################################
+##### QA requests ####################
+#######################################
+
+# Intended sentence: Grace, can you answer medical questions?
+(@QA-req-ask :amr-set (ask
+    :* *
+    :ARG1 @QA-req-sub))
+
+# Intended sentence: Grace, can we ask you some medical questions?
+# Intended sentence: Grace, can we ask some medical questions?
+(@QA-req-ask :amr-set (a / ask
+    :* *
+    :ARG1 @QA-sub
+    :polarity (a2 / amr-unknown)))
+
+#Can you answer some questions?
+#Can you answer some medical questions?
+(@QA-req-sub :amr-set (possible
+    :polarity (a / amr-unknown)
+    :ARG1 (answer
+        :* *
+        :ARG1 @QA-sub)))
+
+#Can I ask you some medical questions?
+#Can I ask you medical questions?
+(@QA-req-sub  :amr-set (p / possible
+    :polarity (a / amr-unknown)
+    :ARG1 (ask
+        :* *
+        :ARG1 @QA-sub)))
+
+(@QA-sub :amr-set (question :* *))
+
+(@QA-req :amr-set @QA-req-sub)
+(@QA-req :amr-set @QA-req-ask)
+

@@ -1,0 +1,6 @@
+# (Please) Stop (this)
+(@stop :amr-set (stop
+    :polite? +
+    :mode (imperative / -)
+    :ARG0 you
+    :ARG1? this))

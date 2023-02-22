@@ -1,0 +1,22 @@
+# [Please] Show me a $face-expr face
+(@make-face-expr-target :amr-set i)
+(@make-face-expr-target :amr-set we)
+
+(@face-arg :amr-set (face :ARG0-of (e / $face-expr)))
+(@face-arg :amr-set (face :ARG1-of (e / $face-expr)))
+
+(@make-faces-req :amr-set
+   (show
+      :mode (imperative / -)
+      :polite? +
+      :ARG0 you
+      :ARG1 @face-arg
+      :ARG2 @make-face-expr-target))
+
+(@make-faces-req :amr-set
+   (show
+      :mode (imperative / -)
+      :polite? +
+      :ARG0 (you :part @face-arg)
+      :ARG1 @face-arg
+      :ARG2 @make-face-expr-target))

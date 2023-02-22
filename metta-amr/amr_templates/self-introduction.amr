@@ -1,0 +1,87 @@
+(@person-role :amr-set person)
+(@person-role :amr-set doctor)
+
+(@any-name :amr-set (name :op1 $name-op1 :op2? $name-op2 :op3? $name-op3 :* *))
+(@person-name :amr-set (@person-role :name $person-name :domain i))
+(@person-name-g :amr-set (person :name $person-name))
+
+# I'm $person-name/My name is $person-name
+(@self-name-statement :amr-set @person-name)
+(@self-name-statement-g :amr-set (@person-name-g
+    :domain i))
+(@self-name-statement :amr-set (name
+    :ARG1 i
+    :ARG2 @person-name))
+(@self-name-statement-g :amr-set (name
+    :ARG1 i
+    :ARG2 @person-name-g))
+
+# You can call me $person-name
+(@self-name-statement :amr-set (possible
+    :ARG1 (call
+        :ARG0 you
+        :ARG1 i
+        :ARG2 @person-name)))
+
+# Should I call you $person-name from now on?
+(@name-confirm?-g :amr-set (recommend-01
+    :polarity (a / amr-unknown)
+    :ARG1 (c / call-01
+             :ARG0 i
+             :ARG1 you
+             :ARG2 $person-name)
+    :time (from :op1 now)))
+
+# I'm a companion robot.
+(@robot-description-g :amr-set (robot :ARG0-of companion-01 :domain (i :pos "PRP")))
+# I'm your robot assistant.
+(@robot-description-g :amr-set (assistant :mod robot :poss you :domain (i :pos "PRP")))
+# I use artificial intelligence to work as a medical assistant.
+(@robot-description-g :amr-set (use-01 :ARG0 (ii / i)
+                                    :ARG1 (intelligent-01 :mod (artificial))
+                                    :ARG2 (work-01 :ARG0 ii
+                                                   :ARG1 (assistant :mod (medicine))
+                                                   :beneficiary (staff :location here :pos "NN"))))
+# You can probably guess I'm a robot.
+(@robot-description-g :amr-set (possible-01 :ARG1 (guess-01 :ARG0 you
+                                                         :ARG1 (robot :domain i)
+                                                         :mod probable)))
+#I am an AI robot.
+(@robot-description-g :amr-set (robot :mod artificial :domain i))
+
+# We can spend time together
+(@spend-time :amr-set (possible-01 :ARG1 (spend-02 :ARG0 we
+                                                   :ARG1 time
+                                                   :manner together)))
+
+# I can help you communicate with staff and family
+(@help-communicate :amr-set (possible-01 :ARG1 (help-01 :ARG0 i
+                                                        :ARG1 (communicate-01 :ARG0 (y / you)
+                                                        :ARG2 (and :op1 staff :op2 family))
+                                         :ARG2 y)))
+# Previous 2 templates combined
+(@robot-function-g :amr-set (and :op1 @spend-time :op2 @help-communicate))
+
+# Grace, (please) introduce yourself.
+(@grace-self-intro :amr-set
+    (say
+       :ARG0 i
+       :ARG1 (introduce
+                  :mode (imperative / -)
+                  :polite? +
+                  :ARG0 (p / person :name (name :op1 "Grace"))
+                  :ARG1 p)
+       :ARG2 p))
+
+# I am honored to be here at $nameofplace
+(@grace-at-location :amr-set
+    (honor
+       :ARG1 (ii / i)
+       :ARG2 (be-located-at
+                :ARG1 ii
+                :ARG2 here
+                :location (country :name $nameofplace))
+       :pos "VBN"))
+
+(@self-introduction :amr-set @self-name-statement)
+(@self-introduction-g :amr-set (and :op1 @self-name-statement-g :op2 @robot-description-g))

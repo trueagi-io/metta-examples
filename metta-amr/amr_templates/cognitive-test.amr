@@ -1,0 +1,35 @@
+# Please start a cognitive test/quiz
+(@ask-start-cogtest :amr-set (start :mode (imperative / -) :polite? + :ARG0 you 
+            :ARG1 (test :mod cognitive)))
+(@ask-start-cogtest :amr-set (start :mode (imperative / -) :polite? + :ARG0 you 
+            :ARG1 (quiz :mod cognitive)))
+            
+# Can you please start a cognitive test/quiz?
+(@ask-start-cogtest :amr-set (possible :polarity (a / amr-unknown) :polite? + :ARG1
+            (start :ARG0 you :ARG1 (test :mod cognitive))))
+(@ask-start-cogtest :amr-set (possible :polarity (a / amr-unknown) :polite? + :ARG1
+            (start :ARG0 you :ARG1 (quiz :mod cognitive))))
+#Would you like do a little cognitive test?    
+(@ask-start-cogtest-g :amr-set 
+           (like-02 :polarity (a / amr-unknown) :ARG0 (y/you)  :ARG1 (test-01  :ARG0 y  :ARG1 cognitive :mod little)))
+
+#What month is it?
+(@ask-current-month-g :amr-set (month :mod (amr-unknown :domain it)))
+
+#What year is it?
+(@ask-current-year-g :amr-set (year :mod (a / amr-unknown) :domain it  :pos "VB"))
+(@ask-current-year-g :amr-set (year :mod (a / amr-unknown)))
+
+#How many months in a  year?
+(@ask-month-count-g :amr-set  (rate-entity-91   :ARG1 (month :quant (a / amr-unknown)) :ARG2 (temporal-quantity :quant 1 :unit year)))
+
+#Say the name of the month
+(@say-current-month :amr-set (date-entity :month $month))
+#Say year
+(@say-current-year :amr-set (date-entity :year $year))
+#There are count months in a year
+(@say-month-count :amr-set 
+            (rate-entity-91 :ARG1 (month :quant $count) :ARG2 (temporal-quantity :quant 1 :unit year)))
+# OK not cognitive tests.
+ (@no-cogtest-g :amr-set   ( test-01   :mod cognitive :polarity - :ARG1-of okay-04 ))
+            

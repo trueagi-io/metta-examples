@@ -1,0 +1,48 @@
+(@generic-target :amr-set it)
+(@generic-target :amr-set thing)
+(@generic-target :amr-set everything)
+
+(@general-condition-verb :amr-set do)
+(@general-condition-verb :amr-set feel)
+
+# How's everything (today)? / How are things (today)?
+(@general-condition?-c :amr-set (a / amr-unknown :domain thing :time today))
+(@general-condition?-c :amr-set (@generic-target :manner (a / amr-unknown) :time? today))
+
+# How are you (today)?
+(@general-condition? :amr-set (you :manner (a / amr-unknown) :time? today))
+
+# How are you doing (today)? / How are you feeling (today)? /
+# How do you do (today)? / How do you feel (today)?
+(@general-condition? :amr-set (@general-condition-verb :ARG0 you :ARG1 (a / amr-unknown) :time? today))
+(@general-condition? :amr-set (@general-condition-verb :ARG0 you :manner (a / amr-unknown) :time? today))
+
+# How's everything going (today)? / How are things going (today)? /
+# How's it going (today)? / How's your day going (today)?
+(@general-condition? :amr-set (go :ARG1 @generic-target :manner (a / amr-unknown) :time? today :pos "VBG"))
+(@general-condition? :amr-set (go :ARG1 (day :poss you :pos "NN") :pos "VBG" :manner (a / amr-unknown) :time? today))
+
+# What's up?
+(@whatsup? :amr-set (a / amr-unknown :mod up))
+(@whatsup?-g :amr-set (up :ARG1 (a / amr-unknown)))
+
+# What's new?
+(@whats-new?-c :amr-set (new :ARG1 (a / amr-unknown)))
+
+# How's your day?
+(@general-condition? :amr-set (a / amr-unknown :domain (day :poss you)))
+(@general-condition?-g :amr-set (day :poss you :manner (a / amr-unknown) :pos "NN"))
+
+# What are you up to?
+(@what-upto? :amr-set (a / amr-unknown :ARG1-of (up-to :op1 you)))
+(@what-upto?-g :amr-set (up-to :ARG0 you :ARG1 (a / amr-unknown)))
+
+# How are you holding up (today)?
+(@general-condition? :amr-set (hold-up :ARG0 you :manner (a / amr-unknown) :time? today :pos? "VBG"))
+
+# How are things coming along (today)?
+# TODO: How to generate "How are things coming along (today)?"...
+(@general-condition? :amr-set (come-along-18 :ARG1 thing :manner (a / amr-unknown) :time? today))
+
+(@general-condition? :amr-set @general-condition?-c)
+(@general-condition?-g :amr-set @general-condition?-c)

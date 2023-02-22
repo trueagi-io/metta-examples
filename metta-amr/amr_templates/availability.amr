@@ -1,0 +1,12 @@
+########## Generate ##########
+(@daytime1 :amr-set (date-entity :weekday $weekday :time $time))
+(@daytime2 :amr-set (and :op1 (date-entity :weekday $weekday1 :time $time1)
+                         :op2 (date-entity :weekday $weekday2 :time $time2)
+                         :pos "CC"))
+
+# $person-name is available at $time $weekday.
+(@person-avail-day-time-g :amr-set
+   (available-02
+      :ARG1 (person :name $person-name)
+      :time $daytime
+      :pos "JJ"))

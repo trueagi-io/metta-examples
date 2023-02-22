@@ -1,0 +1,20 @@
+# (Oh, )okay(!)
+(@general-agree-sub :amr-set (okay :mode? (expressive / -) :mod? (oh :mode (expressive / -))))
+# Okay
+(@general-agree-sub-g :amr-set (okay :mode (expressive / -)))
+# Alright
+(@general-agree-sub-c :amr-set (a / all-right))
+# (Okay, )Sounds good
+(@general-agree-sub-c :amr-set (sound :ARG1 good :ARG1-of? okay :mode? (expressive / -)))
+# (Okay, )That sounds good
+(@general-agree-sub :amr-set (sound :ARG1 that :ARG2 good :ARG1-of? okay))
+# Perfect
+(@general-agree-sub-c :amr-set perfect)
+
+# Include all confirmations as agreements for matching, too
+(@general-agree :amr-set @general-confirm)
+(@general-agree :amr-set @general-agree-sub-c)
+(@general-agree :amr-set @general-agree-sub)
+
+(@general-agree-g :amr-set @general-agree-sub-c)
+(@general-agree-g :amr-set @general-agree-sub-g)

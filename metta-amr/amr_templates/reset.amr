@@ -1,0 +1,17 @@
+# reset(!) / Reset(!)
+(@reset :amr-set (reset :mode? * :ARG0? you))
+
+# Do you want me to forget about our whole interaction?
+(@confirm-reset-g :amr-set (want-01 :polarity (a / amr-unknown)
+                                    :ARG0 you
+                                    :ARG1 (forget-01 :ARG0 i
+                                                     :ARG1 (interact-01 :ARG0 we
+                                                                        :mod whole))))
+
+(@not-resetting-g :amr-set (r / reset-01
+    :polarity -
+    :ARG1-of (o / okay-04
+        :pos "UH")
+    :pos "VBG"
+    :pos "RB"))
+(@reset-g :amr-set @not-resetting-g))

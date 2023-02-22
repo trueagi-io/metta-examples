@@ -1,0 +1,14 @@
+# I hope you are feeling better now.
+(@hope-g :amr-set
+   (hope-01
+      :ARG0 i
+      :ARG1 (f1 / feel-01
+               :ARG0 you
+               :ARG1 (good-02
+                        :ARG2-of (have-degree-91
+                                     :ARG1 (f2 / feel-01)
+                                     :ARG3 more))
+               :time now
+               :pos "VBG")
+      :pos "VBP")
+)

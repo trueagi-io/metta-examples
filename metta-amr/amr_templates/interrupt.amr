@@ -1,0 +1,32 @@
+# Grace, stop. / Grace, stop / Stop Grace / Stop Grace. / Stop Grace! / Grace stop!
+(@interrupt :amr-set
+   (stop
+      :mode (imperative / -)
+      :ARG0 you
+      :ARG1 (person :name (name :op1 "Grace"))))
+
+# Grace stop / Grace stop.
+(@interrupt :amr-set
+   (stop
+      :mode (imperative / -)
+      :ARG0 (person :name (name :op1 "Grace"))))
+
+# stop grace / stop grace. / stop grace!
+(@interrupt :amr-set
+   (stop
+      :mode (imperative / -)
+      :ARG0 you
+      :ARG1 grace))
+
+# grace stop! / grace stop.
+(@interrupt :amr-set
+   (stop
+      :mode (imperative / -)
+      :ARG0 you
+      :mod grace))
+
+# grace stop
+(@interrupt :amr-set
+   (stop
+      :mode (imperative / -)
+      :ARG0 grace))

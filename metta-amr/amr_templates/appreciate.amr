@@ -1,0 +1,22 @@
+(@appreciate-adj :amr-set nice)
+(@appreciate-adj :amr-set good)
+(@appreciate-adj :amr-set great)
+(@appreciate-adj :amr-set lovely)
+(@appreciate-adj :amr-set amaze)
+
+(@appreciate-adv :amr-set well)
+
+# It's a(n) $appreciate-adj day
+(@appreciate-day :amr-set (day :* @appreciate-adj))
+# It's a $appreciate-adj day
+(@appreciate-day-c :amr-set (day :ARG1-of @appreciate-adj))
+# It's $appreciate-adj
+(@appreciate-it :amr-set (@appreciate-adj :domain it))
+# It went $appreciate-adv(.)
+(@appreciate-it :amr-set (go :ARG1 it :manner? @appreciate-adv :ARG1-of? @appreciate-adv))
+
+(@appreciate-g :amr-set @appreciate-it)
+(@appreciate-g :amr-set @appreciate-adj)
+(@appreciate-g :amr-set @appreciate-day-c)
+(@appreciate :amr-set @appreciate-g)
+(@appreciate :amr-set @appreciate-day)

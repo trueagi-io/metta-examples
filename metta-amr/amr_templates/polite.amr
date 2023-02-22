@@ -1,0 +1,65 @@
+# Thanks(!) / Thank you(!) / Thanks a lot(!)
+(@thanks-c :amr-set (thank :ARG0? i :ARG1? you :mode? (expressive / -) :quant? lot))
+# Thanks $person-name(!)
+(@thanks-name :amr-set (thank :ARG0 i :ARG1 (person :name @any-name) :mode? (expressive / -)))
+(@thanks-name :amr-set (say :ARG1 (thank :ARG0 i :ARG1 (p / person :name @any-name)) :ARG2 p))
+# Thanks sweetheart
+(@thanks-sweetheart :amr-set (say :ARG0 i :ARG1 thank :ARG2 sweetheart))
+
+(@thanks :amr-set @thanks-c)
+(@thanks :amr-set @thanks-name)
+(@thanks :amr-set @thanks-sweetheart)
+
+(@thanks-g :amr-set @thanks-c)
+
+# You're welcome
+(@youre-welcome :amr-set (welcome-01 :ARG1 you))
+# No problem
+(@no-problem :amr-set (problem :polarity -))
+# Sure(!)
+(@sure :amr-set (sure :mode? (expressive / -)))
+
+# Come in request and answers
+(@comein? :amr-set (permit-01 :polarity (a / amr-unknown)
+                              :ARG1 (come-01 :ARG1 i :ARG4 in)))
+(@comein :amr-set (come-in :mode (imperative / -) :ARG1 you))
+(@comein :amr-set (come :mode (imperative / -)
+                           :polite +
+                           :ARG1 you
+                           :ARG4 in))
+
+
+# I'm glad
+(@glad :amr-set (glad-02 :ARG0 i))
+
+# Nice to meet you, $other-name
+(@nicemeet-name-g :amr-set (say :ARG1 (nice :ARG1 (meet :ARG0 i :ARG1 (o / $other-name))) :ARG2 o))
+(@nicemeet-name :amr-set (say :ARG1 (nice :ARG1 (meet :ARG0 i :* *)) :* *))
+
+# Nice to meet you
+(@nicemeet-c :amr-set (nice :ARG1 (meet :ARG0 i :ARG1 you)))
+# Nice to meet you, too
+(@nicemeet-too-c :amr-set (nice :ARG1 (meet :ARG0 i :ARG1 you :mod too)))
+
+#Excuse me
+(@excuse-me-g :amr-set (e / excuse
+   :mode (imperative / -)
+   :ARG0 (y / you)
+   :ARG1 (ii / i)))
+
+# I'm sorry
+(@sorry-g :amr-set (sorry :ARG1 i))
+
+# Sorry, I was confused
+(@sorry-confused-g :amr-set (sorry-01 :ARG0 (be :ARG0 i :ARG1 confuse-01 :pos "VBD")))
+
+(@nicemeet :amr-set @nicemeet-c)
+(@nicemeet :amr-set @nicemeet-name)
+(@nicemeet :amr-set @nicemeet-too-c)
+
+#(@polite-g :amr-set @nicemeet-name-g)
+#(@polite-g :amr-set @nicemeet-c)
+#(@polite-g :amr-set @nicemeet-too-c)
+(@polite :amr-set @nicemeet)
+
+(@polite-g :amr-set @excuse-me-g)

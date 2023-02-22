@@ -1,0 +1,179 @@
+(@move-cmd-verb :amr-set go)
+(@move-cmd-verb :amr-set move)
+
+(@move-direction-left :amr-set (left :ARG1 you))
+(@move-direction-left :amr-set (left :ARG1-of @move-cmd-verb))
+(@move-direction-right :amr-set (right :ARG1 you))
+(@move-direction-right :amr-set (right :ARG1-of @move-cmd-verb))
+
+(@dist-quant :amr-set (distance-quantity :quant $distance :unit (mu / $unit)))
+(@dir-dist-quant-left :amr-set (left :quant @dist-quant))
+(@dir-dist-quant-right :amr-set (right :quant @dist-quant))
+(@rel-dist-quant :amr-set (relative-position :op1 @dist-quant))
+(@rel-dir-dist-quant-left :amr-set (relative-position :op1 @move-direction-left :quant @dist-quant))
+(@rel-dir-dist-quant-right :amr-set (relative-position :op1 @move-direction-right :quant @dist-quant))
+
+# [Please] move/go $distance feet/meters forward/backward/to the left/to the right
+(@move-cmd-forward :amr-set (@move-cmd-verb :ARG1 forward :extent @dist-quant :* *))
+(@move-cmd-forward :amr-set (@move-cmd-verb :ARG1 forward :direction @dist-quant :* *))
+(@move-cmd-forward :amr-set (@move-cmd-verb :ARG1 forward :ARG2 @dist-quant))
+(@move-cmd-forward :amr-set (@move-cmd-verb :ARG1 @dist-quant :direction forward :* *))
+(@move-cmd-backward :amr-set (go-back :ARG1 @dist-quant :* *))
+(@move-cmd-backward :amr-set (go-back :ARG2 @dist-quant :* *))
+(@move-cmd-backward :amr-set (@move-cmd-verb :ARG1 @dist-quant :direction backward :* *))
+(@move-cmd-left :amr-set (@move-cmd-verb :ARG1 @dist-quant :ARG2 left :* *))
+(@move-cmd-left :amr-set (@move-cmd-verb :ARG1 @dist-quant :direction left :* *))
+(@move-cmd-left :amr-set (@move-cmd-verb :ARG1 @dir-dist-quant-left :* *))
+(@move-cmd-left :amr-set (@move-cmd-verb :ARG2 @rel-dir-dist-quant-left :* *))
+(@move-cmd-left :amr-set (@move-cmd-verb :ARG2 left :direction @dist-quant :* *))
+(@move-cmd-left :amr-set (@move-cmd-verb :ARG2 left :direction @rel-dist-quant :* *))
+(@move-cmd-left :amr-set (@move-cmd-verb :ARG4 left :extent @dist-quant :* *))
+(@move-cmd-left :amr-set (@move-cmd-verb :ARG4 left :direction @dist-quant :* *))
+(@move-cmd-left :amr-set (@move-cmd-verb :ARG4 left :direction @rel-dist-quant :* *))
+(@move-cmd-left :amr-set (@move-cmd-verb :direction left :direction @dist-quant :* *))
+(@move-cmd-left :amr-set (@move-cmd-verb :direction left :extent @dist-quant :* *))
+(@move-cmd-left :amr-set (@move-cmd-verb :direction left :quant @dist-quant :* *))
+(@move-cmd-left :amr-set (@move-cmd-verb :ARG1 @dist-quant :ARG2 @move-direction-left :* *))
+(@move-cmd-left :amr-set (@move-cmd-verb :ARG1 @dist-quant :direction @move-direction-left :* *))
+(@move-cmd-left :amr-set (@move-cmd-verb :ARG2 @move-direction-left :extent @dist-quant :* *))
+(@move-cmd-left :amr-set (@move-cmd-verb :ARG2 @move-direction-left :direction @dist-quant :* *))
+(@move-cmd-left :amr-set (@move-cmd-verb :ARG4 @move-direction-left :direction @dist-quant :* *))
+(@move-cmd-left :amr-set (@move-cmd-verb :ARG4 @dist-quant :direction @move-direction-left :* *))
+(@move-cmd-left :amr-set (@move-cmd-verb :direction @move-direction-left :extent @dist-quant :* *))
+(@move-cmd-right :amr-set (@move-cmd-verb :ARG1 @dist-quant :ARG2 right :* *))
+(@move-cmd-right :amr-set (@move-cmd-verb :ARG1 @dist-quant :direction right :* *))
+(@move-cmd-right :amr-set (@move-cmd-verb :ARG1 @dir-dist-quant-right :* *))
+(@move-cmd-right :amr-set (@move-cmd-verb :ARG2 @rel-dir-dist-quant-right :* *))
+(@move-cmd-right :amr-set (@move-cmd-verb :ARG2 right :direction @dist-quant :* *))
+(@move-cmd-right :amr-set (@move-cmd-verb :ARG2 right :direction @rel-dist-quant :* *))
+(@move-cmd-right :amr-set (@move-cmd-verb :ARG4 right :extent @dist-quant :* *))
+(@move-cmd-right :amr-set (@move-cmd-verb :ARG4 right :direction @dist-quant :* *))
+(@move-cmd-right :amr-set (@move-cmd-verb :ARG4 right :direction @rel-dist-quant :* *))
+(@move-cmd-right :amr-set (@move-cmd-verb :direction right :direction @dist-quant :* *))
+(@move-cmd-right :amr-set (@move-cmd-verb :direction right :extent @dist-quant :* *))
+(@move-cmd-right :amr-set (@move-cmd-verb :direction right :quant @dist-quant :* *))
+(@move-cmd-right :amr-set (@move-cmd-verb :ARG1 @dist-quant :ARG2 @move-direction-right :* *))
+(@move-cmd-right :amr-set (@move-cmd-verb :ARG1 @dist-quant :direction @move-direction-right :* *))
+(@move-cmd-right :amr-set (@move-cmd-verb :ARG2 @move-direction-right :extent @dist-quant :* *))
+(@move-cmd-right :amr-set (@move-cmd-verb :ARG2 @move-direction-right :direction @dist-quant :* *))
+(@move-cmd-right :amr-set (@move-cmd-verb :ARG4 @move-direction-right :direction @dist-quant :* *))
+(@move-cmd-right :amr-set (@move-cmd-verb :ARG4 @dist-quant :direction @move-direction-right :* *))
+(@move-cmd-right :amr-set (@move-cmd-verb :direction @move-direction-right :extent @dist-quant :* *))
+
+(@turn-cmd-verb :amr-set turn)
+(@turn-cmd-verb :amr-set rotate)
+
+# [Please] turn/rotate $deg degrees
+(@turn-cmd :amr-set (@turn-cmd-verb :ARG1 (degree :quant $deg) :* *))
+(@turn-cmd :amr-set (@turn-cmd-verb :ARG1 (temperature-quantity :quant $deg :* *) :* *))
+(@turn-cmd :amr-set (@turn-cmd-verb :ARG2 (degree :quant $deg) :* *))
+(@turn-cmd :amr-set (@turn-cmd-verb :ARG2 (temperature-quantity :quant $deg :* *) :* *))
+(@turn-cmd :amr-set (@turn-cmd-verb :ARG2 (angle-quantity :quant $deg :unit degree) :* *))
+
+# Turn left
+(@turn-left :amr-set (turn :mode (imperative / -) :ARG0 you :ARG2 left))
+
+# Turn right
+(@turn-right :amr-set (turn :mode (imperative / -) :ARG0 you :ARG2 right))
+
+# Turn around
+(@turn-around :amr-set (turn :mode (imperative / -) :ARG0 you :direction around))
+
+# Spin around
+(@spin-around :amr-set (spin :mode (imperative / -) :ARG0 you :direction around))
+
+# Move/go a little to your left
+(@move-little-left :amr-set (@move-cmd-verb :mode (imperative / -) :ARG0 (y / you) :ARG2 (left :ARG1 y) :degree little))
+(@move-little-left :amr-set (@move-cmd-verb :mode (imperative / -) :ARG0 (y / you) :ARG4 (left :ARG1 y) :degree little))
+
+# Move/go a little to your right
+(@move-little-right :amr-set (@move-cmd-verb :mode (imperative / -) :ARG0 (y / you) :ARG2 (right :ARG1 y) :degree little))
+(@move-little-right :amr-set (@move-cmd-verb :mode (imperative / -) :ARG0 (y / you) :ARG4 (right :ARG1 y) :degree little))
+
+# Move/go forward a little
+(@move-little-forward :amr-set (m / move :mode (imperative / -) :ARG0 (you :ARG1-of m) :direction forward :degree little))
+(@move-little-forward :amr-set (go :mode (imperative / -) :ARG0 you :ARG1 forward :degree little))
+
+# Move/go backward a little
+(@move-little-backward :amr-set (m / move :mode (imperative / -) :ARG0 (you :ARG1-of m) :direction backward :degree little))
+(@move-little-backward :amr-set (go :mode (imperative / -) :ARG0 you :ARG4 backward :degree little))
+
+# [Please] go to $person-name
+(@go-to-person :amr-set (go :mode? (imperative / -) :polite? + :ARG0 you :ARG4 (person :name $person-name)))
+
+# [Please] come to $person-name
+(@go-to-person :amr-set (come :mode? (imperative / -) :polite? + :ARG1 you :ARG4 (person :name $person-name)))
+(@go-to-person :amr-set (come :ARG4 (person :name $person-name)))
+
+# [Please] come to me / [Please] come [over] here
+(@come-to-target :amr-set i)
+(@come-to-target :amr-set here)
+(@come-to-me :amr-set (come :mode? (imperative / -) :polite? + :ARG1 you :ARG4 @come-to-target))
+
+# Where is $person-name?
+(@where-is-person? :amr-set (person :name $person-name :location (a / amr-unknown)))
+(@where-is-person? :amr-set (be-located-at :ARG1 (person :name $person-name) :ARG2 (a / amr-unknown)))
+# Intended sentence: Grace, where is Ben?
+#Where is Ben, Grace?
+(@say-ask :amr-set say)
+(@say-ask :amr-set ask)
+(@where-is-person? :amr-set (@say-ask
+    :ARG0? (ii / i)
+    :ARG1 (b / be-located-at
+        :ARG1 (person
+            :name $person-name)
+        :ARG2 (a2 / amr-unknown))
+    :ARG2 (p2 / person
+        :name (n2 / name
+            :op1 "Grace"))
+    :ARG3? a2))
+
+(@robot-movement :amr-set @where-is-person?)
+
+# $person-name is here
+(@person-is-here-g :amr-set
+   (be-located-at
+      :ARG1 (person :name $person-name)
+      :ARG2 (here :pos "RB")))
+
+# Over there
+(@over-there-g :amr-set (over :op1 (there:pos "RB") :pos "RB"))
+
+# Right here
+(@right-here-g :amr-set (here :mod (right :pos "RB") :pos "RB"))
+
+(@person-located-g :amr-set @person-is-here-g)
+(@person-located-g :amr-set @over-there-g)
+(@person-located-g :amr-set @right-here-g)
+
+# Oh, $person-name isn't here anymore.
+(@person-not-here-anymore-g :amr-set
+   (be-located-at
+      :polarity -
+      :ARG1 $person-name
+      :ARG2 (here :pos "RB")
+      :time (anymore :pos "RB")
+      :mod (oh :mode (expressive / -) :pos "UH")
+      :pos "RB"))
+
+# Maybe $person-name is behind me.
+(@person-behind-me-g :amr-set
+   (possible
+      :ARG1 (be-located-at
+               :ARG1 $person-name
+               :ARG2 (behind :op1 (i :pos "PRP") :pos "IN"))))
+
+
+# Sorry, I don't know where $person-name.
+(@dont-know-where-g :amr-set
+   (sorry
+      :ARG1 (i :pos "PRP")
+      :ARG2 (know-01
+               :polarity -
+               :ARG0 i
+               :ARG1 (location :location-of $person-name :pos "VB")
+      :pos "UH")))
+
+# I'll give you some space
+(@leaving-space-c :amr-set (give :ARG0 i :ARG1 (space :quant? some) :ARG2 you))
+

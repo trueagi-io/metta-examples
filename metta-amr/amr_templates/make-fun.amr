@@ -1,0 +1,8 @@
+ # I am also feeling energized, as my battery is full.
+(@make-fun-energize-g :amr-set
+   (feel-01
+      :ARG0 (i :pos "PRP")
+      :ARG1 (energize-01 :ARG1 ii :pos "JJ")
+      :mod (also :pos "RB")
+      :ARG1-of (cause-01 :ARG0 (full-09 :ARG1 (battery :poss ii :pos "NN") :pos "JJ"))
+      :pos "VBG"))

@@ -1,0 +1,6 @@
+# Let's do a quick medical check.
+(@quick-medical-check :amr-set (check :mode (imperative / -) :ARG0 we :ARG1 medicine :ARG1-of quick))
+
+# Please do a quick medical check.
+(@quick-medical-check :amr-set (check :mode (imperative / -) :polite? + :ARG0 you :mod medicine :ARG1-of quick))
+

@@ -1,0 +1,28 @@
+#
+(@physical-activity-query? :amr-set (like-02 :ARG0 (y / you)
+                                             :ARG1 (schedule-01 :ARG0 y
+                                                                :ARG1 (session :mod (activity-06 :mod physical))
+                                                                :ARG2 (week :mod next))
+                                             :polarity (a / amr-unknown)))
+
+# What's offered for next week?
+(@activity-offer-query? :amr-set (o / offer :polarity (a / amr-unknown :ARG1-of o) :time (week :mod next)))
+# What's available next week?
+(@activity-offer-query? :amr-set (available :ARG2 (a2 / amr-unknown) :time (week :mod next)))
+# Next week there will be $activities
+(@activity-options :amr-set (a / $activities :time (week :mod next)))
+# $selected-activity is scheduled for $activity-schedule
+(@activity-schedules :amr-set (schedule-01 :ARG1 $selected-activity :time $activity-schedule))
+# Alright, your $selected-activity session is booked for $selected-weekday at $selected-time.
+(@confirm-selection :amr-set (book-01 :ARG1 (session :mod $selected-activity :poss you)
+                                      :ARG3 (date-entity :time $selected-time
+                                                         :weekday $selected-weekday)))
+# I'll remind you of your coming appointment
+(@remind-offer :amr-set (remind-01 :ARG0 (i :pos "PRP")
+                                   :ARG1 (appoint-01 :ARG1 (y / you) :ARG1-of come-01)
+                                   :ARG2 y))
+
+# Remember that $thing-to-remember
+(@general-reminder :amr-set (remember :mode (imperative / -) :ARG0 (y / you) :ARG1 $thing-to-remember))
+
+(@activity-schedule-g :amr-set @general-reminder)

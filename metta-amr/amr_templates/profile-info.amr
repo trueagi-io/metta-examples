@@ -1,0 +1,59 @@
+#### INFORM USER NAME
+
+#I guess you are $user-name
+(@guess-name-g :amr-set (guess
+    :ARG0 i
+    :ARG1 (person
+        :name (name
+            :op1 (u / $user-name))
+        :domain you)))
+
+#### USER'S FAVORITE FOOD
+
+#What is your favorite food?
+(@fav-food-query?-g :amr-set (food
+    :ARG1-of (favor
+        :ARG0 you)
+    :domain (a / amr-unknown)))
+
+#You're a fan of $fav-food
+# FOR SOME FOODS, it outputs "You're a pro $fav-food", which is weird
+#(@say-fav-food-g :amr-set (favor
+#    :ARG0 you
+#    :ARG1 $fav-food
+#    :pos "JJ"))
+#You love to eat $fav-food
+(@say-fav-food-g :amr-set (l / love-01
+   :ARG0 (y / you)
+   :ARG1 (e / eat-01
+            :ARG0 y
+            :ARG1 $fav-food)))
+
+#### TIME USER FIRST MET WITH ROBOT
+
+#(@meet-date :amr-set (date-entity :year 2020 :month 8 :day 2))
+
+#We met on August 28, 2022
+(@met-on-date-g :amr-set (meet
+    :ARG0 we
+    :time $meet-date
+    :pos "VBD"))
+
+#We met for the first time on January 3, 2001
+(@met-on-date-g :amr-set (meet
+    :ARG0 we
+    :ord (ordinal-entity
+        :value 1)
+    :time $meet-date
+    :pos "VBD"))
+
+#We know each other since April 1, 1990
+(@met-on-date-g :amr-set (know
+    :ARG0 we
+    :ARG1 (other
+        :mod (each
+            :pos "DT")
+        :pos "JJ")
+    :time (since
+        :op1 $meet-date)
+    :pos "VBP"))

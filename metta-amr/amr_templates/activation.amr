@@ -1,0 +1,115 @@
+##### ACTIVATION
+
+(@person-Grace :amr-set (person
+    :name (name
+        :op1 "Grace")))
+
+# Intended sentence: What do you think Grace?
+(@activate :amr-set (think
+    :ARG0 you
+    :ARG1 (a / amr-unknown)
+    :ARG2 @person-Grace))
+
+#Tell me, Grace
+(@activate :amr-set (tell
+    :mode (imperative / -)
+    :ARG0 you
+    :ARG1 @person-Grace
+    :ARG2 i))
+
+#Wake up Grace
+(@activate :amr-set (wake-up
+    :* *
+    :mode (imperative / -)
+    :ARG0 @person-Grace))
+
+#Pay attention Grace
+(@activate :amr-set (say
+    :* *
+    :ARG1 (attend
+        :mode (imperative / -)
+        :ARG0 @person-Grace)))
+
+#Listen to me Grace
+(@activate :amr-set (listen
+    :mode (imperative / -)
+    :ARG0 @person-Grace
+    :ARG1 i))
+
+#Listen, Grace
+(@activate :amr-set (listen
+    :mode (imperative / -)
+    :ARG0 @person-Grace))
+
+#Are you listening, Grace?
+(@activate :amr-set (say
+    :* *
+    :ARG0 i
+    :ARG1 (listen
+        :ARG0 @person-Grace
+        :polarity (a / amr-unknown))))
+
+##### DEACTIVATION
+
+#Grace, be quiet
+(@deactivate :amr-set (say
+    :* *
+    :ARG0 i
+    :ARG1 (quiet
+            :mode (imperative / -)
+            :ARG0 @person-Grace)))
+
+# We're not talking to you Grace
+(@deactivate :amr-set (s / say
+    :* *
+    :ARG0 (ii / i)
+    :ARG1 (t / talk
+        :polarity -
+        :ARG0 (w / we)
+        :ARG2 @person-Grace)))
+
+# Intended sentence: He's not talking to you Grace
+(@deactivate :amr-set (s / say
+    :* *
+    :ARG0 (ii / i)
+    :ARG1 (t / talk
+        :polarity -
+        :ARG0 *
+        :ARG2 @person-Grace)))
+
+#Just listen for a while Grace
+(@deactivate :amr-set (s / say
+    :* *
+    :ARG1 (l / listen
+        :mode (imperative / -)
+        :ARG0 @person-Grace
+        :duration (w / while)
+        :mod (j / just))))
+
+#Please be quiet
+#Quiet[, please]
+(@deactivate :amr-set (q / quiet
+   :mode? (imperative / -)
+   :polite? +
+   :ARG0? (y / you)))
+
+(@quiet-Grace :amr-set (q / quiet
+   :mode (imperative / -)
+   :polite? +
+   :ARG0 @person-Grace))
+
+(@quiet-Grace :amr-set (p / possible
+   :polite? +
+   :ARG1 (q / quiet
+       :ARG1 @person-Grace)))
+
+# Please be quiet Grace
+# Please, Grace, be quiet
+# Grace, can you be quiet please?
+(@deactivate :amr-set (say
+    :ARG0 i
+    :ARG1 @quiet-Grace
+    :ARG2 *))
+
+(@activation :amr-set @activate)
+(@activation :amr-set @deactivate)

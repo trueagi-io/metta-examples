@@ -1,0 +1,246 @@
+#########################
+########## RAISING VOLUME
+#########################
+
+# Speak up
+(@raise-vol-req-sub :amr-set (speak-up
+    :* *))
+
+(@speak-verb :amr-set speak)
+(@speak-verb :amr-set talk)
+(@speak-verb :amr-set say)
+
+# (Please) Speak louder
+(@raise-vol-req-sub :amr-set (@speak-verb  :ARG1-of (h / have-degree :ARG2 (l / loud ) :ARG3 (m / more))))
+(@raise-vol-req-sub :amr-set (@speak-verb
+    :ARG0 *
+    :mode (imperative / -)
+    :polite? +
+    :ARG1-of (loud
+        :ARG2-of (have-degree
+            :* *
+            :ARG3 more))))
+(@raise-vol-req-sub :amr-set (@speak-verb
+    :ARG0 *
+    :mode (imperative / -)
+    :polite? +
+    :ARG1-of (have-degree
+        :* *
+        :ARG2 loud
+        :ARG3 more)))
+
+#Increase/Raise your volume
+(@raise-vol-verb :amr-set increase)
+(@raise-vol-verb :amr-set raise)
+(@raise-vol-req-sub :amr-set (@raise-vol-verb
+    :* *
+    :ARG1 (volume
+        :* *)))
+
+#I can't hear you
+(@raise-vol-req-sub :amr-set (possible
+    :polarity -
+    :ARG1 (hear
+        :ARG0 i
+        :ARG1 you)))
+
+# You are speaking too low
+(@raise-vol-req-sub :amr-set (@speak-verb
+    :* *
+    :ARG1-of (low
+        :ARG2-of (have-degree
+            :* *))))
+
+# You are speaking very low
+(@raise-vol-req-sub :amr-set (@speak-verb
+    :* *
+    :ARG1-of (low
+        :degree *)))
+
+# Grace, can you speak louder
+(@raise-vol-req :amr-set (say
+    :ARG0 i
+    :ARG1 (p / possible
+        :ARG1 (@speak-verb
+            :ARG0 (p2 / person
+                :name (n / name
+                    :op1 "Grace"
+                    :pos "NN"))
+            :ARG1-of (h / have-degree
+                :ARG2 (l / loud)
+                :ARG3 (m / more))))
+    :ARG2 p2))
+
+# can you speak louder
+(@raise-vol-req :amr-set (p / possible
+    :polarity? (a / amr-unknown)
+    :polite? +
+    :ARG1 (@speak-verb
+        :ARG0 (y / you)
+        :ARG1-of (h / have-degree
+            :ARG2 (l / loud)
+            :ARG3 (m / more)))))
+
+(@raise-vol-req-say :amr-set (say :* * :ARG1 @raise-vol-req-sub))
+(@raise-vol-req :amr-set @raise-vol-req-sub)
+(@raise-vol-req :amr-set @raise-vol-req-say)
+
+#########################
+######### LOWERING VOLUME
+#########################
+
+# (Please) lower your volume
+(@lower-vol-req-sub :amr-set (lower
+   :* *
+   :ARG1 (volume
+            :* *)))
+
+#Lower volume
+(@lower-vol-req-sub :amr-set (volume
+   :ARG1-of (have-degree
+               :ARG2 low
+               :* *)))
+
+# Speak (more) quietly
+(@lower-vol-req-sub :amr-set (@speak-verb
+   :* *
+   :mode (imperative / -)
+   :manner (quiet :* *)))
+# Speak in a lower volume
+(@lower-vol-req-sub :amr-set (@speak-verb
+   :* *
+   :mode (imperative / -)
+   :manner (volume :* * :ARG1-of (have-degree :* * :ARG2 (low :* *)))))
+# (Please) Speak lower
+(@lower-vol-req-sub :amr-set (@speak-verb
+   :* *
+   :mode (imperative / -)
+   :ARG1-of (have-degree :* * :ARG2 (low :* *))))
+# You're speaking too loud
+(@lower-vol-req-sub :amr-set (@speak-verb
+    :* *
+    :ARG1-of (loud
+        :ARG2-of (have-degree
+            :* *
+            :ARG3 too))))
+# You're speaking very loud
+(@lower-vol-req-sub :amr-set (@speak-verb
+    :* *
+    :manner (loud
+        :degree? *)))
+
+#You are too loud
+(@lower-vol-req-sub :amr-set (have-degree
+   :ARG1 you
+   :ARG2 loud
+   :ARG3 too))
+#You are (very) loud
+(@lower-vol-req-sub :amr-set (loud
+    :domain you
+    :degree? *))
+
+# Not so loud
+(@lower-vol-req-sub :amr-set (loud :* * :polarity -))
+
+# Don't speak so loud!
+(@lower-vol-req-sub :amr-set (@speak-verb
+    :* *
+    :polarity -
+    :manner (loud :* *)))
+
+# (Please) lower your voice
+(@lower-vol-req-sub :amr-set (lower
+    :* *
+    :ARG1 (voice :* *)))
+
+# Turn it down
+# Turn down the volume
+(@lower-vol-req-sub :amr-set (turn-down
+    :* *
+    :ARG1 *))
+
+
+(@lower-vol-req-say :amr-set (say :* * :ARG1 @lower-vol-req-sub))
+(@lower-vol-req :amr-set @lower-vol-req-sub)
+(@lower-vol-req :amr-set @lower-vol-req-say)
+
+# can you speak lower
+(@lower-vol-req :amr-set (p / possible
+    :polarity? (a / amr-unknown)
+    :polite? +
+    :ARG1 (t / @speak-verb
+        :ARG0 (y / you)
+        :manner (low
+            :ARG2-of (h / have-degree
+                :* *
+                :ARG3 (m / more))))))
+
+ # Grace, can you speak lower
+(@lower-vol-req :amr-set (say
+    :ARG0 i
+    :ARG1 (p / possible
+        :ARG1 (@speak-verb
+            :ARG0 (p2 / person
+                :name (n / name
+                    :op1 "Grace"
+                    :pos "NN"))
+            :manner (low
+                :ARG2-of (h / have-degree
+                    :* *
+                    :ARG3 (m / more)))))
+    :ARG2 p2))
+
+# Can you speak [a little] softer?
+(@lower-vol-req :amr-set
+    (possible
+        :polarity? (a / amr-unknown)
+        :ARG1 (speak
+            :ARG0 you
+            :ARG1-of (have-degree
+                :ARG2 (soft :ARG1 *)
+                :ARG3 (more :quant? *)))))
+
+######### CONFIRM NEW VOLUME
+# Does this sound better?
+(@confirm-vol?-g :amr-set (sound
+    :polarity (a / amr-unknown)
+    :ARG1 (t / this)
+    :ARG2 (good
+        :ARG2-of (have-degree
+            :ARG1 t
+            :ARG3 more))))
+
+# Is it better now?
+(@confirm-vol?-g :amr-set
+    (have-degree-91
+        :ARG1 (it :pos "PRP")
+        :ARG2 (good :ARG1 ii)
+        :ARG3 more
+        :time (now :pos "RB")
+        :polarity (a / amr-unknown)))
+
+# How about now?
+(@confirm-vol?-g :amr-set (now :manner (a2 / amr-unknown) :ARG0 about))
+
+# Can you hear me better now?
+(@confirm-vol?-g :amr-set
+    (possible-01
+       :polarity (a / amr-unknown)
+       :ARG1 (h / hear-01
+                :ARG0 you
+                :ARG1 i
+                :time now
+                :ARG1-of (have-degree-91
+                             :ARG2 (good-02 :ARG1 (h2 / hear-01))
+                             :ARG3 more))))
+
+(@volume-change :amr-set @raise-vol-req)
+(@volume-change :amr-set @lower-vol-req)
+(@volume-change-g :amr-set @confirm-vol?-g)
+
+
+######### CONTINUE/STOP VOLUME CHANGE
+# Note: @general-agree and @general-decline are assigned based on
+#       the way @confirm-vol?-g is asked above.
+(@continue-vol-change :amr-set @general-decline)
+(@stop-vol-change :amr-set @general-agree)

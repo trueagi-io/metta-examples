@@ -1,0 +1,5 @@
+# What's your purpose?
+(@purpose? :amr-set (purpose :poss you :domain amr-unknown))
+
+# What's your mission?
+(@purpose? :amr-set (mission :ARG0 you :ARG1 amr-unknown))

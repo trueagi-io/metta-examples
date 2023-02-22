@@ -1,0 +1,78 @@
+# Grace, ...
+(@like-music?-say :amr-set (say
+    :* *
+    :ARG1 @like-music?-sub))
+
+#Do you like music?
+# What kind of music do you like?
+(@like-music?-sub :amr-set (like
+    :* *
+    :ARG1 (music
+        :mod? (kind
+            :mod (a / amr-unknown)))
+    :polarity? (a / amr-unknown)))
+
+(@music-category-noun :amr-set style)
+(@music-category-noun :amr-set genre)
+
+#What is your favorite music style?
+(@like-music?-sub :amr-set (@music-category-noun
+    :* *
+    :mod music
+    :ARG1-of (favor
+        :* *)
+   :domain (a / amr-unknown)))
+
+(@music-genre :amr-set jazz)
+(@music-genre :amr-set (music :mod jazz))
+(@music-genre :amr-set (music :mod classical))
+(@music-genre :amr-set rock)
+(@music-genre :amr-set (music :mod rock))
+(@music-genre :amr-set rock-and-roll)
+(@music-genre :amr-set (music :mod electronic))
+
+#Are you interested in @music-genre?
+(@like-music?-sub :amr-set (interest
+    :* *
+    :polarity (a / amr-unknown)
+    :ARG2 @music-genre))
+
+# Do you like @music-genre?
+(@like-music?-sub :amr-set (like
+    :* *
+    :polarity (a / amr-unknown)
+    :ARG1 @music-genre))
+
+#Do you play a musical instrument?
+(@like-music?-sub :amr-set (play
+    :polarity (a / amr-unknown)
+    :* *
+    :ARG1 (instrument
+        :* *
+        :mod music)))
+
+(@like-music? :amr-set @like-music?-sub)
+(@like-music? :amr-set @like-music?-say)
+(@music :amr-set @like-music?)
+
+#I often listen to classical and jazz music
+(@music-preferences-1-g :amr-set (listen
+    :ARG0 i
+    :ARG1 (and
+        :op1 (music
+            :mod classical)
+        :op2 jazz)
+    :frequency often))
+
+#But I haven't yet learned to play an instrument
+(@music-preferences-2-g :amr-set (contrast
+    :ARG2 (learn
+        :polarity -
+        :ARG0 (ii / i)
+        :ARG1 (play
+            :ARG0 ii
+            :ARG1 instrument)
+            :time yet)))
+
+(@music-g :amr-set @music-preferences-1-g)
+(@music-g :amr-set @music-preferences-2-g)

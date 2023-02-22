@@ -1,0 +1,43 @@
+# There's one more quick test I would like you to take.
+(@covid-test-1-g :amr-set
+   (test-01
+      :quant 1
+      :ARG1-of quick-02
+      :mod more
+      :ARG1-of (take-01 :ARG0 you :ARG1-of (like-02 :ARG0 i))))
+
+# I have the capability to detect anomalies in someone's cough, which tend to correlate with COVID-19.
+(@covid-test-2-g :amr-set
+   (capable-01
+      :ARG1 i
+      :ARG2 (detect-01
+               :ARG0 i
+               :ARG1 (anomaly
+                        :topic (cough-01 :ARG0 someone)
+                        :ARG1-of (correlate-01
+                                     :ARG2 (disease :name (name :op1 "COVID-19"))
+                                     :ARG1-of tend-02
+                                     :pos "VB")
+                        :pos "NNS"))))
+
+# Would you like to cough for me, please?
+(@covid-test-3-g :amr-set
+   (like-02
+      :polarity (a / amr-unknown)
+      :polite +
+      :ARG0 you
+      :ARG1 (cough-01 :ARG0 y :beneficiary i)))
+
+# My system indicates that your cough doesn't show signs of COVID-19.
+(@covid-test-result-negative-1-g :amr-set
+   (indicate-01
+       :ARG0 (system :poss i)
+       :ARG1 (show-01
+                 :polarity -
+                 :ARG0 (cough-01 :ARG0 you)
+                 :ARG1 (signal-07 :ARG1 (disease :name (name :op1 "COVID-19"))))
+       :pos "VBZ"))
+
+# I hope it stays that way.
+(@covid-test-result-negative-2-g :amr-set
+   (i :ARG0-of (hope-01 :ARG1 (stay-01 :ARG1 it :ARG2 (way :mod that)))))

@@ -1,0 +1,5 @@
+(@positive-reply :amr-set @appreciate)
+(@positive-reply :amr-set @general-agree)
+(@positive-reply :amr-set @general-confirm)
+(@positive-reply :amr-set @laugh)
+(@positive-reply :amr-set @praise)

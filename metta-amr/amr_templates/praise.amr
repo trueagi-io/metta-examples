@@ -1,0 +1,11 @@
+# Well done
+(@praise-c :amr-set (do-02 :ARG1-of well-09 :mode? (expressive / -)))
+
+# Great job
+(@praise-c :amr-set (do-02 :ARG0 you :ARG1 great))
+# You did great
+(@praise-c :amr-set (do-02 :ARG0 you :ARG1 great :pos "VBD"))
+
+
+(@praise :amr-set @praise-c)
+(@praise-g :amr-set @praise-c)

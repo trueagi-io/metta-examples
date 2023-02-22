@@ -1,0 +1,9 @@
+(@person-role :amr-set person)
+(@person-role :amr-set doctor)
+
+(@any-name :amr-set (name :op1 $name-op1 :op2? $name-op2 :op3? $name-op3 :* *))
+(@person-name :amr-set (@person-role :name $person-name :domain i))
+(@person-name-g :amr-set (person :name $person-name))
+
+# I'm $person-name/My name is $person-name
+(@self-name-statement :amr-set @person-name)

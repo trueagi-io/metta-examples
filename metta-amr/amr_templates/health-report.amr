@@ -1,0 +1,34 @@
+# The results from your blood test are $test_result.
+(@report-blood-test-g :amr-set
+   (r / $test_result
+      :ARG1 (thing
+               :ARG2-of (result-01
+                           :ARG1 (test-01
+                                     :ARG1 blood
+                                     :ARG2 you)
+                           :pos "NNS"))
+      :pos "JJ"))
+
+# My chest camera detects that your body temperature is $body_temperature.
+(@report-body-temp-g :amr-set
+   (detect-01
+      :ARG0 (camera :mod chest :poss i)
+      :ARG1 (t / $body_temp
+               :ARG1 (temperature
+                        :mod (body :part-of you :pos "NN")
+                        :pos "NN")
+               :pos "JJ")
+      :pos "VBZ"))
+
+# I can see from your wrist monitor records that your sleep has $sleep_quality.
+(@report-sleep-quality-g :amr-set
+   (possible-01
+      :ARG1 (see-01
+               :ARG0 i
+               :ARG1 (q / $sleep_quality
+                          :ARG1 (sleep-01 :ARG0 you)
+                          :pos "VBN")
+               :source (record-01
+                          :ARG0 (monitor :mod wrist :poss you)
+                          :pos "NNS")
+               :pos "VB")))
