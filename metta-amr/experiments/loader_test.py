@@ -17,6 +17,7 @@ if __name__ == '__main__':
         for f in os.listdir(templates_dir):
             if f.endswith('.amr') and (f == "test.amr"):
                 amr_nlu.load_templates_from_file(os.path.join(templates_dir, f))
+                break
     #text = input()
     #res = amr_nlu.text2intents(text)
     print("----- The atomspace contains:\n\n---", amr_nlu.amr_space.get_atoms())

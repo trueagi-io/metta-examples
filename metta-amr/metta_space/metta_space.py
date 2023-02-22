@@ -11,11 +11,11 @@ class MettaSpace:
         self.tokenizer = hp.Tokenizer()
 
     def add_triple(self, triple):
-        hp_parser = hp.SExprParser(str(triple).replace(",", ""))
+        hp_parser = hp.SExprParser(str(triple).replace(",", "").replace("'",""))
         self.space.add_atom(hp_parser.parse(self.tokenizer))
 
     def get_concept(self, value):
-        results = self.metta.run(f"!(match &self ('{value}' ':instance' $concept)  $concept)")
+        results = self.metta.run(f"!(match &self ({value} :instance $concept)  $concept)")
         return results[0] if len(results) > 0 else None
 
     def get_atoms(self):
@@ -24,8 +24,8 @@ class MettaSpace:
     def get_amrsets_by_concept(self, concept):
         results = []
         if concept is not None:
-            results = self.metta.run(f"!(match &self (, ($inst ':instance' '{concept}')\
-            ($set ':amr-set' $inst)) ($set $inst))")
+            results = self.metta.run(f"!(match &self (, ($inst :instance {concept})\
+            ($set :amr-set $inst)) ($set $inst))")
         return results[0] if len(results) > 0 else None
 
 
