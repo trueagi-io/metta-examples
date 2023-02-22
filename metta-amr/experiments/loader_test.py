@@ -1,10 +1,6 @@
 import os
 import pathlib
-from opencog.utilities import (push_default_atomspace)
-from opencog.type_constructors import *
-#from amratom import AmrTemplateInstance
 from amr_template_nlu import AmrTemplateNLU
-import hyperon as hp
 
 
 if __name__ == '__main__':
