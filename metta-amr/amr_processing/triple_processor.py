@@ -6,9 +6,6 @@ import re
 _spacy_model = 'en_core_web_md'
 _penman_model = penman.models.noop.NoOpModel()
 
-
-
-
 def is_instance(triple):
     return triple[1] == ':instance'
 
@@ -193,3 +190,32 @@ class TripleProcessor:
         for triple in filter(lambda x: not is_instance(x), graph.triples):
             yield self._process_relation(triple, amr_instances)
 
+class UtteranceParser:
+    def __init__(self, amr_proc):
+        self.log = logging.getLogger(__name__ + '.' + type(self).__name__)
+        self.amr_proc = amr_proc
+        self.triple_proc = TripleProcessor(AmrInstanceDict)
+        # FIXME: NB: to have unique varible names we need importing all
+        # triples into triple_proc before processing
+        self.triple_proc.next_id = 500000
+
+    def parse(self, text):
+        # parse amr and return triples
+        triples = []
+        tops = []
+        try:
+            amrs = self.amr_proc.utterance_to_amr(text)
+            for amr in amrs:
+                parsed_amr = self.triple_proc.amr_to_triples(amr)
+                tops.append(parsed_amr.tp)
+                for triple in parsed_amr:
+                    triples.append(triple)
+        finally:
+            return triples, tops
+
+
+
+    def parse_sentence(self, text):
+        triples, tops = self.parse(text)
+        assert len(tops) == 1, 'Single sentence is expected as input'
+        return tops[0]

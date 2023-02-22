@@ -15,11 +15,10 @@ if __name__ == '__main__':
     templates_dir = os.path.join(work_dir, "amr_templates")
     if os.path.exists(templates_dir):
         for f in os.listdir(templates_dir):
-            if f.endswith('.amr') and (f == "test.amr"):
+            if f.endswith('.amr'):
                 amr_nlu.load_templates_from_file(os.path.join(templates_dir, f))
-                break
     #text = input()
     #res = amr_nlu.text2intents(text)
     print("----- The atomspace contains:\n\n---", amr_nlu.amr_space.get_atoms())
 
-    print(amr_nlu.amr_space.get_amrsets_by_concept('person'))
+    print(amr_nlu.amr_space.get_concept('doctor-000001'))

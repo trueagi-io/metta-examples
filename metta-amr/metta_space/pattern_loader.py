@@ -2,7 +2,7 @@ import io
 import logging
 import re
 
-from amr_processing import TripleProcessor,  PatternInstanceDict,AmrInstanceDict, is_const, is_amr_set
+from amr_processing import TripleProcessor,  PatternInstanceDict, UtteranceParser, is_const, is_amr_set
 _single_word_pattern = re.compile(r'^\S+$')
 class PatternLoader:
 
@@ -33,38 +33,7 @@ class PatternLoader:
                     self.amr_space.add_triple((source, role, top.name))
             else:
                 self.amr_space.add_triple(triple)
-            print("Triple :\n", triple)
-            print("The atomspace contains:\n\n",  self.amr_space.get_atoms())
+
         #self._index_amrsets()
-        #print("The atomspace contains:\n\n",  self.amr_space.atomspace.get_atoms_by_type(types.Atom))
-
-class UtteranceParser:
-
-    def __init__(self, amr_proc):
-        self.log = logging.getLogger(__name__ + '.' + type(self).__name__)
-        self.amr_proc = amr_proc
-        self.triple_proc = TripleProcessor(AmrInstanceDict)
-        # FIXME: NB: to have unique varible names we need importing all
-        # triples into triple_proc before processing
-        self.triple_proc.next_id = 500000
-
-    def parse(self, text):
-        # parse amr and return triples
-        triples = []
-        tops = []
-        try:
-            amrs = self.amr_proc.utterance_to_amr(text)
-            for amr in amrs:
-                parsed_amr = self.triple_proc.amr_to_triples(amr)
-                tops.append(parsed_amr.tp)
-                for triple in parsed_amr:
-                    triples.append(triple)
-        finally:
-            return triples, tops
 
 
-
-    def parse_sentence(self, text):
-        triples, tops = self.parse(text)
-        assert len(tops) == 1, 'Single sentence is expected as input'
-        return tops[0]

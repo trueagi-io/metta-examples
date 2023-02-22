@@ -1,4 +1,0 @@
-reset
-reset!
-Reset
-reset!

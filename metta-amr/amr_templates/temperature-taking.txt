@@ -1,8 +1,0 @@
-##### TEMPERATURE TAKING
-# What's my body temperature?
-# Is my body temperature normal?
-# Can you take my body temperature please?
-# Can you measure my body temperature please?
-# Activate your temperature taking functionality.
-# Activate your temperature measuring functionality.
-

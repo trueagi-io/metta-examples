@@ -1,7 +1,0 @@
-########## Common ##########
-# It's done.
-(@done-c :amr-set (be-done :ARG1 it))
-
-##########
-(@done :amr-set @done-c)
-(@done-g :amr-set @done-c)

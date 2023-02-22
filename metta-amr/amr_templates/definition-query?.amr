@@ -1,4 +1,0 @@
-# What is that (exactly)?
-(@whatis-that? :amr-set (a / amr-unknown :domain that :mod? exact))
-# What is $concept
-(@whatis? :amr-set (c / $concept :domain (a / amr-unknown) :mod? exact))

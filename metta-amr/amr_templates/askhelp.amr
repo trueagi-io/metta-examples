@@ -1,8 +1,0 @@
-########## Recognize ##########
-(@askhelp :amr-set
-   (possible
-      :polarity (a / amr-unknown)
-      :ARG1 (help
-               :ARG0 you
-               :ARG1 $helpwhat
-               :ARG2 i)))

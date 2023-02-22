@@ -1,7 +1,0 @@
-# Say something in $lang
-(@say-non-english :amr-set(say-01 :mode (imperative / -) :ARG0 you 
-:ARG1 something :medium (language :name (name  :op1 $lang))))
-# Do you know some phrases in $lang
-(@say-non-english :amr-set (know-01 :ARG0 you :ARG1 (phrase :quant (s/some) :medium (language :name (name :op1 $lang))) :polarity amr-unknown))
-(@say-non-english :amr-set (know-01 :ARG0 you :ARG1 (phrase :mod (language  :name (name :op1 $lang))) :polarity amr-unknown))
-
