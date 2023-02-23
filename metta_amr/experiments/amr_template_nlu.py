@@ -2,7 +2,8 @@ import logging
 import time
 
 from metta_space import PatternLoader, MettaSpace
-from amr_processing import AmrProcessor
+from amr_processing import AmrProcessor, UtteranceParser
+
 class AmrTemplateNLU:
 
     def __init__(self):
@@ -18,6 +19,15 @@ class AmrTemplateNLU:
         with open(filename, 'r') as f:
             self.pattern_parser.load_file(f)
 
+    def text2intents(self, text, intent_set=None):
+        self.log.info('text2intents start: %s', text)
+        # REM: child_atomspace is used to avoid pollution of main atomspace with utterances.
+        # If these utterances or their parses are needed, they should be explicitly saved
+        # and tagged with their source.
+        utterance_parser = UtteranceParser(self.amr_proc)
+        self.log.info('initialization done')
+        tops = utterance_parser.parse(text)
+        return tops
 
     # def text2intents(self, text, intent_set=None):
     #     self.log.info('text2intents start: %s', text)

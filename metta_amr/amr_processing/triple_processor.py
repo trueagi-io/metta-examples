@@ -212,7 +212,7 @@ class UtteranceParser:
             amrs = self.amr_proc.utterance_to_amr(text)
             for amr in amrs:
                 parsed_amr = self.triple_proc.amr_to_triples(amr)
-                tops.append(parsed_amr.tp)
+                tops.append(parsed_amr.top)
                 for triple in parsed_amr:
                     triples.append(triple)
         finally:
