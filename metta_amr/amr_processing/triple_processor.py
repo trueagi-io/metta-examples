@@ -57,17 +57,22 @@ class AmrInstanceDict:
 
 _number_or_string_pattern = re.compile(r'\d+(\.\d+)?|"[^\"]+"|-|\+')
 
-def is_amr_set(triple):
-    return triple[1] == ':amr-set'
+class TypeDetector:
+    @staticmethod
+    def is_amr_set(triple):
+        return triple[1] == ':amr-set'
 
-def is_const( word):
-    return _number_or_string_pattern.fullmatch(word)
+    @staticmethod
+    def is_const( word):
+        return _number_or_string_pattern.fullmatch(word)
 
-def is_variable(word):
-    return word == '*' or word.startswith('$')
+    @staticmethod
+    def is_variable(word):
+        return word == '*' or word.startswith('$')
 
-def is_amrset_name(word):
-    return word.startswith('@')
+    @staticmethod
+    def is_amrset_name(word):
+        return word.startswith('@')
 
 _roles_with_attrs_at_right = { ':mode', ':pos', ':polarity' }
 
@@ -80,9 +85,9 @@ class PatternInstanceDict(AmrInstanceDict):
     def add_graph(self, graph):
         for triple in filter(is_instance, graph.triples):
             node, instance_role, concept = triple
-            assert not(is_variable(node) and is_amrset_name(concept)), (
+            assert not( TypeDetector.is_variable(node) and  TypeDetector.is_amrset_name(concept)), (
                 '($var / @amrset) is not supported')
-            assert not(node == '-' and is_variable(concept)), (
+            assert not(node == '-' and  TypeDetector.is_variable(concept)), (
                 '(- / $var) is not supported')
             if concept is None:
                 continue
@@ -102,14 +107,14 @@ class PatternInstanceDict(AmrInstanceDict):
     def _add_instance(self, concept, role, is_source):
         if concept in self.instance_by_node:
             return
-        elif is_variable(concept):
+        elif  TypeDetector.is_variable(concept):
             self.instance_by_node[concept] = concept
             return
-        elif is_amrset_name(concept):
+        elif TypeDetector.is_amrset_name(concept):
             if role == ':amr-set' and is_source:
                 self.instance_by_node[concept] = concept
                 return
-        elif is_const(concept):
+        elif TypeDetector.is_const(concept):
             return
         elif not is_source and role in _roles_with_attrs_at_right:
             self.log.warn('Concept node is generated for the possible attribute '
@@ -119,7 +124,7 @@ class PatternInstanceDict(AmrInstanceDict):
         self.instance_triples.append((instance, ":instance", concept))
 
     def _get_unique_instance(self, target):
-        if is_variable(target) or is_amrset_name(target):
+        if  TypeDetector.is_variable(target) or  TypeDetector.is_amrset_name(target):
             return super()._get_unique_instance(target[1:])
         else:
             return super()._get_unique_instance(target)
