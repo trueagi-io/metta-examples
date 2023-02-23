@@ -1,7 +1,13 @@
+import enum
 import logging
 import hyperon as hp
 
 from amr_processing import TypeDetector
+
+class Types(enum.Enum):
+    AmrVariable = "variable"
+    AmrSet = "amrset"
+
 
 
 class MettaSpace:
@@ -16,6 +22,16 @@ class MettaSpace:
         hp_parser = hp.SExprParser(str_atom)
         self.space.add_atom(hp_parser.parse(self.tokenizer))
 
+    def is_a(self, value, type):
+        if type == Types.AmrVariable:
+            if TypeDetector.is_variable(value):
+                return True
+            results = self.metta.run(f"!(match &self (is_variable  {value})  $concept)")
+            return len(results) > 0
+        if type == Types.AmrSet:
+            return TypeDetector.is_amrset_name(value)
+
+
     def add_triple(self, triple):
         source, role, target = triple
         self.add_atom(f"({source} {role} {target})")
@@ -25,8 +41,6 @@ class MettaSpace:
 
         if  TypeDetector.is_variable(target):
             self.add_atom(f"(is_variable {target})")
-
-
 
     def get_concept(self, value):
         results = self.metta.run(f"!(match &self ({value} :instance $concept)  $concept)")

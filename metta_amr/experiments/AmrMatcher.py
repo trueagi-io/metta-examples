@@ -1,5 +1,20 @@
 import logging
+from collections import OrderedDict
 
+from metta_space import Types
+SingleVariableTemplates = ["@select-single", "@single-name"]
+class AmrMatch:
+
+    def __init__(self, amrset, vars={}):
+        self.amrset = amrset
+        self.vars = vars
+
+    def __repr__(self):
+        return ('{ amrset: ' + repr(self.amrset) + ', vars: ' +
+            repr(self.vars) + ' }')
+
+    def __eq__(self, other):
+        return self.amrset == other.amrset and self.vars == other.vars
 
 class AmrMatcher:
     def __init__(self, space):
@@ -24,7 +39,7 @@ class AmrMatcher:
                 amrset_instance)
         if (input_value == template_value):
             return [{}]
-        if template_value.is_a(types.AmrVariable):
+        if self.space.is_a(template_value, Types.AmrVariable):
             matches = self.match_value(input_value, h_level=h_level+1)
             if len(matches) == 0:
                 # instance AmrVariable
@@ -50,11 +65,11 @@ class AmrMatcher:
         elif input_concept is None:
             self.log.debug('match_amr_trees: input concept is None and template concept is not')
             return []
-        elif template_concept.is_a(types.AmrSet):
+        elif self.space.is_a(template_concept, Types.AmrSet):
             # hierarchical template
             return self.match_amr_set(input_value, template_value,
                     template_concept, h_level=h_level)
-        elif template_concept.is_a(types.AmrVariable):
+        elif self.space.is_a(template_concept,Types.AmrVariable):
             # parent AnchorNode
             match[template_concept] = input_concept
         elif not match_concept(input_concept, template_concept):
@@ -137,35 +152,29 @@ class AmrMatcher:
                 amrset_instance)
 
         input_roles = {}
-        for role, target in self.space.get_relations(VariableNode("role"),
-                input_value, VariableNode("target"),
-                { "role": "AmrRole", "target": None }):
+        for role, target in self.space.get_relations("$role",   input_value, "$target", ["$role", "$target"]):
             if role not in input_roles:
                 input_roles[role] = set()
             input_roles[role].add(target)
 
         template_roles = {}
-        for role, target in self.space.get_relations(VariableNode("role"),
-                template_value, VariableNode("target"),
-                { "role": "AmrRole", "target": None }):
+        for role, target in self.space.get_relations("$role", template_value, "$target", ["$role", "$target"]):
             if role not in template_roles:
                 template_roles[role] = self.RoleMetadata(role)
             template_roles[role].targets.append((template_value, target))
 
         if amrset_instance is not None:
-            for role, target in self.space.get_relations(VariableNode("role"),
-                    amrset_instance, VariableNode("target"),
-                    { "role": "AmrRole", "target": None }):
+            for role, target in self.space.get_relations("$role", amrset_instance, "$target", ["$role", "$target"]):
                 if role.name == ':amr-set':
                     continue
                 if role not in template_roles:
                     template_roles[role] = self.RoleMetadata(role)
                 template_roles[role].targets.append((amrset_instance, target))
 
-        matches = [ match ]
+        matches = [match]
         absent_input_roles = set()
         absent_template_roles = set(template_roles.keys())
-        has_role_wildcard = AmrRole(":*") in template_roles
+        has_role_wildcard = ":*" in template_roles
         for role in input_roles:
             if role in template_roles:
                 absent_template_roles.remove(role)

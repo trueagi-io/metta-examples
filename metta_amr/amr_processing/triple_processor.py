@@ -5,12 +5,32 @@ import re
 
 _spacy_model = 'en_core_web_md'
 _penman_model = penman.models.noop.NoOpModel()
+_number_or_string_pattern = re.compile(r'\d+(\.\d+)?|"[^\"]+"|-|\+')
 
-def is_instance(triple):
-    return triple[1] == ':instance'
+class TypeDetector:
+    @staticmethod
+    def is_instance(triple):
+        return triple[1] == ':instance'
 
-def is_unknown(triple):
-    return is_instance(triple) and triple[2] == 'amr-unknown'
+    @staticmethod
+    def is_unknown(triple):
+        return TypeDetector.is_instance(triple) and triple[2] == 'amr-unknown'
+
+    @staticmethod
+    def is_amr_set(triple):
+        return triple[1] == ':amr-set'
+
+    @staticmethod
+    def is_const(word):
+        return _number_or_string_pattern.fullmatch(word)
+
+    @staticmethod
+    def is_variable(word):
+        return word == '*' or word.startswith('$')
+
+    @staticmethod
+    def is_amrset_name(word):
+        return word.startswith('@')
 
 def _remove_postfix(word):
     pos = word.rfind('-')
@@ -35,7 +55,7 @@ class AmrInstanceDict:
         self.instance_triples = []
 
     def add_graph(self, graph):
-        for triple in filter(is_instance, graph.triples):
+        for triple in filter(TypeDetector.is_instance, graph.triples):
             self.log.debug('triple: %s', triple)
             (source, role, target) = triple
             instance = self._get_unique_instance(target)
@@ -55,24 +75,7 @@ class AmrInstanceDict:
         else:
             return node
 
-_number_or_string_pattern = re.compile(r'\d+(\.\d+)?|"[^\"]+"|-|\+')
 
-class TypeDetector:
-    @staticmethod
-    def is_amr_set(triple):
-        return triple[1] == ':amr-set'
-
-    @staticmethod
-    def is_const( word):
-        return _number_or_string_pattern.fullmatch(word)
-
-    @staticmethod
-    def is_variable(word):
-        return word == '*' or word.startswith('$')
-
-    @staticmethod
-    def is_amrset_name(word):
-        return word.startswith('@')
 
 _roles_with_attrs_at_right = { ':mode', ':pos', ':polarity' }
 
@@ -83,7 +86,7 @@ class PatternInstanceDict(AmrInstanceDict):
         self.log = logging.getLogger(__name__ + '.PatternInstanceDict')
 
     def add_graph(self, graph):
-        for triple in filter(is_instance, graph.triples):
+        for triple in filter(TypeDetector.is_instance, graph.triples):
             node, instance_role, concept = triple
             assert not( TypeDetector.is_variable(node) and  TypeDetector.is_amrset_name(concept)), (
                 '($var / @amrset) is not supported')
@@ -98,7 +101,7 @@ class PatternInstanceDict(AmrInstanceDict):
             self.instance_by_node[node] = instance
             self.instance_triples.append((instance, instance_role, concept))
 
-        for triple in filter(lambda x: not is_instance(x), graph.triples):
+        for triple in filter(lambda x: not TypeDetector.is_instance(x), graph.triples):
             self.log.debug('triple: %s', triple)
             source, role, target = triple
             self._add_instance(source, role, True)
@@ -192,7 +195,7 @@ class TripleProcessor:
     def _triples_generator(self, amr_instances, graph):
         for triple in amr_instances.get_instance_triples():
             yield triple
-        for triple in filter(lambda x: not is_instance(x), graph.triples):
+        for triple in filter(lambda x: not TypeDetector.is_instance(x), graph.triples):
             yield self._process_relation(triple, amr_instances)
 
 class UtteranceParser:
@@ -217,7 +220,6 @@ class UtteranceParser:
                     triples.append(triple)
         finally:
             return triples, tops
-
 
 
     def parse_sentence(self, text):
