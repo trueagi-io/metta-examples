@@ -1,10 +1,8 @@
 import logging
-import amrlib
 import penman
 import penman.models.noop
 
-from amrlib.alignments.rbw_aligner import RBWAligner
-from amrlib.graph_processing.annotator import add_lemmas, load_spacy
+
 _spacy_model = 'en_core_web_md'
 _penman_model = penman.models.noop.NoOpModel()
 
@@ -13,30 +11,35 @@ def _load_spacy():
     # There is no API to inject own model into amrlib pipeline. I keep this
     # code because I don't like reimplementing internal `add_lemmas` logic
     # using own spacy model
-    load_spacy(_spacy_model)
-    from amrlib.graph_processing.annotator import spacy_nlp
-    logging.getLogger(__name__).debug("_load_spacy(): %s is loaded",
-            spacy_nlp.path)
-    return spacy_nlp
+    global _spacy_model_cache
+    if _spacy_model_cache is None:
+        from amrlib.graph_processing.annotator import load_spacy
+        load_spacy(_spacy_model)
+        from amrlib.graph_processing.annotator import spacy_nlp
+        logging.getLogger(__name__).debug("_load_spacy(): %s is loaded",
+                spacy_nlp.path)
+        _spacy_model_cache = spacy_nlp
 
 _stog_model_cache = None
 _gtos_model_cache = None
 _spacy_model_cache = None
 
-def load_models():
+def load_stog_model():
     global _stog_model_cache
-    if _stog_model_cache is None:
-        _stog_model_cache = amrlib.load_stog_model()
+    global _spacy_model_cache
 
+    if (_stog_model_cache is None) or (_spacy_model_cache is None):
+        import amrlib
+        if _stog_model_cache is None:
+            _stog_model_cache = amrlib.load_stog_model()
+        _load_spacy()
+        amrlib.setup_spacy_extension()
+
+def load_gtos_model():
     global _gtos_model_cache
     if _gtos_model_cache is None:
+        import amrlib
         _gtos_model_cache = amrlib.load_gtos_model()
-
-    global _spacy_model_cache
-    if _spacy_model_cache is None:
-        _spacy_model_cache = _load_spacy()
-
-    amrlib.setup_spacy_extension()
 
 def clean_subs(amrs):
     new_amrs = []
@@ -51,21 +54,21 @@ def clean_subs(amrs):
         new_amrs.append(amr)
     return new_amrs
 
-
-
 class AmrProcessor:
 
     def __init__(self):
         self.log = logging.getLogger(__name__ + '.' + type(self).__name__)
-
-        load_models()
-
         global _spacy_model_cache
         self.nlp = _spacy_model_cache
         global _gtos_model_cache
         self.gtos = _gtos_model_cache
 
     def utterance_to_amr(self, utterance, indent=-1):
+        if self.nlp is None:
+            load_stog_model()
+            global _spacy_model_cache
+            self.nlp = _spacy_model_cache
+
         doc = self.nlp(utterance)
         amrs = doc._.to_amr()
         amrs = clean_subs(amrs)
@@ -80,6 +83,10 @@ class AmrProcessor:
                         triples_proc))
 
     def amr_to_utterance(self, amr):
+        if self.gtos is None:
+            load_gtos_model()
+            global _gtos_model_cache
+            self.gtos = _gtos_model_cache
         return self.gtos.generate([amr], use_tense=False)[0][0]
 
     def triples_to_utterance(self, triples):
@@ -87,6 +94,10 @@ class AmrProcessor:
 
     def _add_pos_tags(self, doc, amr, sent, indent):
         self.log.debug('_add_pos_tags: amr: %s, sent: %s', amr, sent)
+
+        from amrlib.alignments.rbw_aligner import RBWAligner
+        from amrlib.graph_processing.annotator import add_lemmas
+
         graph = add_lemmas(amr, snt_key='snt')
         aligner = RBWAligner.from_penman_w_json(graph)
         graph = aligner.get_penman_graph()
