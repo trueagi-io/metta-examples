@@ -2,15 +2,13 @@ import io
 import logging
 import re
 
-from amr_processing import TripleProcessor,  PatternInstanceDict, UtteranceParser, is_const, is_amr_set
-_single_word_pattern = re.compile(r'^\S+$')
+from amr_processing import TripleProcessor,  PatternInstanceDict, UtteranceParser
+#_single_word_pattern = re.compile(r'^\S+$')
 class PatternLoader:
 
-    def __init__(self, amr_proc, amr_space):
+    def __init__(self, amr_space):
         self.log = logging.getLogger(__name__ + '.' + type(self).__name__)
-        self.amr_proc = amr_proc
         self.amr_space = amr_space
-        self.utterance_parser= UtteranceParser(self.amr_proc)
         self.triple_proc = TripleProcessor(PatternInstanceDict)
 
     def load_file(self, file):
@@ -20,19 +18,29 @@ class PatternLoader:
         with io.StringIO(text) as file:
             self.load_file(file)
 
+    def load_templates(self, templates):
+        self.load_text(templates)
+
+    def load_templates_from_file(self, filename):
+        with open(filename, 'r') as f:
+            self.load_file(f)
+
     def _process_triples(self, triples):
 
         for triple in triples:
-            if is_amr_set(triple) and is_const(triple[2]):
-                source, role, target = triple
-                no_quotes = target[1:-1]
-                if _single_word_pattern.search(no_quotes) is not None:
-                    self.amr_space.add_triple(triple)
-                else:
-                    top = self.utterance_parser.parse_sentence(no_quotes)
-                    self.amr_space.add_triple((source, role, top.name))
-            else:
-                self.amr_space.add_triple(triple)
+            # next code is used for templates like
+            # (@first-activation :amr-set "I was first activated in Hong Kong.")
+            # we do not use such templates
+            # if TypeDetector.is_amr_set(triple) and TypeDetector.is_const(triple[2]):
+            #     source, role, target = triple
+            #     no_quotes = target[1:-1]
+            #     if _single_word_pattern.search(no_quotes) is not None:
+            #         self.amr_space.add_triple(triple)
+            #     else:
+            #         top = self.utterance_parser.parse_sentence(no_quotes)
+            #         self.amr_space.add_triple((source, role, top))
+            # else:
+            self.amr_space.add_triple(triple)
 
         #self._index_amrsets()
 
