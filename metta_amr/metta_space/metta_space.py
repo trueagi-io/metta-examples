@@ -26,10 +26,12 @@ class MettaSpace:
         if type == Types.AmrVariable:
             if TypeDetector.is_variable(value):
                 return True
-            results = self.metta.run(f"!(match &self (is_variable  {value})  $concept)")
-            return len(results) > 0
+            result = self.get_concept(value)
+            return TypeDetector.is_variable(result) if result is not None else False
         if type == Types.AmrSet:
             return TypeDetector.is_amrset_name(value)
+        result = self.get_concept(value)
+        return TypeDetector.is_amrset_name(result) if result is not None else False
 
 
     def add_triple(self, triple):
@@ -55,7 +57,7 @@ class MettaSpace:
         if concept is not None:
             concept_results = self.metta.run(f"!(match &self (, ($inst :instance {concept})\
             ($set :amr-set $inst)) ($set $inst))")
-        results = self.metta.run(f"!(match &self (, (is_variable $inst)\
+        results = self.metta.run(f"!(match &self (, (is_variable $set)\
                         ($set :amr-set $inst)) ($set $inst))")
         results.extend(concept_results)
 

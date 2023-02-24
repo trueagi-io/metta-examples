@@ -1,4 +1,5 @@
 import logging
+import re
 from collections import OrderedDict
 
 from metta_space import Types
@@ -16,11 +17,26 @@ class AmrMatch:
     def __eq__(self, other):
         return self.amrset == other.amrset and self.vars == other.vars
 
+_meaning_postfix_pattern = re.compile(r'-\d+$')
+
+
+def match_concept(input, template):
+    if _meaning_postfix_pattern.search(template) is not None:
+        # the template specifies an exact meaning
+        return input== template
+    else:
+        meaning_pos = _meaning_postfix_pattern.search(input)
+        if meaning_pos is None:
+            return input == template
+        else:
+            return input[:meaning_pos.start(0)] == template
 class AmrMatcher:
     def __init__(self, space):
         self.log = logging.getLogger(__name__ + '.' + type(self).__name__)
         self.space = space
         self.cache = {}
+
+
 
     def match_amr_set(self, input_value, template_value, amrset, h_level=0):
         self.log.debug("match_amr_set: input_value: %s, template_value: %s, amrset: %s",

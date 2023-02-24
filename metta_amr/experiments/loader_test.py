@@ -10,10 +10,12 @@ if __name__ == '__main__':
     templates_dir = os.path.join(work_dir, "amr_templates")
     if os.path.exists(templates_dir):
         for f in os.listdir(templates_dir):
-            if f.endswith('.amr'):
+            if f.endswith('.amr') and f == "make-faces.amr":
                 pattern_loader.load_templates_from_file(os.path.join(templates_dir, f))
     #text = input()
     #res = amr_nlu.text2intents(text)
     print("----- The atomspace contains:\n\n---", pattern_loader.amr_space.get_atoms())
+    for atom in  pattern_loader.amr_space.get_atoms():
+        print(atom)
 
     print(pattern_loader.amr_space.get_relations("$role", "face-arg-000008", "$target", ["$role", "$target"]))
