@@ -10,14 +10,7 @@ class AmrTemplateNLU:
         self.log = logging.getLogger(__name__ + '.' + type(self).__name__)
         self.amr_space = MettaSpace()
         self.amr_proc = AmrProcessor()
-        self.pattern_parser = PatternLoader(self.amr_proc, self.amr_space)
-
-    def load_templates(self, templates):
-        self.pattern_parser.load_text(templates)
-
-    def load_templates_from_file(self, filename):
-        with open(filename, 'r') as f:
-            self.pattern_parser.load_file(f)
+        self.pattern_parser = PatternLoader(self.amr_proc)
 
     def text2intents(self, text, intent_set=None):
         self.log.info('text2intents start: %s', text)
