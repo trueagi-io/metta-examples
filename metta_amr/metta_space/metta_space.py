@@ -22,31 +22,36 @@ class MettaSpace:
         hp_parser = hp.SExprParser(str_atom)
         self.space.add_atom(hp_parser.parse(self.tokenizer))
 
+    def is_variable_atom(self, value):
+        return value.startswith('var-')
+
     def is_a(self, value, type):
         if type == Types.AmrVariable:
-            if TypeDetector.is_variable(value):
+            if self.is_variable_atom(value):
                 return True
-            result = self.get_concept(value)
-            return TypeDetector.is_variable(result) if result is not None else False
         if type == Types.AmrSet:
             return TypeDetector.is_amrset_name(value)
-        result = self.get_concept(value)
-        return TypeDetector.is_amrset_name(result) if result is not None else False
+        return False
 
 
     def add_triple(self, triple):
         source, role, target = triple
-        self.add_atom(f"({source} {role} {target})")
+        if source.startswith('$'):
+            source = 'var-' + source[1:]
 
-        if TypeDetector.is_variable(source):
-            self.add_atom(f"(is_variable {source})")
+        if target.startswith('$'):
+            target = 'var-' + target[1:]
 
-        if  TypeDetector.is_variable(target):
-            self.add_atom(f"(is_variable {target})")
+        if TypeDetector.is_instance_role(role):
+            self.add_atom(f"({source} {role} {target})")
+            if self.is_variable_atom(target):
+                self.add_atom(f"({source} :instance-of-var {target})")
+        else:
+            self.add_atom(f"({source} :role: {role} {target})")
 
     def get_concept(self, value):
-        results = self.metta.run(f"!(match &self ({value} :instance $concept)  $concept)")
-        return results[0] if len(results) > 0 else None
+        results = self.metta.run(f"!(match &self ({value} :instance $concept)  $concept)", True)
+        return results[0].get_name() if len(results) > 0 else None
 
     def get_atoms(self):
         return self.space.get_atoms()
@@ -56,12 +61,19 @@ class MettaSpace:
         concept_results = []
         if concept is not None:
             concept_results = self.metta.run(f"!(match &self (, ($inst :instance {concept})\
-            ($set :amr-set $inst)) ($set $inst))")
-        results = self.metta.run(f"!(match &self (, (is_variable $set)\
-                        ($set :amr-set $inst)) ($set $inst))")
+            ($set :role: :amr-set $inst)) ($set $inst))", True)
+        # if amr-set is instance of
+        results = self.metta.run(f"!(match &self (, ($set :role: :amr-set $inst) ($inst :instance-of-var $concept))\
+         ($set  $inst))", True)
         results.extend(concept_results)
-
-        return results[0] if len(results) > 0 else None
+        new_results = []
+        for res in results:
+            children = res.get_children()
+            if len(children) == 1:
+                new_results.append(children[0].get_name())
+            else:
+                new_results.append([r.get_name() for r in children])
+        return new_results if len(new_results) > 0 else []
 
     def get_relations(self, pred, arg0, arg1, res_vars=None):
         if res_vars is None:
@@ -72,9 +84,16 @@ class MettaSpace:
                 res_vars.append(arg1)
         if len(res_vars) > 0:
             return_vals = " ".join(res_vars)
-            results = self.metta.run(f"!(match &self ({arg0} {pred} {arg1}) ({return_vals}))")
-            return results[0] if len(results) > 0 else None
-        return None
+            results = self.metta.run(f"!(match &self ({arg0} :role: {pred} {arg1}) ({return_vals}))", True)
+            new_results = []
+            for res in results:
+                children = res.get_children()
+                if len(children) == 1:
+                    new_results.append(children[0].get_name())
+                else:
+                    new_results.append([r.get_name() for r in children])
+            return new_results if len(new_results) > 0 else []
+        return []
 
 
 

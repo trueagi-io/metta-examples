@@ -31,18 +31,17 @@ def match_concept(input, template):
         else:
             return input[:meaning_pos.start(0)] == template
 class AmrMatcher:
-    def __init__(self, space):
+    def __init__(self, amr_space, input_space):
         self.log = logging.getLogger(__name__ + '.' + type(self).__name__)
-        self.space = space
+        self.amr_space = amr_space
+        self.input_space = input_space
         self.cache = {}
-
-
 
     def match_amr_set(self, input_value, template_value, amrset, h_level=0):
         self.log.debug("match_amr_set: input_value: %s, template_value: %s, amrset: %s",
                        input_value, template_value, amrset)
         matches = []
-        for candidate in self.space.get_relations(":amr-set", amrset, "$target"):
+        for candidate in self.amr_space.get_relations(":amr-set", amrset, "$target"):
             for match in self.match_amr_trees(input_value, candidate,
                     amrset_instance=template_value, h_level=h_level):
                 matches.append({amrset: match})
@@ -55,7 +54,8 @@ class AmrMatcher:
                 amrset_instance)
         if (input_value == template_value):
             return [{}]
-        if self.space.is_a(template_value, Types.AmrVariable):
+
+        if self.amr_space.is_a(template_value, Types.AmrVariable):
             matches = self.match_value(input_value, h_level=h_level+1)
             if len(matches) == 0:
                 # instance AmrVariable
@@ -67,8 +67,8 @@ class AmrMatcher:
                 return result
 
         # match concepts
-        input_concept = self.space.get_concept(input_value)
-        template_concept = self.space.get_concept(template_value)
+        input_concept = self.input_space.get_concept(input_value)
+        template_concept = self.amr_space.get_concept(template_value)
         self.log.debug('match_amr_trees: input_concept: %s template_concept: %s',
                        input_concept, template_concept)
         match = {}
@@ -81,11 +81,11 @@ class AmrMatcher:
         elif input_concept is None:
             self.log.debug('match_amr_trees: input concept is None and template concept is not')
             return []
-        elif self.space.is_a(template_concept, Types.AmrSet):
+        elif self.amr_space.is_a(template_concept, Types.AmrSet):
             # hierarchical template
             return self.match_amr_set(input_value, template_value,
                     template_concept, h_level=h_level)
-        elif self.space.is_a(template_concept,Types.AmrVariable):
+        elif self.amr_space.is_a(template_concept,Types.AmrVariable):
             # parent AnchorNode
             match[template_concept] = input_concept
         elif not match_concept(input_concept, template_concept):
@@ -118,7 +118,7 @@ class AmrMatcher:
 
     def merge_variables(self, matches):
         new_matches = []
-        var_main = AmrVariable("$main")
+        var_main = "$main"
         list_to_merge = []
         prefixes = dict()
         postfixes = dict()
@@ -153,7 +153,7 @@ class AmrMatcher:
             merged_name = self.concat_arrays(merged_name, postfixes,  has_quotes)
 
             merged_name = merged_name[:-1]
-            new_atom = AmrConcept(merged_name)
+            new_atom = merged_name
             new_match = dict()
             new_match[var_main] = new_atom
             new_matches.append(new_match)
@@ -168,20 +168,20 @@ class AmrMatcher:
                 amrset_instance)
 
         input_roles = {}
-        for role, target in self.space.get_relations("$role",   input_value, "$target", ["$role", "$target"]):
+        for role, target in self.input_space.get_relations("$role",   input_value, "$target", ["$role", "$target"]):
             if role not in input_roles:
                 input_roles[role] = set()
             input_roles[role].add(target)
 
         template_roles = {}
-        for role, target in self.space.get_relations("$role", template_value, "$target", ["$role", "$target"]):
+        for role, target in self.amr_space.get_relations("$role", template_value, "$target", ["$role", "$target"]):
             if role not in template_roles:
                 template_roles[role] = self.RoleMetadata(role)
             template_roles[role].targets.append((template_value, target))
 
         if amrset_instance is not None:
-            for role, target in self.space.get_relations("$role", amrset_instance, "$target", ["$role", "$target"]):
-                if role.name == ':amr-set':
+            for role, target in self.amr_space.get_relations("$role", amrset_instance, "$target", ["$role", "$target"]):
+                if role == ':amr-set':
                     continue
                 if role not in template_roles:
                     template_roles[role] = self.RoleMetadata(role)
@@ -195,13 +195,14 @@ class AmrMatcher:
             if role in template_roles:
                 absent_template_roles.remove(role)
             else:
-                if role.name == ':pos' or has_role_wildcard:
+                if role == ':pos' or has_role_wildcard:
                     continue
                 else:
                     absent_input_roles.add(role)
                     continue
 
             for next_input_value in input_roles[role]:
+                print(input_roles)
                 for source, next_template_value in template_roles[role].targets:
                     new_matches = []
                     for res in self.match_amr_trees(next_input_value,
@@ -250,15 +251,13 @@ class AmrMatcher:
     def get_mandatory_roles(self, role_metadata):
         mandatory_roles = []
         for source, target in role_metadata.targets:
-            optional = self.is_optional_role(source, role_metadata.role, target)
+            optional = self.is_optional_role(role_metadata.role)
             if not optional:
                 mandatory_roles.append((role_metadata.role, source, target))
         return mandatory_roles
 
-    def is_optional_role(self, template_value, role, target):
-        return (role == AmrRole(":*") or
-                EvaluationLink(PredicateNode("is-optional"),
-                    ListLink(template_value, role, target)).tv == TRUE)
+    def is_optional_role(self, role):
+        return (role == ":*" or role.endswith("?"))
 
     def match_value(self, value, h_level=0):
         if value in self.cache:
@@ -266,12 +265,13 @@ class AmrMatcher:
             self.log.debug("match_value: value: %s, cached result: %s", value, res)
             return res
         res = []
-        concept = self.space.get_concept(value)
+        concept = self.input_space.get_concept(value)
         self.log.debug("match_value: value: %s, concept: %s", value, concept)
-        for amrset, amrset_var in self.space.get_amrsets_by_concept(concept):
+        amr_sets = self.amr_space.get_amrsets_by_concept(concept)
+        for amrset, amrset_var  in amr_sets:
             self.log.debug("match_value: try amrset: %s, instance: %s", amrset, amrset_var)
             if(h_level>0):
-                if (amrset.name in SingleVariableTemplates):
+                if (amrset in SingleVariableTemplates):
                     continue
             for match in self.match_amr_trees(value, amrset_var, h_level=h_level):
                 amr_match = AmrMatch(amrset, match)

@@ -1,16 +1,19 @@
 import os
 import pathlib
+
+from experiments.amr_template_nlu import AmrTemplateNLU
 from metta_space import PatternLoader, MettaSpace
 
 if __name__ == '__main__':
     amr_space = MettaSpace()
+    amr_nlu = AmrTemplateNLU(amr_space)
     pattern_loader = PatternLoader(amr_space)
 
     work_dir = pathlib.Path(__file__).parent.resolve().parent
     templates_dir = os.path.join(work_dir, "amr_templates")
     if os.path.exists(templates_dir):
         for f in os.listdir(templates_dir):
-            if f.endswith('.amr') and f == "make-faces.amr":
+            if f.endswith('.amr'):
                 pattern_loader.load_templates_from_file(os.path.join(templates_dir, f))
     #text = input()
     #res = amr_nlu.text2intents(text)
@@ -18,4 +21,6 @@ if __name__ == '__main__':
     for atom in  pattern_loader.amr_space.get_atoms():
         print(atom)
 
-    print(pattern_loader.amr_space.get_relations("$role", "face-arg-000008", "$target", ["$role", "$target"]))
+    print(pattern_loader.amr_space.get_amrsets_by_concept('some'))
+    res = amr_nlu.amrs2intents(['(s / show  :mode imperative :ARG0 (y / you) :ARG1 (f / face :ARG1-of (h / happy)) :ARG2 (ii / i))'])
+    print(res)
