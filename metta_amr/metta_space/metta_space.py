@@ -1,6 +1,7 @@
 import enum
 import logging
 import hyperon as hp
+from hyperon.atoms import S, E
 
 from amr_processing import TypeDetector
 
@@ -15,15 +16,10 @@ class MettaSpace:
         self.metta = hp.MeTTa()
         self.space = self.metta.space()
         self.cache = {}
-        self.tokenizer = hp.Tokenizer()
-
-    def add_atom(self, str_atom):
-        hp_parser = hp.SExprParser(str_atom)
-        self.space.add_atom(hp_parser.parse(self.tokenizer))
 
     def add_triple(self, triple):
         source, role, target = triple
-        self.add_atom(f"({source} {role} {target})")
+        self.space.add_atom(E(S(source), S(role), S(target)))
 
     def get_concept(self, value):
         results = self.metta.run(f"!(match &self ({value} :instance $concept)  $concept)", True)
