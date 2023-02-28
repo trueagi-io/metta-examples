@@ -17,7 +17,7 @@ class FunctionsTest(T):
         cls.amr_space = MettaSpace()
         pattern_loader = PatternLoader(cls.amr_space)
         pattern_loader.load_templates_from_file(template_file)
-        os.system("export PYTHONPATH=${PYTHONPATH}:/media/sveta/hdisk4/singnet/hyperon-experimental/build/python")
+       
 
 
     def test_get_atoms(self):
