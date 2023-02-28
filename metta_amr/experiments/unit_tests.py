@@ -17,25 +17,30 @@ class FunctionsTest(T):
         cls.amr_space = MettaSpace()
         pattern_loader = PatternLoader(cls.amr_space)
         pattern_loader.load_templates_from_file(template_file)
-       
-
 
     def test_get_atoms(self):
         for atom in self.amr_space.get_atoms():
             print(atom)
 
     def test_get_concept(self):
+        #(show-000010 :instance show)
         concept = self.amr_space.get_concept('show-000010')
         self.assertEqual("show", concept.get_name())
 
+        #(face-arg-000008 :instance @face-arg)
         concept = self.amr_space.get_concept('face-arg-000008')
         self.assertEqual("@face-arg", concept.get_name())
 
+        #(face-expr-000002 :instance $face-expr)
         concept = self.amr_space.get_concept('face-expr-000002')
         self.assertEqual("$face-expr", concept.get_name())
 
     def test_get_amrsets_by_concept(self):
         results = self.amr_space.get_amrsets_by_concept('show')
+        #(@make-faces-req :amr-set show-000010)
+        #(@make-faces-req:amr-set show-000006)
+        #(activities-000021 :instance $activities) !
+        #(@activity-options:amr-set activities-000021)
         correct_results = [["@make-faces-req", "show-000010"],
                            ["@make-faces-req", "show-000006"],
                            ["@activity-options", "activities-000021"]]
@@ -45,6 +50,8 @@ class FunctionsTest(T):
 
     def test_get_amrsets_by_concept_var(self):
         # if concept is variable
+        # (activities-000021 :instance $activities)
+        # (@activity-options:amr-set activities-000021)
         results = self.amr_space.get_amrsets_by_concept('$activities')
         correct_results = [["@activity-options", "activities-000021"]]
         self.assertEqual(len(correct_results), len(results))
@@ -57,14 +64,21 @@ class FunctionsTest(T):
             self.assertTrue([r.get_name() for r in res] in correct_results)
 
     def test_get_relations_for_target(self):
+        # (show-000006 :ARG2 make-face-expr-target-000009)
         res = self.amr_space.get_relations(':ARG2', 'show-000006', '$tarrget')
         self.assertEqual([r.get_name() for r in res[0]], ['make-face-expr-target-000009'])
 
     def test_get_relations_for_anyrole(self):
+        # (say-000017 :* *)
         res = self.amr_space.get_relations(':*', '$source', '$tarrget')
         self.assertEqual([r.get_name() for r in res[0]], ['say-000017','*'])
 
     def test_get_relations_for_source(self):
+        # (show-000010 :mode imperative)
+        # (show-000010 :polite? +)
+        # (show-000010 :ARG0 you-000011)
+        # (show-000010 :ARG1 face-arg-000012)
+        # (show-000010 :ARG2 make-face-expr-target-000013)
         results = self.amr_space.get_relations('$role', 'show-000010', '$target')
         correct_results = [[":ARG1", "face-arg-000012"], [":polite?", "+"], [":ARG0", "you-000011"],
                            [":ARG2," "make-face-expr-target-000013"], [":mode"," imperative"]]
@@ -73,10 +87,12 @@ class FunctionsTest(T):
             self.assertTrue([r.get_name() for r in res] in correct_results)
 
     def test_get_relations_for_var(self):
+        # this is incorrect query
         res = self.amr_space.get_relations(':amr-set', "$source", '$activities', res_vars=["$source"])
         self.assertEqual(res, [])
 
     def test_get_relations_for_role(self):
+        #(amr-unknown-000024 :mod? exact-000026)
         res = self.amr_space.get_relations(':mod?', '$source', '$target')
         self.assertEqual([r.get_name() for r in res[0]], ["amr-unknown-000024", "exact-000026"])
 
