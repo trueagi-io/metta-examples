@@ -12,7 +12,7 @@ class Types(enum.Enum):
 
 def amrt2metta(token):
     if TypeDetector.is_variable(token):
-        return f"(Var {token[1:]})"
+        return token if token == '*' else f"(Var {token[1:]})"
     return token
 
 class MettaSpace:
@@ -29,10 +29,13 @@ class MettaSpace:
     def add_triple(self, triple):
         source, role, target = triple
         target = amrt2metta(target)
-        self.metta.run(f"! (add-atom &triples ({source} {role} {target}))")
+        if role == ':instance':
+            self.metta.run(f"! (add-atom &triples (Instance ({source} {target})))")
+        else:
+            self.metta.run(f"! (add-atom &triples ({source} {role} {target}))")
 
     def get_concept(self, value):
-        results = self.metta.run(f"!(match &triples ({value} :instance $concept)  $concept)", True)
+        results = self.metta.run(f"!(match &triples (Instance ({value} $concept))  $concept)", True)
         return results[0] if len(results) > 0 else None
 
     def get_atoms(self):
@@ -69,6 +72,7 @@ class MettaSpace:
         if len(res_vars) > 0:
             return_vals = " ".join(res_vars)
             results = self.metta.run(f"!(match &triples ({arg0} {pred} {arg1}) ({return_vals}))", True)
+            # FIXME: use repr for atoms
             return [result.get_children() if hasattr(result, "get_children") else result[0] for result in results]
         return []
 
@@ -76,7 +80,7 @@ class MettaSpace:
         results = self.metta.run(f"!(match &triples ($source $role {instance}) ($role $source))", True)
         results_right = self.metta.run(f"!(match &triples ({instance} $role $target) ($role $target))", True)
         results.extend(results_right)
-        return [result.get_children() for result in results] if len(results) > 0 else []
+        return [[repr(ch) for ch in result.get_children()] for result in results] if len(results) > 0 else []
 
     def get_concept_roles(self,  concept, role, res_vars=None):
         if res_vars is None:
@@ -87,13 +91,13 @@ class MettaSpace:
                 res_vars.append(concept)
         if len(res_vars) > 0:
             return_vals = " ".join(res_vars)
-            results = self.metta.run(f"!(match &triples (, ($source {role} $target) ($source :instance {concept})) ({return_vals}))", True)
+            results = self.metta.run(f"!(match &triples (, ($source {role} $target) (Instance ($source {concept}))) ({return_vals}))", True)
             return [result.get_children() if hasattr(result, "get_children") else result[0] for result in results]
         return []
 
     def index_amrsets(self):
         results = self.metta.run(
-            f"!(match &triples (, ($amrset :amr-set $target) ($target :instance $concept)) ($amrset $target $concept))", True)
+            f"!(match &triples (, ($amrset :amr-set $target) (Instance ($target $concept))) ($amrset $target $concept))", True)
         for result in results:
             concept_atom = result.get_children()[2]
             amrset, target, concept = [repr(res) for res in result.get_children()]
@@ -106,7 +110,7 @@ class MettaSpace:
 
     def index_amrset(self, root, root_instance, tail_amrset):
         results = self.metta.run(
-            f"!(match &triples (, ({tail_amrset} :amr-set $target) ($target :instance $concept)) ($target $concept))",
+            f"!(match &triples (, ({tail_amrset} :amr-set $target) (Instance ($target $concept))) ($target $concept))",
             True)
         for result in results:
             concept_atom = result.get_children()[1]

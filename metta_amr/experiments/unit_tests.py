@@ -39,7 +39,7 @@ class FunctionsTest(T):
     def compare_results(self, results, correct_results):
         self.assertEqual(len(correct_results), len(results))
         for res in results:
-            self.assertTrue([repr(r) for r in res] in correct_results)
+            self.assertTrue([repr(r) for r in res] in correct_results, f"\nExpected: {correct_results}\nGot: {results}")
 
     def test_get_amrsets_by_concept(self):
         # (@make-faces-req :amr-set show-000010)
