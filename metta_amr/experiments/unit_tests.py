@@ -166,11 +166,11 @@ class FunctionsTest(T):
     def test_get_instance_roles(self):
         # (amr-unknown-000024 :domain that-000025)
         # (amr-unknown-000024 :mod? exact-000026
-        # (@whatis-that?:amr-set amr-unknown-000024)
+        # (@whatis-that? :amr-set amr-unknown-000024)
         results = self.amr_space.get_instance_roles("amr-unknown-000024")
         correct_results = [[":mod", "exact-000026"],
-                            [":domain", "that-000025"],
-                           [":amr-set","@whatis-that?"]]
+                           [":domain", "that-000025"],
+                           [":amr-set", "@whatis-that?"]]
         # ? (amr-unknown-000024 =)
         self.compare_results(results, correct_results)
 

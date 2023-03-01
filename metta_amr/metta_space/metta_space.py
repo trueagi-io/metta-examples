@@ -10,6 +10,11 @@ class Types(enum.Enum):
     AmrVariable = "variable"
     AmrSet = "amrset"
 
+def amrt2metta(token):
+    if TypeDetector.is_variable(token):
+        return f"(Var {token[1:]})"
+    return token
+
 class MettaSpace:
     def __init__(self):
         self.log = logging.getLogger(__name__ + '.' + type(self).__name__)
@@ -23,8 +28,7 @@ class MettaSpace:
 
     def add_triple(self, triple):
         source, role, target = triple
-        if TypeDetector.is_variable(target):
-            target = f"(Var {target[1:]})"
+        target = amrt2metta(target)
         self.metta.run(f"! (add-atom &triples ({source} {role} {target}))")
 
     def get_concept(self, value):
@@ -39,6 +43,7 @@ class MettaSpace:
         results = []
         concept_results = []
         if concept is not None:
+            concept = amrt2metta(concept)
             concept_results = self.metta.run(f"!(match &conset ({concept} $set $inst) ($set $inst))", True)
 
         results = self.metta.run(f"!(match &varset ($set $inst) ($set $inst))", True)
@@ -69,8 +74,6 @@ class MettaSpace:
 
     def get_instance_roles(self, instance):
         results = self.metta.run(f"!(match &triples ($source $role {instance}) ($role $source))", True)
-        #results_var = self.metta.run(f"!(match &triples ($source $role (Var $var)) ($role $source))", True)
-        #results.extend(results_var)
         results_right = self.metta.run(f"!(match &triples ({instance} $role $target) ($role $target))", True)
         results.extend(results_right)
         return [result.get_children() for result in results] if len(results) > 0 else []
