@@ -32,18 +32,17 @@ class MettaSpace:
         results = []
         concept_results = []
         if concept is not None:
-            concept_results = self.metta.run(f"!(match &self (, ($inst :instance {concept})\
-                  ($set :amr-set $inst)) ($set $inst))", True)
-        # if amr-set is instance of
-        #results = self.metta.run(f"!(match &self (, ($set :role: :amr-set $inst) ($inst :instance-of-var ????)) ($set  $inst))", True)
+            concept_results = self.metta.run(f"!(match &self ({concept} $set amrset-by-concept $inst) ($set $inst))", True)
+
+        results = self.metta.run(f"!(match &self ($set amrset-by-variable $inst) ($set  $inst))", True)
         results.extend(concept_results)
         return [result.get_children() for result in results]
 
     def is_a(self, value, type):
         if type == Types.AmrVariable:
-            return TypeDetector.is_variable(value)
+            return TypeDetector.is_variable(value.get_name())
         if type == Types.AmrSet:
-            return TypeDetector.is_amrset_name(value)
+            return TypeDetector.is_amrset_name(value.get_name())
         return False
 
     def get_relations(self, pred, arg0, arg1, res_vars=None):
@@ -67,23 +66,45 @@ class MettaSpace:
         results.extend(results_right)
         return [result.get_children() for result in results] if len(results) > 0 else []
 
-    def get_concept_roles(self, pred, concept, res_vars=None):
+    def get_concept_roles(self,  concept, role, res_vars=None):
         if res_vars is None:
             res_vars = []
-            if TypeDetector.is_variable(pred):
-                res_vars.append(pred)
+            if TypeDetector.is_variable(role):
+                res_vars.append(role)
             if TypeDetector.is_variable(concept):
                 res_vars.append(concept)
         if len(res_vars) > 0:
             return_vals = " ".join(res_vars)
-            results = self.metta.run(f"!(match &self(, ($source {pred} $target) ($source :instance {concept})) ({return_vals}))", True)
+            results = self.metta.run(f"!(match &self(, ($source {role} $target) ($source :instance {concept})) ({return_vals}))", True)
             return [result.get_children() if hasattr(result, "get_children") else result[0] for result in results]
         return []
 
-    # def get_instance_roles(self, amr_instance):
-    #     return [self.get_relations(VariableNode("role"), amr_instance, VariableNode("right-inst"),
-    #                                {"role": "AmrRole", "right-inst": None}),
-    #             self.get_relations(VariableNode("role"), VariableNode("left-inst"), amr_instance,
-    #                                {"role": "AmrRole", "left-inst": None})]
+    def index_amrsets(self):
+        results = self.metta.run(
+            f"!(match &self(, ($amrset :amr-set $target) ($target :instance $concept)) ($amrset $target $concept))", True)
+        for result in results:
+            amrset, target, concept = [res.get_name() for res in result.get_children()]
+            if TypeDetector.is_variable(concept):
+                self.space.add_atom(E(S(amrset), S("amrset-by-variable"), S(target)))
+            elif TypeDetector.is_amrset_name(concept):
+                self.index_amrset(amrset, target, concept)
+            else:
+                self.space.add_atom(E(S(concept), S(amrset), S("amrset-by-concept"), S(target)))
+
+    def index_amrset(self, root, root_instance, tail_amrset):
+        results = self.metta.run(
+            f"!(match &self(, ({tail_amrset} :amr-set $target) ($target :instance $concept)) ($target $concept))",
+            True)
+        for result in results:
+            target, concept = [res.get_name() for res in result.get_children()]
+            if TypeDetector.is_variable(concept):
+                self.space.add_atom(E(S(root), S("amrset-by-variable"), S(root_instance)))
+            elif TypeDetector.is_amrset_name(concept):
+                assert root.get_name() != concept.get_name(), f'AMR set loop found, start AmrSet: {root}, last AmrSet before loop: {tail_amrset}'
+            else:
+                self.space.add_atom(E(S(concept), S(root), S("amrset-by-concept"), S(root_instance)))
+
+
+
 
 
