@@ -37,3 +37,17 @@
 (@activity-options :amr-set (a / $activities :time (week :mod next)))
 (@whatis-that? :amr-set (a / amr-unknown :domain that :mod? exact))
 
+#What activities do you enjoy?
+(@hobbies?-sub :amr-set (enjoy
+    :* *
+    :ARG1 (activity
+            :* *
+            :mod (a2 / amr-unknown))))
+
+(@confirm-word :amr-set definite)
+# @confirm-word (please)(!)
+(@general-confirm-please-c :amr-set (@confirm-word :polite? + :mode? (expressive / -)))
+
+(@greeting-noname :amr-set (t / $time-of-day :ARG1-of good-02))
+(@greeting-g :amr-set @greeting-noname)
+

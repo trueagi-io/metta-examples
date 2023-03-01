@@ -42,6 +42,6 @@ class PatternLoader:
             # else:
             self.amr_space.add_triple(triple)
 
-        #self._index_amrsets()
+        self.amr_space.index_amrsets()
 
 

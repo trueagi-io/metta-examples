@@ -35,43 +35,71 @@ class FunctionsTest(T):
         concept = self.amr_space.get_concept('face-expr-000002')
         self.assertEqual("$face-expr", concept.get_name())
 
-    def test_get_amrsets_by_concept(self):
-        results = self.amr_space.get_amrsets_by_concept('show')
-        #(@make-faces-req :amr-set show-000010)
-        #(@make-faces-req:amr-set show-000006)
-        #(activities-000021 :instance $activities) !
-        #(@activity-options:amr-set activities-000021)
-        correct_results = [["@make-faces-req", "show-000010"],
-                           ["@make-faces-req", "show-000006"],
-                           ["@activity-options", "activities-000021"]]
+    def compare_results(self, results, correct_results):
         self.assertEqual(len(correct_results), len(results))
         for res in results:
             self.assertTrue([r.get_name() for r in res] in correct_results)
+
+    def test_get_amrsets_by_concept(self):
+        # (@make-faces-req :amr-set show-000010)
+        # (@make-faces-req:amr-set show-000006)
+        # --- amrset-by-variable ---
+        # (activities-000021 :instance $activities) !
+        # (@activity-options:amr-set activities-000021)
+        # --- amrset-by-variable ---
+        # (time-of-day-000032 :instance $time-of-day)
+        # (@greeting-noname :amr-set time-of-day-000032)
+        # (greeting-noname-000034 :instance @greeting-noname)
+        # (@greeting-g :amr-set greeting-noname-000034)
+        results = self.amr_space.get_amrsets_by_concept('show')
+        correct_results = [["@make-faces-req", "show-000006"], ["@make-faces-req", "show-000010"],
+         ["@activity-options", "activities-000021"],
+         ["@greeting-g", "greeting-noname-000034"],
+         ["@greeting-noname","time-of-day-000032"]]
+        self.compare_results(results, correct_results)
+
+    def test_get_amrsets_by_concept_nested(self):
+        # (definite-000030 :instance definite)
+        # (@confirm-word :amr-set definite-000030)
+        # (confirm-word-000031 :instance @confirm-word)
+        # (@general-confirm-please-c :amr-set confirm-word-000031)
+        # also amrset-by-variable
+        results = self.amr_space.get_amrsets_by_concept('definite')
+
+        correct_results = [["@general-confirm-please-c",  "confirm-word-000031"],
+         ["@confirm-word", "definite-000030"],
+         ["@activity-options", "activities-000021"],
+         ["@greeting-g", "greeting-noname-000034"],
+         ["@greeting-noname", "time-of-day-000032"]]
+
+        self.compare_results(results, correct_results)
+
 
     def test_get_amrsets_by_concept_var(self):
-        # if concept is variable
-        # (activities-000021 :instance $activities)
-        # (@activity-options:amr-set activities-000021)
-        results = self.amr_space.get_amrsets_by_concept('$activities')
-        correct_results = [["@activity-options", "activities-000021"]]
-        self.assertEqual(len(correct_results), len(results))
-        for res in results:
-            self.assertTrue([r.get_name() for r in res] in correct_results)
-
+        # if concept is variable or any symbol we get amrset-by-variable
         results = self.amr_space.get_amrsets_by_concept('*')
-        self.assertEqual(len(correct_results), len(results))
-        for res in results:
-            self.assertTrue([r.get_name() for r in res] in correct_results)
+
+        correct_results = [
+         ["@activity-options", "activities-000021"],
+         ["@greeting-g", "greeting-noname-000034"],
+         ["@greeting-noname","time-of-day-000032"]]
+        self.compare_results(results, correct_results)
+
+        results = self.amr_space.get_amrsets_by_concept('$activities')
+        self.compare_results(results, correct_results)
 
     def test_get_relations_for_target(self):
         # (show-000006 :ARG2 make-face-expr-target-000009)
         res = self.amr_space.get_relations(':ARG2', 'show-000006', '$tarrget')
-        self.assertEqual([r.get_name() for r in res[0]], ['make-face-expr-target-000009'])
+        self.compare_results(res, [['make-face-expr-target-000009']])
 
     def test_get_relations_for_anyrole(self):
         # (say-000017 :* *)
-        res = self.amr_space.get_relations(':*', '$source', '$tarrget')
-        self.assertEqual([r.get_name() for r in res[0]], ['say-000017','*'])
+        # (activity-000029 :* *)
+        # (enjoy-000028 :* *)
+        results = self.amr_space.get_relations(':*', '$source', '$tarrget')
+        correct_results = [["activity-000029", "*"], ["enjoy-000028", "*"], ["say-000017", "*"]]
+        self.compare_results(results, correct_results)
 
     def test_get_relations_for_source(self):
         # (show-000010 :mode imperative)
@@ -80,11 +108,9 @@ class FunctionsTest(T):
         # (show-000010 :ARG1 face-arg-000012)
         # (show-000010 :ARG2 make-face-expr-target-000013)
         results = self.amr_space.get_relations('$role', 'show-000010', '$target')
-        correct_results = [[":ARG1", "face-arg-000012"], [":polite?", "+"], [":ARG0", "you-000011"],
+        correct_results = [[":ARG1", "face-arg-000012"], [":polite", "+"], [":ARG0", "you-000011"],
                            [":ARG2," "make-face-expr-target-000013"], [":mode"," imperative"]]
-        self.assertEqual(len(results), len(correct_results))
-        for res in results:
-            self.assertTrue([r.get_name() for r in res] in correct_results)
+        self.compare_results(results, correct_results)
 
     def test_get_relations_for_var(self):
         # this is incorrect query
@@ -92,37 +118,49 @@ class FunctionsTest(T):
         self.assertEqual(res, [])
 
     def test_get_relations_for_role(self):
-        #(amr-unknown-000024 :mod? exact-000026)
+        # (amr-unknown-000024 :mod? exact-000026)
         res = self.amr_space.get_relations(':mod?', '$source', '$target')
-        self.assertEqual([r.get_name() for r in res[0]], ["amr-unknown-000024", "exact-000026"])
+        self.compare_results(res,  [["amr-unknown-000024", "exact-000026"]])
 
     def test_get_concept_roles(self):
-        #(say-000017 :instance say)
-        #(say-000017 : * *)
-        res = self.amr_space.get_concept_roles(':*', '$concept')
-        self.assertEqual([r.get_name() for r in res[0]], ["say"])
+        # (say-000017 :instance say)
+        # (say-000017 : * *)
+        # (enjoy-000028 :instance enjoy)
+        # (enjoy-000028 :* *)
+        # (activity-000029 :instance activity)
+        # (activity-000029 :* *)
+        results = self.amr_space.get_concept_roles('$concept', ':*')
+        correct_results = [["activity"], ["enjoy"], ["say"]]
+        self.compare_results(results, correct_results)
 
-        # (show-000006 :instance show)
-        # (show-000006 :mode imperative)
-        res = self.amr_space.get_concept_roles(":mode", '$concept')
-        self.assertEqual([r.get_name() for r in res[0]], ["show"])
+        # (show-000006 :ARG0 you-000007)
+        # (show-000010 :ARG0 you-000011)
+        # (say-000017 :ARG0 i-000018)
+        # (listen-000019 :ARG0 person-Grace-000020)
+        results = self.amr_space.get_concept_roles('$concept', ":ARG0")
+        correct_results = [["say"], ["listen"], ["show"]]
+        self.compare_results(results, correct_results)
 
         # not working, because in space polite is with ?
-        res = self.amr_space.get_concept_roles(":polite", '$concept')
-        self.assertEqual([r.get_name() for r in res[0]], ["show"])
+        res = self.amr_space.get_concept_roles('$concept', ":polite")
+        self.compare_results(res, [["show"]])
 
-        #(face-000005 :instance face)
-        #(face-000005 :ARG1-of face-expr-000004)
-        res = self.amr_space.get_concept_roles(":ARG1-of", '$concept')
-        self.assertEqual([r.get_name() for r in res[0]], ["face"])
+        # (face-000005 :instance face)
+        # (face-000005 :ARG1-of face-expr-000004)
+        # (time-of-day-000032 :ARG1-of good-02-000033)
+        # (time-of-day-000032 :instance $time-of-day)
 
-        #(amr-unknown-000024 :instance amr-unknown)
+        results = self.amr_space.get_concept_roles('$concept', ":ARG1-of")
+        # we have [[face], [$time-of-day]]  $time-of-day  is not of type AmrConcept
+        correct_results = [["face"]]
+        self.compare_results(results, correct_results)
+
+
         #(amr-unknown-000024 :domain that-000025)
         #(amr-unknown-000024 :mod? exact-000026)
-        results = self.amr_space.get_concept_roles("$role", 'amr-unknown')
-        correct_results = [[":domain", ":mod?"]]
-        for res in results:
-            self.assertTrue([r.get_name() for r in res] in correct_results)
+        results = self.amr_space.get_concept_roles('amr-unknown', "$role")
+        correct_results = [[":domain", ":mod"]]
+        self.compare_results(results, correct_results)
 
     def test_get_instance_roles(self):
         # (amr-unknown-000024 :domain that-000025)
@@ -132,11 +170,8 @@ class FunctionsTest(T):
         correct_results = [[":mod", "exact-000026"],
                             [":domain", "that-000025"],
                            [":amr-set","@whatis-that?"]]
-        self.assertEqual(len(correct_results), len(results))
-        for res in results:
-            self.assertTrue([r.get_name() for r in res] in correct_results)
-
-
+        # ? (amr-unknown-000024 =)
+        self.compare_results(results, correct_results)
 
 
 if __name__ == '__main__':
