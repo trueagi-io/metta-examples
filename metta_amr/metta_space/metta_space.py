@@ -131,9 +131,7 @@ class MettaSpace:
         if concept_atom is not None:
             concept = repr(concept_atom)
             if not(TypeDetector.is_amrset_name(concept) or isinstance(concept_atom, ExpressionAtom)):
-                # can we add unique atoms?
-                if (len(self.get_concept_roles(concept, role, res_vars=['$dummy']))) == 0:
-                    self.metta.run(f"! (add-atom &conset (has-role {concept} {role}))")
+                self.metta.run(f"! (add-atom &conset (has-role {concept} {role}))")
 
 
 
