@@ -33,7 +33,7 @@ class FunctionsTest(T):
 
         #(face-expr-000002 :instance $face-expr)
         concept = self.amr_space.get_concept('face-expr-000002')
-        # NOTE: we expect (Var face-expr) instead of face-expr
+        # NOTE: we expect (Var face-expr) instead of $face-expr
         self.assertEqual("(Var face-expr)", repr(concept))
 
     def compare_results(self, results, correct_results):
