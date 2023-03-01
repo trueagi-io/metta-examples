@@ -29,6 +29,9 @@ class MettaSpace:
     def add_triple(self, triple):
         source, role, target = triple
         target = amrt2metta(target)
+        # TODO: add optional role here
+        if role[-1] == '?':
+            role = role[:-1]
         if role == ':instance':
             self.metta.run(f"! (add-atom &triples (Instance ({source} {target})))")
         else:
@@ -80,7 +83,7 @@ class MettaSpace:
         results = self.metta.run(f"!(match &triples ($source $role {instance}) ($role $source))", True)
         results_right = self.metta.run(f"!(match &triples ({instance} $role $target) ($role $target))", True)
         results.extend(results_right)
-        return [[repr(ch) for ch in result.get_children()] for result in results] if len(results) > 0 else []
+        return [result.get_children() for result in results] if len(results) > 0 else []
 
     def get_concept_roles(self,  concept, role, res_vars=None):
         if res_vars is None:
