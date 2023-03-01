@@ -29,6 +29,7 @@ class MettaSpace:
     def add_triple(self, triple):
         source, role, target = triple
         target = amrt2metta(target)
+        # TODO: add optional role here
         if role[-1] == '?':
             role = role[:-1]
         if role == ':instance':
