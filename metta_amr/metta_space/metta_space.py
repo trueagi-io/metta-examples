@@ -23,6 +23,8 @@ class MettaSpace:
             ! (bind! &triples (new-space))
             ! (bind! &conset (new-space))
             ! (bind! &varset (new-space))
+            ! (bind! &optrole (new-space))
+            ! (bind! &roles (new-space))
         ''')
         self.cache = {}
 
@@ -30,12 +32,16 @@ class MettaSpace:
         source, role, target = triple
         target = amrt2metta(target)
         # TODO: add optional role here
+        isoptional = False
         if role[-1] == '?':
             role = role[:-1]
+            isoptional = True
         if role == ':instance':
             self.metta.run(f"! (add-atom &triples (Instance ({source} {target})))")
         else:
             self.metta.run(f"! (add-atom &triples ({source} {role} {target}))")
+            if isoptional:
+                self.metta.run(f"! (add-atom &optrole ({source} {role} {target}))")
             self.add_has_role(source, role)
 
     def get_concept(self, value):
@@ -95,7 +101,7 @@ class MettaSpace:
                 res_vars.append(concept)
         if len(res_vars) > 0:
             return_vals = " ".join(res_vars)
-            results = self.metta.run(f"! (match &conset (has-role {concept} {role}) ({return_vals}))", True)
+            results = self.metta.run(f"! (match &roles ({concept} {role}) ({return_vals}))", True)
             return [result.get_children() if hasattr(result, "get_children") else result[0] for result in results]
         return []
 
@@ -131,7 +137,14 @@ class MettaSpace:
         if concept_atom is not None:
             concept = repr(concept_atom)
             if not(TypeDetector.is_amrset_name(concept) or isinstance(concept_atom, ExpressionAtom)):
-                self.metta.run(f"! (add-atom &conset (has-role {concept} {role}))")
+                self.metta.run(f"! (add-atom &roles ({concept} {role}))")
+
+    def is_optional_role(self, source, role, target):
+        if role == ":*":
+            return True
+        results = self.metta.run(f"! (match &optrole ({source} {role} {target}) 1)", True)
+        return len(results) > 0
+
 
 
 

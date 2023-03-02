@@ -19,7 +19,7 @@ class FunctionsTest(T):
         pattern_loader.load_templates_from_file(template_file)
 
     def test_get_atoms(self):
-        for atom in self.amr_space.get_atoms():
+        for atom in self.amr_space.get_atoms('conset'):
             print(atom)
 
     def test_get_concept(self):
@@ -175,6 +175,11 @@ class FunctionsTest(T):
                            [":amr-set", "@whatis-that?"]]
         # ? (amr-unknown-000024 =)
         self.compare_results(results, correct_results)
+
+    def test_is_optional_role(self):
+        self.assertTrue(self.amr_space.is_optional_role('amr-unknown-000024', ':mod', 'exact-000026'))
+        self.assertFalse(self.amr_space.is_optional_role('week-000022', ':mod', 'next-000023'))
+        self.assertTrue(self.amr_space.is_optional_role('show-000010', ':polite', '+'))
 
 
 if __name__ == '__main__':
