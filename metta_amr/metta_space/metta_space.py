@@ -36,13 +36,14 @@ class MettaSpace:
             self.metta.run(f"! (add-atom &triples (Instance ({source} {target})))")
         else:
             self.metta.run(f"! (add-atom &triples ({source} {role} {target}))")
+            self.add_has_role(source, role)
 
     def get_concept(self, value):
         results = self.metta.run(f"!(match &triples (Instance ({value} $concept))  $concept)", True)
         return results[0] if len(results) > 0 else None
 
-    def get_atoms(self):
-        return self.metta.run("! (get-atoms &triples)")
+    def get_atoms(self, space_name='triples'):
+        return self.metta.run(f"! (get-atoms &{space_name})", True)
         #return self.amr_space.get_atoms()
 
     def get_amrsets_by_concept(self, concept):
@@ -94,7 +95,7 @@ class MettaSpace:
                 res_vars.append(concept)
         if len(res_vars) > 0:
             return_vals = " ".join(res_vars)
-            results = self.metta.run(f"!(match &triples (, ($source {role} $target) (Instance ($source {concept}))) ({return_vals}))", True)
+            results = self.metta.run(f"! (match &conset (has-role {concept} {role}) ({return_vals}))", True)
             return [result.get_children() if hasattr(result, "get_children") else result[0] for result in results]
         return []
 
@@ -124,6 +125,14 @@ class MettaSpace:
                 assert root.get_name() != concept, f'AMR set loop found, start AmrSet: {root}, last AmrSet before loop: {tail_amrset}'
             else:
                 self.metta.run(f"! (add-atom &conset ({concept} {root} {root_instance}))")
+
+    def add_has_role(self, source, role):
+        concept_atom = self.get_concept(source)
+        if concept_atom is not None:
+            concept = repr(concept_atom)
+            if not(TypeDetector.is_amrset_name(concept) or isinstance(concept_atom, ExpressionAtom)):
+                self.metta.run(f"! (add-atom &conset (has-role {concept} {role}))")
+
 
 
 
