@@ -1,11 +1,13 @@
 import enum
 import logging
+import re
+
 import hyperon as hp
 from hyperon.atoms import S, E, ValueAtom, GroundedAtom, ExpressionAtom
 
 from amr_processing import TypeDetector
 
-
+_meaning_postfix_pattern = re.compile(r'-\d+$')
 class Types(enum.Enum):
     AmrVariable = "variable"
     AmrSet = "amrset"
@@ -29,7 +31,10 @@ class MettaSpace:
         self.cache = {}
 
     @staticmethod
-    def results_to_str(results):
+    def atoms_to_str(results):
+        if not isinstance(results, list):
+            return repr(results)
+
         str_results = []
         for res in results:
             str_results.append([repr(r) for r in res] if isinstance(res, list) else repr(res))
@@ -68,13 +73,14 @@ class MettaSpace:
         results = self.metta.run(f"!(match &varset ($set $inst) ($set $inst))", True)
         results.extend(concept_results)
         results = [result.get_children() for result in results]
-        return self.results_to_str(results)
+        return self.atoms_to_str(results)
 
-    def is_a(self, value, type):
+    @staticmethod
+    def is_a(value, type):
         if type == Types.AmrVariable:
-            return TypeDetector.is_variable(value.get_name())
+            return value.startswith("(Var")
         if type == Types.AmrSet:
-            return TypeDetector.is_amrset_name(value.get_name())
+            return TypeDetector.is_amrset_name(value)
         return False
 
     def get_relations(self, pred, arg0, arg1, res_vars=None):
@@ -88,9 +94,9 @@ class MettaSpace:
                 res_vars.append(arg1)
         if len(res_vars) > 0:
             return_vals = f'({" ".join(res_vars)})' if len(res_vars) > 1 else res_vars[0]
-            results = self.metta.run(f"!(match &triples ({arg0} {pred} {arg1}) ({return_vals}))", True)
+            results = self.metta.run(f"!(match &triples ({arg0} {pred} {arg1}) {return_vals})", True)
             results = [result.get_children() if hasattr(result, "get_children") else result for result in results]
-            return self.results_to_str(results)
+            return self.atoms_to_str(results)
         return []
 
     def get_instance_roles(self, instance):
@@ -98,7 +104,7 @@ class MettaSpace:
         results_right = self.metta.run(f"!(match &triples ({instance} $role $target) ($role $target))", True)
         results.extend(results_right)
         results = [result.get_children() for result in results]
-        return self.results_to_str(results)
+        return self.atoms_to_str(results)
 
     def get_concept_roles(self,  concept, role, res_vars=None):
         if res_vars is None:
@@ -111,7 +117,7 @@ class MettaSpace:
             return_vals = f'({" ".join(res_vars)})' if len(res_vars) > 1 else res_vars[0]
             results = self.metta.run(f"! (match &roles ({concept} {role}) {return_vals})", True)
             results = [result.get_children() if hasattr(result, "get_children") else result for result in results]
-            return self.results_to_str(results)
+            return self.atoms_to_str(results)
         return []
 
     def index_amrsets(self):
@@ -142,10 +148,9 @@ class MettaSpace:
                 self.metta.run(f"! (add-atom &conset ({concept} {root} {root_instance}))")
 
     def add_has_role(self, source, role):
-        concept_atom = self.get_concept(source)
-        if concept_atom is not None:
-            concept = repr(concept_atom)
-            if not(TypeDetector.is_amrset_name(concept) or isinstance(concept_atom, ExpressionAtom)):
+        concept = self.get_concept(source)
+        if concept is not None:
+            if not(TypeDetector.is_amrset_name(concept) or self.is_a(concept, Types.AmrVariable)):
                 self.metta.run(f"! (add-atom &roles ({concept} {role}))")
 
     def is_optional_role(self, source, role, target):
@@ -154,6 +159,18 @@ class MettaSpace:
         results = self.metta.run(f"! (match &optrole ({source} {role} {target}) 1)", True)
         return len(results) > 0
 
+
+    @staticmethod
+    def match_concept(input, template):
+        if _meaning_postfix_pattern.search(template) is not None:
+            # the template specifies an exact meaning
+            return input == template
+        else:
+            meaning_pos = _meaning_postfix_pattern.search(input)
+            if meaning_pos is None:
+                return input == template
+            else:
+                return input[:meaning_pos.start(0)] == template
 
 
 

@@ -3,8 +3,6 @@ import unittest
 
 import pathlib
 
-from hyperon import SymbolAtom
-
 T = unittest.TestCase
 from metta_space import PatternLoader, MettaSpace
 
@@ -25,21 +23,22 @@ class FunctionsTest(T):
     def test_get_concept(self):
         #(show-000010 :instance show)
         concept = self.amr_space.get_concept('show-000010')
-        self.assertEqual("show", concept.get_name())
+        self.assertEqual("show", concept)
 
         #(face-arg-000008 :instance @face-arg)
         concept = self.amr_space.get_concept('face-arg-000008')
-        self.assertEqual("@face-arg", concept.get_name())
+        self.assertEqual("@face-arg", concept)
 
         #(face-expr-000002 :instance $face-expr)
         concept = self.amr_space.get_concept('face-expr-000002')
         # NOTE: we expect (Var face-expr) instead of $face-expr
-        self.assertEqual("(Var face-expr)", repr(concept))
+        self.assertEqual("(Var face-expr)", concept)
 
     def compare_results(self, results, correct_results):
         err = f"\nExpected: {correct_results}\nGot: {results}"
         self.assertEqual(len(correct_results), len(results), err)
         for res in results:
+            #vals = [repr(r) for r in res] if isinstance(res, list) else repr(res)
             self.assertTrue(res in correct_results, err + f"\nWrong {res}")
 
     def test_get_amrsets_by_concept(self):
