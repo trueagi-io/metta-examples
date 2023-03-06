@@ -76,7 +76,7 @@ class AmrMatcher:
             return []
         elif MettaSpace.is_a(template_concept, Types.AmrSet):
             # hierarchical template
-            return self.match_amr_set(input_value, template_value,
+            return self.match_amr_set(input_value, input_space, template_value,
                     template_concept, h_level=h_level)
         elif MettaSpace.is_a(template_concept, Types.AmrVariable):
             # parent AnchorNode
@@ -192,7 +192,7 @@ class AmrMatcher:
         res = []
         concept = input_space.get_concept(value)
         self.log.debug("match_value: value: %s, concept: %s", value, concept)
-        for amrset, amrset_var in input_space.get_amrsets_by_concept(concept):
+        for amrset, amrset_var in self.space.get_amrsets_by_concept(concept):
             self.log.debug("match_value: try amrset: %s, instance: %s", amrset, amrset_var)
             if(h_level>0):
                 if (amrset in SingleVariableTemplates):
