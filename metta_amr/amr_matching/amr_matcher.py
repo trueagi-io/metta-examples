@@ -1,5 +1,4 @@
 import logging
-import re
 from collections import OrderedDict
 
 from metta_space import MettaSpace

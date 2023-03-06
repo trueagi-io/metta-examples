@@ -83,6 +83,13 @@ class MettaSpace:
             return TypeDetector.is_amrset_name(value)
         return False
 
+    @staticmethod
+    def get_variable_name(variable):
+        if MettaSpace.is_a(variable, Types.AmrVariable):
+            return "$" + variable[len("(Var "):-1]
+        return variable
+
+
     def get_relations(self, pred, arg0, arg1, res_vars=None):
         if res_vars is None:
             res_vars = []

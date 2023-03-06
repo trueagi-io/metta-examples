@@ -6,7 +6,8 @@ import pathlib
 from amr_processing import UtteranceParser, TripleProcessor, AmrInstanceDict
 
 T = unittest.TestCase
-from metta_space import PatternLoader, MettaSpace, AmrMatcher, AmrMatch
+from metta_space import PatternLoader, MettaSpace
+from amr_matching import AmrMatcher, AmrMatch, AmrTemplateInstance
 
 
 class MatcherTest(T):
@@ -29,7 +30,8 @@ class MatcherTest(T):
 
         template_roles[':mod'] = self.amr_matcher.RoleMetadata(':mod')
         template_roles[':mod'].targets.extend([('week-000005', 'next-000006')])
-        self.assertEqual(self.amr_matcher.get_mandatory_roles(template_roles[':mod']), [(':mod', 'week-000005', 'next-000006')])
+        self.assertEqual(self.amr_matcher.get_mandatory_roles(template_roles[':mod']),
+                         [(':mod', 'week-000005', 'next-000006')])
 
         template_roles[":mod"] = self.amr_matcher.RoleMetadata(':mod')
         template_roles[":mod"].targets.extend([('amr-unknown-000007', 'exact-000009')])
@@ -40,7 +42,7 @@ class MatcherTest(T):
         sentences = []
         try:
             for amr in amrs:
-                parsed_amr =triple_proc.amr_to_triples(amr)
+                parsed_amr = triple_proc.amr_to_triples(amr)
                 for triple in parsed_amr:
                     input_space.add_triple(triple)
                 sentences.append(parsed_amr.top)
@@ -79,46 +81,51 @@ class MatcherTest(T):
         input_space = MettaSpace()
         tops = self.parse_amr(["(b / ball :time (w / week :mod (n / next)))"], input_space)
         res = self.amr_matcher.match_amr_trees(tops[0], input_space, "activities-000004")
-        self.assertEqual(res,  [{"(Var activities)": 'ball'}])
+        self.assertEqual(res, [{"(Var activities)": 'ball'}])
 
     def test_match_amr_set(self):
         input_space = MettaSpace()
-        tops = self.parse_amr(['(a / available-02  :ARG2 (p / person  :name (n / name  :op1 "John")) :time (d / date-entity  :time "15:00" :weekday (m / monday)))'], input_space)
+        tops = self.parse_amr([
+                                  '(a / available-02  :ARG2 (p / person  :name (n / name  :op1 "John")) :time (d / date-entity  :time "15:00" :weekday (m / monday)))'],
+                              input_space)
         res = self.amr_matcher.match_amr_set("date-entity-000003", input_space, "daytime1-000016", "@daytime1")
-        self.assertEqual(res,  [{'@daytime1': {'(Var weekday)': 'monday-000004', '(Var time)': '15:00'}}])
+        self.assertEqual(res, [{'@daytime1': {'(Var weekday)': 'monday-000004', '(Var time)': '15:00'}}])
 
     def test_match_amr_roles_for_var(self):
         input_space = MettaSpace()
-        tops = self.parse_amr(['(a / available-02  :ARG2 (p / person  :name (n / name  :op1 "John")) :time (d / date-entity  :time "15:00" :weekday (m / monday)))'], input_space)
+        tops = self.parse_amr([
+                                  '(a / available-02  :ARG2 (p / person  :name (n / name  :op1 "John")) :time (d / date-entity  :time "15:00" :weekday (m / monday)))'],
+                              input_space)
 
-
-        res = self.amr_matcher.match_amr_roles("date-entity-000003", input_space, "date-entity-000013", match={} )
-        self.assertEqual(res, [{"(Var weekday)":  "monday-000004", '(Var time)': "15:00"}])
-
+        res = self.amr_matcher.match_amr_roles("date-entity-000003", input_space, "date-entity-000013", match={})
+        self.assertEqual(res, [{"(Var weekday)": "monday-000004", '(Var time)': "15:00"}])
 
     def test_match_value_for_many_var_template(self):
         input_space = MettaSpace()
-        tops = self.parse_amr(['(a / available-02  :ARG2 (p / person  :name (n / name  :op1 "John")) :time (d / date-entity  :time "15:00" :weekday (m / monday)))'],
+        tops = self.parse_amr([
+                                  '(a / available-02  :ARG2 (p / person  :name (n / name  :op1 "John")) :time (d / date-entity  :time "15:00" :weekday (m / monday)))'],
                               input_space)
 
         res = self.amr_matcher.match_value(tops[0], input_space)
         self.assertEqual(res,
                          [AmrMatch(amrset="@person-avail-day-time-g",
                                    vars={'(Var person-name)': 'name-000002',
-                                    '@daytime1': {'(Var weekday)': 'monday-000004',
-                                   '(Var time)': '15:00'}})])
+                                         '@daytime1': {'(Var weekday)': 'monday-000004',
+                                                       '(Var time)': '15:00'}})])
 
     def test_match_value_non_concept(self):
         input_space = MettaSpace()
-        tops = self.parse_amr(['(a / available-02  :ARG2 (p / person  :name (n / name  :op1 "John")) :time (d / date-entity  :time "15:00" :weekday (m / monday)))'], input_space)
-
+        tops = self.parse_amr([
+                                  '(a / available-02  :ARG2 (p / person  :name (n / name  :op1 "John")) :time (d / date-entity  :time "15:00" :weekday (m / monday)))'],
+                              input_space)
 
         res = self.amr_matcher.match_value("15:00", input_space)
         self.assertEqual(res, [])
 
     def test_match_amr_trees_var_template(self):
         input_space = MettaSpace()
-        tops = self.parse_amr([ '(a / available-02  :ARG2 (p / person  :name (n / name  :op1 "John")) :time (d / date-entity  :time "15:00" :weekday (m / monday)))'],
+        tops = self.parse_amr([
+                                  '(a / available-02  :ARG2 (p / person  :name (n / name  :op1 "John")) :time (d / date-entity  :time "15:00" :weekday (m / monday)))'],
                               input_space)
         # will trigger 'if  template_value.is_a(types.AmrVariable)'
         res = self.amr_matcher.match_amr_trees('name-000002', input_space, '(Var person-name)')
@@ -126,7 +133,8 @@ class MatcherTest(T):
 
     def test_match_amr_trees_non_concept(self):
         input_space = MettaSpace()
-        tops = self.parse_amr([ '(a / available-02  :ARG2 (p / person  :name (n / name  :op1 "John")) :time (d / date-entity  :time "15:00" :weekday (m / monday)))'],
+        tops = self.parse_amr([
+                                  '(a / available-02  :ARG2 (p / person  :name (n / name  :op1 "John")) :time (d / date-entity  :time "15:00" :weekday (m / monday)))'],
                               input_space)
         # will trigger 'if  template_value.is_a(types.AmrVariable)'
         res = self.amr_matcher.match_amr_trees('15:00', input_space, '(Var time)')
@@ -141,3 +149,19 @@ class MatcherTest(T):
         res = self.amr_matcher.match_value("follow-000000", input_space)
         self.assertEqual(res, [AmrMatch(amrset="@follow-doc-order", vars={})])
 
+    def test_amr_template_instance(self):
+        input_space = MettaSpace()
+        tops = self.parse_amr([
+                                  '(a / available-02  :ARG2 (p / person  :name (n / name  :op1 "John")) :time (d / date-entity  :time "15:00" :weekday (m / monday)))'],
+                              input_space)
+
+        res = self.amr_matcher.match_value(tops[0], input_space)
+        res = [AmrTemplateInstance(match)
+               for match in res]
+        instance = AmrTemplateInstance()
+        instance.amrset = "@person-avail-day-time-g"
+        instance.vars = {'$person-name': 'name-000002',
+                         '@daytime1': {'$weekday': 'monday-000004',
+                                       '$time': '15:00'}, '$time': '15:00', '$weekday': 'monday-000004'}
+        instance.subint = ['@daytime1']
+        self.assertEqual(res, [instance])
