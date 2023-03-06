@@ -37,7 +37,7 @@ class AmrTemplateInstance:
                         vkey = list(value.keys())[0]
                         assert len(value) == 1 and isinstance(vkey, str) and MettaSpace.is_a(vkey,Types.AmrSet), \
                             "Expected only one AmrSet as variable value: {0} - {1}".format(key, value)
-                        vname = vkey.name
+                        vname = vkey
                         subint_child, vacc_child = self._unwrap_vars_rec(value[vkey])
                         subint += [vname] + subint_child
                         if len(vacc_child) > 0:

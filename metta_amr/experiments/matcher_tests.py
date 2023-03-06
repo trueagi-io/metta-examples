@@ -85,8 +85,7 @@ class MatcherTest(T):
 
     def test_match_amr_set(self):
         input_space = MettaSpace()
-        tops = self.parse_amr([
-                                  '(a / available-02  :ARG2 (p / person  :name (n / name  :op1 "John")) :time (d / date-entity  :time "15:00" :weekday (m / monday)))'],
+        tops = self.parse_amr(['(a / available-02  :ARG2 (p / person  :name (n / name  :op1 "John")) :time (d / date-entity  :time "15:00" :weekday (m / monday)))'],
                               input_space)
         res = self.amr_matcher.match_amr_set("date-entity-000003", input_space, "daytime1-000016", "@daytime1")
         self.assertEqual(res, [{'@daytime1': {'(Var weekday)': 'monday-000004', '(Var time)': '15:00'}}])
@@ -109,7 +108,7 @@ class MatcherTest(T):
         res = self.amr_matcher.match_value(tops[0], input_space)
         self.assertEqual(res,
                          [AmrMatch(amrset="@person-avail-day-time-g",
-                                   vars={'(Var person-name)': 'name-000002',
+                                   vars={'(Var person-name)':  {'@some-name': {}},
                                          '@daytime1': {'(Var weekday)': 'monday-000004',
                                                        '(Var time)': '15:00'}})])
 
@@ -124,12 +123,11 @@ class MatcherTest(T):
 
     def test_match_amr_trees_var_template(self):
         input_space = MettaSpace()
-        tops = self.parse_amr([
-                                  '(a / available-02  :ARG2 (p / person  :name (n / name  :op1 "John")) :time (d / date-entity  :time "15:00" :weekday (m / monday)))'],
+        tops = self.parse_amr(['(a / available-02  :ARG2 (p / person  :name (n / name  :op1 "John")) :time (d / date-entity  :time "15:00" :weekday (m / monday)))'],
                               input_space)
         # will trigger 'if  template_value.is_a(types.AmrVariable)'
         res = self.amr_matcher.match_amr_trees('name-000002', input_space, '(Var person-name)')
-        self.assertEqual(res, [{'(Var person-name)': "name-000002"}])
+        self.assertEqual(res, [{'(Var person-name)': {'@some-name': {}}}])
 
     def test_match_amr_trees_non_concept(self):
         input_space = MettaSpace()
@@ -151,8 +149,7 @@ class MatcherTest(T):
 
     def test_amr_template_instance(self):
         input_space = MettaSpace()
-        tops = self.parse_amr([
-                                  '(a / available-02  :ARG2 (p / person  :name (n / name  :op1 "John")) :time (d / date-entity  :time "15:00" :weekday (m / monday)))'],
+        tops = self.parse_amr(['(a / available-02  :ARG2 (p / person  :name (n / name  :op1 "John")) :time (d / date-entity  :time "15:00" :weekday (m / monday)))'],
                               input_space)
 
         res = self.amr_matcher.match_value(tops[0], input_space)
@@ -160,8 +157,32 @@ class MatcherTest(T):
                for match in res]
         instance = AmrTemplateInstance()
         instance.amrset = "@person-avail-day-time-g"
-        instance.vars = {'$person-name': 'name-000002',
+        instance.vars = {'$person-name':  '@some-name',
                          '@daytime1': {'$weekday': 'monday-000004',
                                        '$time': '15:00'}, '$time': '15:00', '$weekday': 'monday-000004'}
-        instance.subint = ['@daytime1']
-        self.assertEqual(res, [instance])
+
+        instance.subint = [ '@daytime1', '@some-name']
+        self.assertEqual(res[0].amrset, instance.amrset)
+        self.assertEqual(res[0].vars, instance.vars)
+        for v in res[0].subint:
+            self.assertTrue(v in instance.subint)
+
+    def test_match_amr_trees_with_existing_optional_role(self):
+        input_space = MettaSpace()
+        tops = self.parse_amr(['(l / literature :domain (a / amr-unknown) :mod (e / exact)))'],
+                              input_space)
+        res = self.amr_matcher.match_amr_trees("literature-000000", input_space, "concept-000021")
+        self.assertEqual(res, [{"(Var concept)": "literature"}])
+
+    def test_match_amr_trees_with_optional_role(self):
+        input_space = MettaSpace()
+        tops = self.parse_amr(['(l / literature :domain (a / amr-unknown) ))'], input_space)
+        res = self.amr_matcher.match_amr_trees("literature-000000", input_space, "concept-000021")
+        self.assertEqual(res, [{"(Var concept)": "literature"}])
+
+    def test_match_amr_trees_optional(self):
+        input_space = MettaSpace()
+        tops = self.parse_amr(['(p / person :name (n / name  :op1 "John"  :op2 "Doe"))'], input_space)
+        res = self.amr_matcher.match_amr_trees("person-000000", input_space, "person-000024")
+        self.assertEqual(res, [{"(Var name-op2)": "Doe", "(Var name-op1)": "John"}])
+
