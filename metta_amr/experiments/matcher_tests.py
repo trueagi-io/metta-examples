@@ -186,3 +186,6 @@ class MatcherTest(T):
         res = self.amr_matcher.match_amr_trees("person-000000", input_space, "person-000024")
         self.assertEqual(res, [{"(Var name-op2)": "Doe", "(Var name-op1)": "John"}])
 
+
+if __name__ == '__main__':
+    unittest.main()
