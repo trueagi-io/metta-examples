@@ -3,8 +3,6 @@ import unittest
 
 import pathlib
 
-from hyperon import SymbolAtom
-
 T = unittest.TestCase
 from metta_space import PatternLoader, MettaSpace
 
@@ -25,22 +23,23 @@ class FunctionsTest(T):
     def test_get_concept(self):
         #(show-000010 :instance show)
         concept = self.amr_space.get_concept('show-000010')
-        self.assertEqual("show", concept.get_name())
+        self.assertEqual("show", concept)
 
         #(face-arg-000008 :instance @face-arg)
         concept = self.amr_space.get_concept('face-arg-000008')
-        self.assertEqual("@face-arg", concept.get_name())
+        self.assertEqual("@face-arg", concept)
 
         #(face-expr-000002 :instance $face-expr)
         concept = self.amr_space.get_concept('face-expr-000002')
         # NOTE: we expect (Var face-expr) instead of $face-expr
-        self.assertEqual("(Var face-expr)", repr(concept))
+        self.assertEqual("(Var face-expr)", concept)
 
     def compare_results(self, results, correct_results):
         err = f"\nExpected: {correct_results}\nGot: {results}"
         self.assertEqual(len(correct_results), len(results), err)
         for res in results:
-            self.assertTrue([repr(r) for r in res] in correct_results, err + f"\nWrong {res}")
+            #vals = [repr(r) for r in res] if isinstance(res, list) else repr(res)
+            self.assertTrue(res in correct_results, err + f"\nWrong {res}")
 
     def test_get_amrsets_by_concept(self):
         # (@make-faces-req :amr-set show-000010)
@@ -93,7 +92,7 @@ class FunctionsTest(T):
     def test_get_relations_for_target(self):
         # (show-000006 :ARG2 make-face-expr-target-000009)
         res = self.amr_space.get_relations(':ARG2', 'show-000006', '$tarrget')
-        self.compare_results(res, [['make-face-expr-target-000009']])
+        self.compare_results(res, ['make-face-expr-target-000009'])
 
     def test_get_relations_for_anyrole(self):
         # (say-000017 :* *)
@@ -131,7 +130,7 @@ class FunctionsTest(T):
         # (activity-000029 :instance activity)
         # (activity-000029 :* *)
         results = self.amr_space.get_concept_roles('$concept', ':*')
-        correct_results = [["activity"], ["enjoy"], ["say"]]
+        correct_results = ["activity", "enjoy", "say"]
         self.compare_results(results, correct_results)
 
         # (show-000006 :ARG0 you-000007)
@@ -139,7 +138,7 @@ class FunctionsTest(T):
         # (say-000017 :ARG0 i-000018)
         # (listen-000019 :ARG0 person-Grace-000020)
         results = self.amr_space.get_concept_roles('$concept', ":ARG0")
-        correct_results = [["say"], ["listen"], ["show"]]
+        correct_results = ["say", "listen", "show"]
         # we have [["say"], ["listen"], ["show"], ["show"]]
         #self.compare_results(results, correct_results)
 
@@ -155,14 +154,14 @@ class FunctionsTest(T):
 
         results = self.amr_space.get_concept_roles('$concept', ":ARG1-of")
         # we have [[face], [$time-of-day]]  $time-of-day  is not of type AmrConcept
-        correct_results = [["face"]]
+        correct_results = ["face"]
         self.compare_results(results, correct_results)
 
 
         #(amr-unknown-000024 :domain that-000025)
         #(amr-unknown-000024 :mod? exact-000026)
         results = self.amr_space.get_concept_roles('amr-unknown', "$role")
-        correct_results = [[":domain"], [":mod"]]
+        correct_results = [":domain", ":mod"]
         self.compare_results(results, correct_results)
 
     def test_get_instance_roles(self):

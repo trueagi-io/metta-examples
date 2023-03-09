@@ -1,0 +1,25 @@
+# [Please] Show me a $face-expr face
+(@make-face-expr-target :amr-set i)
+(@make-face-expr-target :amr-set we)
+
+(@greeting-noname :amr-set (t / $time-of-day :ARG1-of good-02))
+
+(@activity-options :amr-set (a / $activities :time (week :mod next)))
+(@whatis-that? :amr-set (a / amr-unknown :domain that :mod? exact))
+(@ask-current-month-g :amr-set (month :mod (amr-unknown :domain it)))
+(@daytime1 :amr-set (date-entity :weekday $weekday :time $time))
+# $person-name is available at $time $weekday.
+(@person-avail-day-time-g :amr-set
+   (available-02
+      :ARG2 (person :name $person-name)
+      :time @daytime1
+     ))
+
+# I'm following the doctor's orders...
+(@follow-doc-order :amr-set (follow :ARG0 i :ARG1 (order :ARG0 doctor :* *)))
+
+# What is $concept
+(@whatis? :amr-set (c / $concept :domain (a / amr-unknown) :mod? exact))
+
+(@any-name :amr-set (p / person :name (n / name :op1 $name-op1 :op2 $name-op2 :op3? $name-op3 :* *)))
+(@some-name:amr-set  (n / name  :op1 "John"))
