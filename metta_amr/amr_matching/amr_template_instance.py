@@ -1,5 +1,3 @@
-from opencog.type_constructors import *
-from opencog.atomspace import Atom
 from copy import deepcopy
 
 from metta_space.metta_space import Types, MettaSpace
