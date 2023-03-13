@@ -23,3 +23,13 @@
 
 (@any-name :amr-set (p / person :name (n / name :op1 $name-op1 :op2 $name-op2 :op3? $name-op3 :* *)))
 (@some-name:amr-set  (n / name  :op1 "John"))
+
+# How did your checkup with $doctor go $time?
+(@doctor-checkup-test? :amr-set (g / go  :ARG1 (c / check-up :ARG0 (y / you) :ARG1 (p / person   :name (n / name    :op1 $name ))) :time (d / date-entity   :time $time) :manner (a / amr-unknown)))
+
+
+# So I turned my hobby into a job.
+(@hobby-test :amr-set (cause    :ARG1 (turn    :ARG0 (ii2 / i)  :ARG1 (hobby   :poss ii2)        :ARG2 job)))
+# I will guide you through simple exercises to relax your mind and body.
+(@meditation-explanation-test :amr-set (g /guide-01 :ARG0 (ii / i) :ARG1 (y / you)  :ARG2 (e / exercise-02 :ARG1-of (s / simple-02) :purpose
+(r / relax-01  :ARG1 (a / and  :op1 (m / mind   :part-of y) :op2 (b / body  :part-of y)) ))))

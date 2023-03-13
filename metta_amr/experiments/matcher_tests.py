@@ -1,4 +1,5 @@
 import os
+import time
 import unittest
 
 import pathlib
@@ -9,6 +10,21 @@ T = unittest.TestCase
 from metta_space import PatternLoader, MettaSpace
 from amr_matching import AmrMatcher, AmrMatch, AmrTemplateInstance
 
+
+def parse_amr(amrs, input_space):
+    if input_space is None:
+        return []
+    triple_proc = TripleProcessor(AmrInstanceDict)
+    sentences = []
+    try:
+        for amr in amrs:
+            parsed_amr = triple_proc.amr_to_triples(amr)
+            for triple in parsed_amr:
+                input_space.add_triple(triple)
+            sentences.append(parsed_amr.top)
+    finally:
+        input_space.index_amrsets()
+        return sentences
 
 class MatcherTest(T):
 
@@ -37,21 +53,9 @@ class MatcherTest(T):
         template_roles[":mod"].targets.extend([('amr-unknown-000007', 'exact-000009')])
         self.assertEqual(self.amr_matcher.get_mandatory_roles(template_roles[':mod']), [])
 
-    def parse_amr(self, amrs, input_space):
-        triple_proc = TripleProcessor(AmrInstanceDict)
-        sentences = []
-        try:
-            for amr in amrs:
-                parsed_amr = triple_proc.amr_to_triples(amr)
-                for triple in parsed_amr:
-                    input_space.add_triple(triple)
-                sentences.append(parsed_amr.top)
-        finally:
-            return sentences
-
     def test_match_amr_roles(self):
         input_space = MettaSpace()
-        tops = self.parse_amr(['(m/morning :ARG1-of (g/good-02))'], input_space)
+        tops = parse_amr(['(m/morning :ARG1-of (g/good-02))'], input_space)
 
         res = self.amr_matcher.match_amr_roles(tops[0], input_space, "time-of-day-000002", {})
         self.assertEqual(res, [{}])
@@ -61,7 +65,7 @@ class MatcherTest(T):
 
     def test_match_value_no_roles(self):
         input_space = MettaSpace()
-        tops = self.parse_amr(['(w/we)'], input_space)
+        tops = parse_amr(['(w/we)'], input_space)
         #  will call self.match_amr_roles, but there are no roles for input_value and template_value,
         #  and self.match_amr_roles returns  [{}]
         # so the result is not empty (!=[]) and amr_matcher.match_value return AmrMatch
@@ -71,7 +75,7 @@ class MatcherTest(T):
 
     def test_match_value_with_roles(self):
         input_space = MettaSpace()
-        tops = self.parse_amr(['(m/month :mod (a / amr-unknown :domain (ii / it)))'], input_space)
+        tops = parse_amr(['(m/month :mod (a / amr-unknown :domain (ii / it)))'], input_space)
         res = self.amr_matcher.match_amr_trees(tops[0], input_space, "month-000010")
         self.assertEqual(res, [{}])
         res = self.amr_matcher.match_value(tops[0], input_space)
@@ -79,20 +83,20 @@ class MatcherTest(T):
 
     def test_match_amr_trees_with_vars(self):
         input_space = MettaSpace()
-        tops = self.parse_amr(["(b / ball :time (w / week :mod (n / next)))"], input_space)
+        tops = parse_amr(["(b / ball :time (w / week :mod (n / next)))"], input_space)
         res = self.amr_matcher.match_amr_trees(tops[0], input_space, "activities-000004")
         self.assertEqual(res, [{"(Var activities)": 'ball'}])
 
     def test_match_amr_set(self):
         input_space = MettaSpace()
-        tops = self.parse_amr(['(a / available-02  :ARG2 (p / person  :name (n / name  :op1 "John")) :time (d / date-entity  :time "15:00" :weekday (m / monday)))'],
+        tops =parse_amr(['(a / available-02  :ARG2 (p / person  :name (n / name  :op1 "John")) :time (d / date-entity  :time "15:00" :weekday (m / monday)))'],
                               input_space)
         res = self.amr_matcher.match_amr_set("date-entity-000003", input_space, "daytime1-000016", "@daytime1")
         self.assertEqual(res, [{'@daytime1': {'(Var weekday)': 'monday-000004', '(Var time)': '15:00'}}])
 
     def test_match_amr_roles_for_var(self):
         input_space = MettaSpace()
-        tops = self.parse_amr([
+        tops = parse_amr([
                                   '(a / available-02  :ARG2 (p / person  :name (n / name  :op1 "John")) :time (d / date-entity  :time "15:00" :weekday (m / monday)))'],
                               input_space)
 
@@ -101,7 +105,7 @@ class MatcherTest(T):
 
     def test_match_value_for_many_var_template(self):
         input_space = MettaSpace()
-        tops = self.parse_amr([
+        tops = parse_amr([
                                   '(a / available-02  :ARG2 (p / person  :name (n / name  :op1 "John")) :time (d / date-entity  :time "15:00" :weekday (m / monday)))'],
                               input_space)
 
@@ -114,7 +118,7 @@ class MatcherTest(T):
 
     def test_match_value_non_concept(self):
         input_space = MettaSpace()
-        tops = self.parse_amr([
+        tops = parse_amr([
                                   '(a / available-02  :ARG2 (p / person  :name (n / name  :op1 "John")) :time (d / date-entity  :time "15:00" :weekday (m / monday)))'],
                               input_space)
 
@@ -123,7 +127,7 @@ class MatcherTest(T):
 
     def test_match_amr_trees_var_template(self):
         input_space = MettaSpace()
-        tops = self.parse_amr(['(a / available-02  :ARG2 (p / person  :name (n / name  :op1 "John")) :time (d / date-entity  :time "15:00" :weekday (m / monday)))'],
+        tops = parse_amr(['(a / available-02  :ARG2 (p / person  :name (n / name  :op1 "John")) :time (d / date-entity  :time "15:00" :weekday (m / monday)))'],
                               input_space)
         # will trigger 'if  template_value.is_a(types.AmrVariable)'
         res = self.amr_matcher.match_amr_trees('name-000002', input_space, '(Var person-name)')
@@ -131,7 +135,7 @@ class MatcherTest(T):
 
     def test_match_amr_trees_non_concept(self):
         input_space = MettaSpace()
-        tops = self.parse_amr([
+        tops = parse_amr([
                                   '(a / available-02  :ARG2 (p / person  :name (n / name  :op1 "John")) :time (d / date-entity  :time "15:00" :weekday (m / monday)))'],
                               input_space)
         # will trigger 'if  template_value.is_a(types.AmrVariable)'
@@ -140,7 +144,7 @@ class MatcherTest(T):
 
     def test_match_amr_roles_with_optional(self):
         input_space = MettaSpace()
-        tops = self.parse_amr(['(f / follow  :ARG0 (ii / i) :ARG1 (o / order :ARG0 (d / doctor) :ARG1 (d2 / drug)))'],
+        tops =parse_amr(['(f / follow  :ARG0 (ii / i) :ARG1 (o / order :ARG0 (d / doctor) :ARG1 (d2 / drug)))'],
                               input_space)
         res = self.amr_matcher.match_amr_roles("order-000002", input_space, "order-000019", match={})
         self.assertEqual(res, [{}])
@@ -149,7 +153,7 @@ class MatcherTest(T):
 
     def test_amr_template_instance(self):
         input_space = MettaSpace()
-        tops = self.parse_amr(['(a / available-02  :ARG2 (p / person  :name (n / name  :op1 "John")) :time (d / date-entity  :time "15:00" :weekday (m / monday)))'],
+        tops =parse_amr(['(a / available-02  :ARG2 (p / person  :name (n / name  :op1 "John")) :time (d / date-entity  :time "15:00" :weekday (m / monday)))'],
                               input_space)
 
         res = self.amr_matcher.match_value(tops[0], input_space)
@@ -169,22 +173,37 @@ class MatcherTest(T):
 
     def test_match_amr_trees_with_existing_optional_role(self):
         input_space = MettaSpace()
-        tops = self.parse_amr(['(l / literature :domain (a / amr-unknown) :mod (e / exact)))'],
+        tops =parse_amr(['(l / literature :domain (a / amr-unknown) :mod (e / exact)))'],
                               input_space)
         res = self.amr_matcher.match_amr_trees("literature-000000", input_space, "concept-000021")
         self.assertEqual(res, [{"(Var concept)": "literature"}])
 
     def test_match_amr_trees_with_optional_role(self):
         input_space = MettaSpace()
-        tops = self.parse_amr(['(l / literature :domain (a / amr-unknown) ))'], input_space)
+        tops =parse_amr(['(l / literature :domain (a / amr-unknown) ))'], input_space)
         res = self.amr_matcher.match_amr_trees("literature-000000", input_space, "concept-000021")
         self.assertEqual(res, [{"(Var concept)": "literature"}])
 
     def test_match_amr_trees_optional(self):
         input_space = MettaSpace()
-        tops = self.parse_amr(['(p / person :name (n / name  :op1 "John"  :op2 "Doe"))'], input_space)
+        tops =parse_amr(['(p / person :name (n / name  :op1 "John"  :op2 "Doe"))'], input_space)
         res = self.amr_matcher.match_amr_trees("person-000000", input_space, "person-000024")
         self.assertEqual(res, [{"(Var name-op2)": "Doe", "(Var name-op1)": "John"}])
+
+    def test_no_roles_match_with_extra_role(self):
+        input_space = MettaSpace()
+        tops =parse_amr(["(p / person :name (n / name  :op1 \"John\" :op2 \"Doe\")  :domain (ii / i))"], input_space)
+        res = self.amr_matcher.match_amr_roles(tops[0], input_space, "person-000024", {})
+        # len(absent_input_roles) > 0
+        self.assertEqual(res, [])
+
+    def test_no_match_amr_trees(self):
+        input_space = MettaSpace()
+        tops =parse_amr(["(a / available-02    :ARG2 (p / person  :name (n / name  :op1 \"John\"))  :time (t / today))"], input_space)
+        # should have ":time should be (date - entity :weekday $weekday:time $time))" but we have 'today'
+        res = self.amr_matcher.match_amr_trees(tops[0], input_space, "available-02-000014")
+        self.assertEqual(res, [])
+
 
 
 if __name__ == '__main__':

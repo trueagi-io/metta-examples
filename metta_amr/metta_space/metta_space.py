@@ -150,7 +150,8 @@ class MettaSpace:
             if isinstance(concept_atom, ExpressionAtom): # TODO (Var ...)
                 self.metta.run(f"! (add-atom &varset ({root} {root_instance}))")
             elif TypeDetector.is_amrset_name(concept):
-                assert root.get_name() != concept, f'AMR set loop found, start AmrSet: {root}, last AmrSet before loop: {tail_amrset}'
+                assert root != concept, f'AMR set loop found, start AmrSet: {root}, last AmrSet before loop: {tail_amrset}'
+                self.index_amrset(root, root_instance,concept)
             else:
                 self.metta.run(f"! (add-atom &conset ({concept} {root} {root_instance}))")
 
