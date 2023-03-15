@@ -78,7 +78,7 @@ class MettaSpace:
     @staticmethod
     def is_a(value, type):
         if type == Types.AmrVariable:
-            return value.startswith("(Var")
+            return value.startswith("(Var") or value == "*"
         if type == Types.AmrSet:
             return TypeDetector.is_amrset_name(value)
         return False
@@ -180,6 +180,10 @@ class MettaSpace:
             else:
                 return input[:meaning_pos.start(0)] == template
 
+    def get_concepts_of_instance(self, amr_instance):
+        results = self.metta.run(
+             f"!(match &triples (Instance ({amr_instance} $concept)) $concept)",  True)
+        return self.atoms_to_str(results)
 
 
 

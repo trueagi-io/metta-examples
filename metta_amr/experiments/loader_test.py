@@ -1,10 +1,10 @@
 import os
 import pathlib
-from metta_space import PatternLoader, MettaSpace
+from metta_space import PatternParser, MettaSpace
 
 if __name__ == '__main__':
     amr_space = MettaSpace()
-    pattern_loader = PatternLoader(amr_space)
+    pattern_loader = PatternParser(amr_space)
 
     work_dir = pathlib.Path(__file__).parent.resolve().parent
     templates_dir = os.path.join(work_dir, "amr_templates")
