@@ -4,7 +4,8 @@ import re
 
 from amr_processing import TripleProcessor,  PatternInstanceDict, UtteranceParser
 #_single_word_pattern = re.compile(r'^\S+$')
-class PatternLoader:
+
+class PatternParser:
 
     def __init__(self, amr_space):
         self.log = logging.getLogger(__name__ + '.' + type(self).__name__)
@@ -41,6 +42,13 @@ class PatternLoader:
             #         self.amr_space.add_triple((source, role, top))
             # else:
             self.amr_space.add_triple(triple)
+
+    def load_templates_from_files(self, filenames):
+        if not isinstance(filenames, list):
+            filenames = [filenames]
+        for filename in filenames:
+            self.load_templates_from_file(filename)
+        self.amr_space.index_amrsets()
 
 
 

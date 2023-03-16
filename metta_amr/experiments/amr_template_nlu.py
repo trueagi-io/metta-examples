@@ -1,7 +1,7 @@
 import logging
 import time
 
-from metta_space import PatternLoader, MettaSpace
+from metta_space import PatternParser, MettaSpace
 from amr_processing import AmrProcessor, UtteranceParser
 
 class AmrTemplateNLU:
@@ -10,7 +10,7 @@ class AmrTemplateNLU:
         self.log = logging.getLogger(__name__ + '.' + type(self).__name__)
         self.amr_space = MettaSpace()
         self.amr_proc = AmrProcessor()
-        self.pattern_parser = PatternLoader(self.amr_proc)
+        self.pattern_parser = PatternParser(self.amr_space)
 
     def text2intents(self, text, intent_set=None):
         self.log.info('text2intents start: %s', text)

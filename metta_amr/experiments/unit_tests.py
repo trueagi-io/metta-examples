@@ -4,7 +4,7 @@ import unittest
 import pathlib
 
 T = unittest.TestCase
-from metta_space import PatternLoader, MettaSpace
+from metta_space import PatternParser, MettaSpace
 
 class FunctionsTest(T):
 
@@ -13,8 +13,8 @@ class FunctionsTest(T):
         work_dir = pathlib.Path(__file__).parent.resolve().parent
         template_file = os.path.join(work_dir, "amr_templates", "test.amr")
         cls.amr_space = MettaSpace()
-        pattern_loader = PatternLoader(cls.amr_space)
-        pattern_loader.load_templates_from_file(template_file)
+        pattern_loader = PatternParser(cls.amr_space)
+        pattern_loader.load_templates_from_files(template_file)
 
     def test_get_atoms(self):
         for atom in self.amr_space.get_atoms('conset'):

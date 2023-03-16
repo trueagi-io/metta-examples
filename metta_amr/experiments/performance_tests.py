@@ -7,7 +7,7 @@ import pathlib
 from amr_processing import UtteranceParser, TripleProcessor, AmrInstanceDict
 
 T = unittest.TestCase
-from metta_space import PatternLoader, MettaSpace
+from metta_space import PatternParser, MettaSpace
 from amr_matching import AmrMatcher, AmrMatch, AmrTemplateInstance
 from matcher_tests import parse_amr
 
@@ -20,12 +20,13 @@ class MatcherTest(T):
         cls.templates_dir = os.path.join(work_dir, "amr_templates")
         cls.amr_space = MettaSpace()
 
-        pattern_loader = PatternLoader(cls.amr_space)
+        pattern_loader = PatternParser(cls.amr_space)
+        files = []
         if os.path.exists(cls.templates_dir):
             for f in os.listdir(cls.templates_dir):
                 if f.endswith('.amr') :
-                    pattern_loader.load_templates_from_file(os.path.join(cls.templates_dir, f))
-            cls.amr_space.index_amrsets()
+                    files.append(os.path.join(cls.templates_dir, f))
+            pattern_loader.load_templates_from_files(files)
         dur = (time.time() - start)
         print("templates load time:", dur)
         cls.amr_matcher = AmrMatcher(cls.amr_space)

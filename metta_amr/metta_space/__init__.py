@@ -1,2 +1,2 @@
 from .metta_space import MettaSpace
-from .pattern_loader import PatternLoader
+from .pattern_parser import PatternParser
