@@ -21,11 +21,12 @@ class MatcherTest(T):
         cls.amr_space = MettaSpace()
 
         pattern_loader = PatternParser(cls.amr_space)
+        files = []
         if os.path.exists(cls.templates_dir):
             for f in os.listdir(cls.templates_dir):
                 if f.endswith('.amr') :
-                    pattern_loader.load_templates_from_file(os.path.join(cls.templates_dir, f))
-            cls.amr_space.index_amrsets()
+                    files.append(os.path.join(cls.templates_dir, f))
+            pattern_loader.load_templates_from_files(files)
         dur = (time.time() - start)
         print("templates load time:", dur)
         cls.amr_matcher = AmrMatcher(cls.amr_space)
