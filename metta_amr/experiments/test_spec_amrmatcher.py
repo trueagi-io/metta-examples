@@ -401,7 +401,7 @@ class AmrMatcherTest(T):
                 'last AmrSet before loop: @a', 'AMR set loop found, ' +
                 'start AmrSet: @a, ' +
                 'last AmrSet before loop: @c', 'AMR set loop found, ' +
-                'start AmrSet: @c), ' +
+                'start AmrSet: @c, ' +
                 'last AmrSet before loop: @b'])
 
 if __name__ == '__main__':
