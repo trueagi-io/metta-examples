@@ -60,6 +60,10 @@ class MettaSpace:
         results = self.metta.run(f"!(match &triples (Instance ({value} $concept))  $concept)", True)
         return repr(results[0]) if len(results) > 0 else None
 
+    def is_concept(self, value):
+        results = self.metta.run(f"!(match &triples (Instance ($instance {value}))  $instance)", True)
+        return len(results) > 0
+
     def get_atoms(self, space_name='triples'):
         return self.metta.run(f"! (get-atoms &{space_name})", True)
         #return self.amr_space.get_atoms()
@@ -89,7 +93,6 @@ class MettaSpace:
             return "$" + variable[len("(Var "):-1]
         return variable
 
-
     def get_relations(self, pred, arg0, arg1, res_vars=None):
         if res_vars is None:
             res_vars = []
@@ -107,11 +110,11 @@ class MettaSpace:
         return []
 
     def get_instance_roles(self, instance):
-        results = self.metta.run(f"!(match &triples ($source $role {instance}) ($role $source))", True)
+        results_left = self.metta.run(f"!(match &triples ($source $role {instance}) ($role $source))", True)
         results_right = self.metta.run(f"!(match &triples ({instance} $role $target) ($role $target))", True)
-        results.extend(results_right)
-        results = [result.get_children() for result in results]
-        return self.atoms_to_str(results)
+        results_left = [result.get_children() for result in results_left]
+        results_right = [result.get_children() for result in results_right]
+        return [self.atoms_to_str(results_right), self.atoms_to_str(results_left)]
 
     def get_concept_roles(self,  concept, role, res_vars=None):
         if res_vars is None:

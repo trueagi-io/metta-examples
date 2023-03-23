@@ -15,9 +15,11 @@ class PatternParser:
     def load_file(self, file):
         self._process_triples(self.triple_proc.file_to_triples(file))
 
-    def load_text(self, text):
+    def load_text(self, text, index_space=False):
         with io.StringIO(text) as file:
             self.load_file(file)
+        if index_space:
+            self.amr_space.index_amrsets()
 
     def load_templates(self, templates):
         self.load_text(templates)
@@ -49,6 +51,11 @@ class PatternParser:
         for filename in filenames:
             self.load_templates_from_file(filename)
         self.amr_space.index_amrsets()
+
+    def parse(self, amr):
+        parsed_amr = self.triple_proc.amr_to_triples(amr)
+        self._process_triples(parsed_amr)
+        return parsed_amr.top
 
 
 

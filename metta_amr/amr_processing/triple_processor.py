@@ -102,7 +102,7 @@ class PatternInstanceDict(AmrInstanceDict):
         self.instance_triples.append((instance, ":instance", concept))
 
     def _get_unique_instance(self, target):
-        if  TypeDetector.is_variable(target) or  TypeDetector.is_amrset_name(target):
+        if TypeDetector.is_variable(target) or TypeDetector.is_amrset_name(target):
             return super()._get_unique_instance(target[1:])
         else:
             return super()._get_unique_instance(target)
@@ -172,7 +172,6 @@ class TripleProcessor:
             yield triple
         for triple in filter(lambda x: not TypeDetector.is_instance(x), graph.triples):
             yield self._process_relation(triple, amr_instances)
-
 
 class UtteranceParser:
 

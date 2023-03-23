@@ -168,12 +168,11 @@ class FunctionsTest(T):
         # (amr-unknown-000024 :domain that-000025)
         # (amr-unknown-000024 :mod? exact-000026
         # (@whatis-that? :amr-set amr-unknown-000024)
-        results = self.amr_space.get_instance_roles("amr-unknown-000024")
-        correct_results = [[":mod", "exact-000026"],
-                           [":domain", "that-000025"],
-                           [":amr-set", "@whatis-that?"]]
+        right, left = self.amr_space.get_instance_roles("amr-unknown-000024")
+        correct_results = [[[':domain', 'that-000025'], [':mod', 'exact-000026']], [[':amr-set', '@whatis-that?']]]
         # ? (amr-unknown-000024 =)
-        self.compare_results(results, correct_results)
+        self.compare_results(right, correct_results[0])
+        self.compare_results(left, correct_results[1])
 
     def test_is_optional_role(self):
         self.assertTrue(self.amr_space.is_optional_role('amr-unknown-000024', ':mod', 'exact-000026'))
