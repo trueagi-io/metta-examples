@@ -136,7 +136,7 @@ class MettaSpace:
         for result in results:
             concept_atom = result.get_children()[2]
             amrset, target, concept = [repr(res) for res in result.get_children()]
-            if isinstance(concept_atom, ExpressionAtom): # TODO (Val ...)
+            if isinstance(concept_atom, ExpressionAtom): # TODO (Var ...)
                 self.metta.run(f"! (add-atom &varset ({amrset} {target}))")
             elif TypeDetector.is_amrset_name(concept):
                 self.index_amrset(amrset, target, concept)

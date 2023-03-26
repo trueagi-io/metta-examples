@@ -1,5 +1,6 @@
 import os
 import pathlib
+import time
 
 from amr_matching import AmrTemplateInstance
 from experiments.amr_template_nlu import AmrTemplateNLU
@@ -14,15 +15,17 @@ if __name__ == '__main__':
     files = []
     if os.path.exists(templates_dir):
         for f in os.listdir(templates_dir):
-            if f.endswith('.amr') and f=='test.amr':
+            if f.endswith('.amr') :
                 files.append(os.path.join(templates_dir, f))
         amr_nlu.load_templates_from_files(files)
     #try:
     amr_inst = AmrTemplateInstance()
-    amr_inst.amrset = "@greetingu"
-    amr_inst.vars= {'$nm': 'Amanda'}
+    amr_inst.amrset = "@say-fav-food-g"
+    amr_inst.vars = {'$fav-food': 'pie'}
     amr_inst.subint = []
+
     res = amr_nlu.intent2text(amr_inst)
+
 
     print(res)
     # except Exception as ex:

@@ -1,5 +1,6 @@
 import logging
 import random
+import time
 
 from metta_space import MettaSpace
 from metta_space.metta_space import Types
@@ -51,6 +52,12 @@ class AmrGenerator:
                     bSubst = True
         return atom
 
+    def is_concept(self, parent_var, parent):
+        if MettaSpace.is_a(parent_var, Types.AmrVariable):
+           return  self.amr_space.is_concept(parent_var)
+        else:
+            return self.amr_space.is_concept(parent)
+
     def triplesFromFullGraph(self, topAtom):
         self.log.debug('triplesFromFullGraph: generating %s', topAtom if topAtom else None)
         topAtom = self.recSubst(topAtom)
@@ -58,7 +65,7 @@ class AmrGenerator:
         if not topAtom: return triples
         parentName = parent = parent_var = None
         # identify parent name with substitutions
-
+        is_concept = False
         if isinstance(topAtom, str):
             pa = self.amr_space.get_concepts_of_instance(topAtom)
             if len(pa) > 0:
@@ -69,8 +76,9 @@ class AmrGenerator:
                 # that the situation of an AmrValue as the parent is valid and implies
                 # the necessity to merge two graphs referring to these AmrValues.
                 parent = self.recSubst(pa[0])
-                parent_var = pa[0]
+                is_concept = self.is_concept( pa[0], parent)
                 parentName = parent
+
         children, _ = self.amr_space.get_instance_roles(topAtom)
         connections = []
         for child in children:
@@ -97,8 +105,7 @@ class AmrGenerator:
                 connections += [(topAtom, child[0], atom2)]
         if parentName:
             self.log.debug('triplesFromFullGraph: topAtom %s / %s', topAtom, parentName)
-            if( MettaSpace.is_a(parent_var, Types.AmrVariable) and self.amr_space.is_concept(parent_var))\
-                or self.amr_space.is_concept(parent):
+            if is_concept:
                 # topAtom is just an instance of AmrConcept
                 triples += [(topAtom, ":instance", parentName)]
             elif MettaSpace.is_a(parent, Types.AmrVariable):
@@ -178,7 +185,9 @@ class AmrGenerator:
         return triples
 
     def generateFull(self, topAtom):
+        start = time.time()
         triples = self.triplesFromFullGraph(topAtom)
+        print("generateFull time", time.time() - start)
         r = self.renameInsts(triples)
         text = self.amr_proc.triples_to_utterance(r) if r != [] else None
         if text is None:
