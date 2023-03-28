@@ -64,7 +64,7 @@ class AmrTemplateNLU:
                     concepts.add(value)
             elif isinstance(value, dict):
                 subint = list(value.keys())[0]
-                variables[var].append(subint)
+                variables[var_expr].append(subint)
                 subvars = self._declare_amr_vars(value[subint])
                 variables.update(subvars)
         return variables, concepts
