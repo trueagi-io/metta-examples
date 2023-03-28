@@ -65,8 +65,9 @@ class AmrTemplateNLU:
             elif isinstance(value, dict):
                 subint = list(value.keys())[0]
                 variables[var_expr].append(subint)
-                subvars = self._declare_amr_vars(value[subint])
+                subvars, concepts = self._declare_amr_vars(value[subint])
                 variables.update(subvars)
+                concepts.update(concepts)
         return variables, concepts
 
     def intent2text(self, intent):
