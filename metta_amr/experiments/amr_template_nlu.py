@@ -5,6 +5,7 @@ from amr_matching import AmrMatcher, AmrTemplateInstance
 from amr_processing import AmrProcessor, UtteranceParser
 from experiments.amr_generator import AmrGenerator
 from metta_space import PatternParser, MettaSpace
+from metta_space.metta_space import amrt2metta
 
 
 class AmrTemplateNLU:
@@ -52,18 +53,21 @@ class AmrTemplateNLU:
 
     def _declare_amr_vars(self, vs):
         variables = {}
+        concepts = set()
         for var, value in vs.items():
-            if var not in variables:
-                variables[var]  = []
-
+            var_expr = amrt2metta(var)
+            if var_expr not in variables:
+                variables[var_expr] = []
             if isinstance(value, str):
-                variables[var].append(value)
+                variables[var_expr].append(value)
+                if self.amr_space.is_concept(var):
+                    concepts.add(value)
             elif isinstance(value, dict):
                 subint = list(value.keys())[0]
                 variables[var].append(subint)
-                subvars  = self._declare_amr_vars(value[subint])
+                subvars = self._declare_amr_vars(value[subint])
                 variables.update(subvars)
-        return variables
+        return variables, concepts
 
     def intent2text(self, intent):
         """
@@ -72,6 +76,6 @@ class AmrTemplateNLU:
         :return:  text sentence coming from `intent`
         """
         # Add variables to the atomspace, to be used by amr_generator
-        variables = self._declare_amr_vars(intent.vars)
+        variables, concepts = self._declare_amr_vars(intent.vars)
         amr_generator = AmrGenerator(self.amr_space, self.amr_proc, variables)
         return amr_generator.generateFull(intent.amrset)

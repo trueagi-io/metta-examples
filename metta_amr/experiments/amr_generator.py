@@ -8,11 +8,12 @@ from metta_space.metta_space import Types
 
 class AmrGenerator:
 
-    def __init__(self, amr_space, amr_proc, variables):
+    def __init__(self, amr_space, amr_proc, variables, concepts):
         self.log = logging.getLogger(__name__ + '.' + type(self).__name__)
         self.amr_space = amr_space
         self.amr_proc = amr_proc
         self.variables = variables
+        self.concepts = concepts
 
     def recSubst(self, atom):
         bSubst = True
@@ -24,8 +25,7 @@ class AmrGenerator:
                     self.log.debug("recSubst: ignore *")
                     atom = None
                 else:
-                    varname = MettaSpace.get_variable_name(atom)
-                    subst = self.variables[varname] if varname in self.variables else []
+                    subst = self.variables[atom] if atom in self.variables else []
                     for s in subst:
                         if not MettaSpace.is_a(s, Types.AmrVariable):
                             if bSubst:
@@ -54,9 +54,8 @@ class AmrGenerator:
 
     def is_concept(self, parent_var, parent):
         if MettaSpace.is_a(parent_var, Types.AmrVariable):
-           return  self.amr_space.is_concept(parent_var)
-        else:
-            return self.amr_space.is_concept(parent)
+            return parent in self.concepts
+        return self.amr_space.is_concept(parent)
 
     def triplesFromFullGraph(self, topAtom):
         self.log.debug('triplesFromFullGraph: generating %s', topAtom if topAtom else None)

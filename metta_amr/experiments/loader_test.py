@@ -15,13 +15,13 @@ if __name__ == '__main__':
     files = []
     if os.path.exists(templates_dir):
         for f in os.listdir(templates_dir):
-            if f.endswith('.amr') :
+            if f.endswith('.amr') and f not in ['mathcer_test.amr', 'test.amr']:
                 files.append(os.path.join(templates_dir, f))
         amr_nlu.load_templates_from_files(files)
     #try:
     amr_inst = AmrTemplateInstance()
-    amr_inst.amrset = "@say-fav-food-g"
-    amr_inst.vars = {'$fav-food': 'pie'}
+    amr_inst.amrset = "@guess-name-g"
+    amr_inst.vars = {'$user-name': {'@any-name': {'$name-op1': 'Sveta'}}}
     amr_inst.subint = []
 
     res = amr_nlu.intent2text(amr_inst)
