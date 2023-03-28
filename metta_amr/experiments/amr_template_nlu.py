@@ -78,5 +78,5 @@ class AmrTemplateNLU:
         """
         # Add variables to the atomspace, to be used by amr_generator
         variables, concepts = self._declare_amr_vars(intent.vars)
-        amr_generator = AmrGenerator(self.amr_space, self.amr_proc, variables)
+        amr_generator = AmrGenerator(self.amr_space, self.amr_proc, variables, concepts)
         return amr_generator.generateFull(intent.amrset)
