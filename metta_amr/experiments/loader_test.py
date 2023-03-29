@@ -15,19 +15,23 @@ if __name__ == '__main__':
     files = []
     if os.path.exists(templates_dir):
         for f in os.listdir(templates_dir):
-            if f.endswith('.amr') and f not in ['mathcer_test.amr', 'test.amr']:
+            if f.endswith('.amr') and (f in ["activation.amr", "select-single.amr"]):
                 files.append(os.path.join(templates_dir, f))
         amr_nlu.load_templates_from_files(files)
     #try:
-    amr_inst = AmrTemplateInstance()
-    amr_inst.amrset = "@guess-name-g"
-    amr_inst.vars = {'$user-name': {'@any-name': {'$name-op1': 'Sveta'}}}
-    amr_inst.subint = []
+    # amr_inst = AmrTemplateInstance()
+    # amr_inst.amrset = "@guess-name-g"
+    # amr_inst.vars = {'$user-name': {'@any-name': {'$name-op1': 'Sveta'}}}
+    # amr_inst.subint = []
+    #
+    # res = amr_nlu.intent2text(amr_inst)
+    print(amr_space.get_atoms("optrole"))
+    print(amr_space.is_optional_role("name-000055", ":pos", "NNP"))
 
-    res = amr_nlu.intent2text(amr_inst)
+    #res = amr_nlu.text2intents("David")
 
 
-    print(res)
+    #print(res)
     # except Exception as ex:
     #     print(ex)
 

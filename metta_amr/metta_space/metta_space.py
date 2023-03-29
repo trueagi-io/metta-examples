@@ -167,6 +167,9 @@ class MettaSpace:
     def is_optional_role(self, source, role, target):
         if role == ":*":
             return True
+
+        #self.metta.run(f"! (add-atom &optrole ({source} {role} {target}))")
+
         results = self.metta.run(f"! (match &optrole ({source} {role} {target}) 1)", True)
         return len(results) > 0
 
