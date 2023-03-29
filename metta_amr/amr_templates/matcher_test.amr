@@ -33,3 +33,6 @@
 # I will guide you through simple exercises to relax your mind and body.
 (@meditation-explanation-test :amr-set (g /guide-01 :ARG0 (ii / i) :ARG1 (y / you)  :ARG2 (e / exercise-02 :ARG1-of (s / simple-02) :purpose
 (r / relax-01  :ARG1 (a / and  :op1 (m / mind   :part-of y) :op2 (b / body  :part-of y)) ))))
+
+(@single-name :amr-set (p / person :name (n/name :op1 $main :op2? $main-post^1 :op3? $main-post^2
+:pos?  "NNP" :pos? "NN" :pos? "FW" :pos? "NNS")))
