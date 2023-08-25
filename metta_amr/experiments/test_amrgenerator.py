@@ -4,7 +4,7 @@ import logging
 from amr_processing import AmrProcessor, TripleProcessor, PatternInstanceDict
 from experiments.amr_generator import AmrGenerator
 from metta_space import MettaSpace, PatternParser
-from metta_space.metta_space import amrt2metta
+from metta_space.metta_space import amrt2metta, remove_quotes
 
 
 class AmrGeneratorTest(unittest.TestCase):
@@ -95,20 +95,15 @@ class AmrGeneratorTest(unittest.TestCase):
         del self.amr_space
         del self.amr_proc
 
-    def remove_quotes(self, string):
-        if len(string) > 2 and (string[0] == '"' and string[-1] == '"'):
-            return string[1:-1]
-        return string
-
     def triples_contain(self, triples, triple):
         # Not precise, but should be enough
 
-        arg1 = self.remove_quotes(triple[0].split('-')[0])
-        arg2 = self.remove_quotes(triple[2].split('-')[0])
+        arg1 = remove_quotes(triple[0].split('-')[0])
+        arg2 = remove_quotes(triple[2].split('-')[0])
 
         for t in triples:
-            if arg1 == self.remove_quotes(t[0].split('-')[0]) and triple[1] == t[1]\
-                    and arg2 == self.remove_quotes(t[2].split('-')[0]):
+            if arg1 == remove_quotes(t[0].split('-')[0]) and triple[1] == t[1]\
+                    and arg2 ==remove_quotes(t[2].split('-')[0]):
                 return True
         return False
 

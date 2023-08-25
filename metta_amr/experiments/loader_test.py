@@ -15,7 +15,7 @@ if __name__ == '__main__':
     files = []
     if os.path.exists(templates_dir):
         for f in os.listdir(templates_dir):
-            if f.endswith('.amr') and (f in ["matcher_test.amr"]):
+            if f.endswith('.amr'): #and (f in ["matcher_test.amr"]):
                 files.append(os.path.join(templates_dir, f))
         amr_nlu.load_templates_from_files(files)
     #try:
@@ -26,7 +26,7 @@ if __name__ == '__main__':
     #
     # res = amr_nlu.intent2text(amr_inst)
     print(amr_space.get_atoms("optrole"))
-    print(amr_space.is_optional_role("name-000049", ":pos", "NNS"))
+    print(amr_space.is_optional_role("name-000049", ":pos", '"NNP"'))
 
     #res = amr_nlu.text2intents("David")
 

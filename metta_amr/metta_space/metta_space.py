@@ -12,10 +12,16 @@ class Types(enum.Enum):
     AmrVariable = "variable"
     AmrSet = "amrset"
 
+def remove_quotes (string):
+    if len(string) > 2 and (string[0] == '"' and string[-1] == '"'):
+        return string[1:-1]
+    return string
+
 def amrt2metta(token):
     if TypeDetector.is_variable(token):
         return token if token == '*' else f"(Var {token[1:]})"
-    return token
+    return remove_quotes(token)
+
 
 class MettaSpace:
     def __init__(self):
