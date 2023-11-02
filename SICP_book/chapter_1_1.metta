@@ -56,9 +56,9 @@
 
 ;I haven't got an idea of function's name
 (= (exercise_1_3 $x1 $x2 $x3)
-  (if (and (> $x1 $x2) (> $x3 $x2))
+  (if (and (>= $x1 $x2) (>= $x3 $x2))
     (sum-of-squares $x1 $x3)
-    (if (and (> $x3 $x1) (> $x2 $x1))
+    (if (and (>= $x3 $x1) (>= $x2 $x1))
         (sum-of-squares $x2 $x3)
         (sum-of-squares $x1 $x2))))
 
