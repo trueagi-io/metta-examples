@@ -95,7 +95,7 @@
 ;applicative-order evaluation or normal-order evaluation
 (= (p) (p))
 (= (test $x $y)
-    (if (= $x 0)
+    (if (== $x 0)
     0
     $y))
 
