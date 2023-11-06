@@ -20,22 +20,22 @@
   (((B x) y) z))
 
 !(assertEqual
-    (((((S ((S (K ((S (K S)) K))) S)) (K K)) x) y) z)
-    (((C x) y) z))
+  (((((S ((S (K ((S (K S)) K))) S)) (K K)) x) y) z)
+  (((C x) y) z))
 
 !(assertEqual
-    ((((S S) (S K)) x) y)
-    ((W x) y))
+  ((((S S) (S K)) x) y)
+  ((W x) y))
 
 
 ; Check self-application combinator
 !(assertEqual
-    (((S I) I) a)
-    (a a))
+  (((S I) I) a)
+  (a a))
 
 !(assertEqual
-    (U a)
-    (a a))
+  (U a)
+  (a a))
 
 
 ; Non-recursive function defined using Y combinator
@@ -44,12 +44,14 @@
 (: id' (-> Atom (-> $t $t)))
 (= ((id' $f) $x) $x)
 (= (id $x) ((Y id') $x))
+
 !(assertEqual (id A) A)
 
 ; Recursive function defined using Y combinator
 (: fac (-> Atom (-> Int Int)))
 (= ((fac $f) $x) (if (> $x 0) (* $x ($f (- $x 1))) 1))
 (= (fact $x) ((Y fac) $x))
+
 !(assertEqual (fact 0) 1)
 !(assertEqual (fact 5) 120)
 
@@ -68,12 +70,20 @@
 
 ; Non-recursive function defined using lambda and Y combinator
 (= (id' $x) ((Y (lambda $f (lambda $x $x))) $x))
+
 !(assertEqual (id' A) A)
 
 ; Recursive function defined using lambda and Y combinator
 (= (fact' $y)
-  (let $fac (lambda $f
-    (lambda $x (if (> $x 0) (* $x ($f (- $x 1))) 1)) )
-      ((Y $fac) $y) ))
+  ((Y
+    (lambda $f
+      (lambda $x
+        (if (> $x 0) (* $x ($f (- $x 1))) 1) ))) $y))
+
 !(assertEqual (fact' 0) 1)
-!(assertEqual (fact 5) 120)
+; Doesn't work because values of the lambda arguments are sneaking via call
+; stack and second lambda call has value as a first argument instead of
+; variable.
+; An example from log:
+; (if (> 5 0) (* 5 ((U ((B (lambda $f#15367 (lambda 5 (if (> 5 0) (* 5 ($f#15367 (- 5 1))) 1)))) U)) (- 5 1))) 1)
+;!(assertEqual (fact' 5) 120)
