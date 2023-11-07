@@ -1,27 +1,34 @@
 ;needed for putting lambda functions as input to functions
-(: Lambda (-> $a $t))
-(: lambda (-> Variable Atom Lambda))
-(= ((lambda $var $body) $val)
+(: lambda1 (-> Variable Atom (-> $a $t)))
+(= ((lambda1 $var $body) $val)
     (let $var $val $body) )
 
-; for lambda without any input
-(= (lambda0 $body)
-    $body)
+; For lambda without any input
+(: lambda0 (-> Atom (-> $t)))
+(= ((lambda0 $body)) $body)
 
-;for lambda with two inputs
-(: Lambda2 (-> $a $b $t))
-(: lambda2 (-> Variable Variable Atom Lambda2))
+; For lambda with two inputs
+; Note: The following lambda2 type definition is more correct:
+; (: lambda2 (-> Variable Variable $t (-> $a $b $t)))
+; This definition also makes some additional examples work (see below).
+; But it doesn't prevent interpreter from evaluation of lambda's body
+; before lambda call is actually made. This is why type
+; (-> Variable Variable Atom (-> $a $b $t)) is used instead.
+
+(: lambda2 (-> Variable Variable Atom (-> $a $b $t)))
 (= ((lambda2 $var1 $var2 $body) $val1 $val2)
     (let ($var1 $var2) ($val1 $val2) $body))
 
-;lambda with three inputs. But actually we will use it to bypass recursive limitation while
+; For lambda with three inputs. But actually we will use it to bypass recursive limitation while
 ;defining function using let
-(: Lambda3 (-> $a $b $c $t))
-(: lambda3 (-> Variable Variable Variable Atom Lambda3))
+(: lambda3 (-> Variable Variable Variable Atom (-> $a $b $c $t)))
 (= ((lambda3 $var1 $var2 $var3 $body) $val1 $val2 $val3)
     (let ($var1 $var2 $var3) ($val1 $val2 $val3) $body))
 
-;sum from $a to $b with pre-defined transition from $a to $(a+1) $next and function $term applied to $a
+; The only reason why different definitions of lambdaX are needed is that we would like to make
+; lambda's interchangeable with other functions.
+
+; Sum from $a to $b with pre-defined transition from $a to $(a+1) $next and function $term applied to $a
 (= (sum $term $a $next $b)
     (if (> $a $b)
         0
@@ -29,14 +36,14 @@
 
 (= (sqr $x) (* $x $x))
 
-;Cube can't be defined as (* $x $x $x) as in Scheme
+; Cube can't be defined as (* $x $x $x) as in Scheme
 (= (cube $x) (* $x (sqr $x)))
 
-;convenient functions
+; Convenient functions
 (= (inc $x) (+ $x 1))
 (= (dec $x) (- $x 1))
 
-;sum all cubes values from $a to $b. Here $term is Cube and $next is just Inc
+; Sum all cubes values from $a to $b. Here $term is Cube and $next is just Inc
 (= (sum-cubes $a $b) (sum cube $a inc $b))
 
 !(assertEqual
@@ -50,19 +57,19 @@
   (sum-integers 1 10)
   55)
 
-(= (pi-sum $a $b) (sum (lambda $x (/ 1.0 (* $x (+ $x 2)))) $a (lambda $x (+ $x 4)) $b))
+(= (pi-sum $a $b) (sum (lambda1 $x (/ 1.0 (* $x (+ $x 2)))) $a (lambda1 $x (+ $x 4)) $b))
 
-;to get more precise pi-value we need more iterations (in SICP book 1000 is used). But metta is currently slower than
-;scheme so in sake of performance let ~3.10 be our pi-value
+; To get more precise pi-value we need more iterations (in SICP book 1000 is used). But metta is currently slower than
+; scheme so in sake of performance let ~3.10 be our pi-value
 
 !(assertEqual
   (* 8 (pi-sum 1 50))
   3.1031453128860114)
 
 (= (integral $f $a $b $dx)
-    (* (sum $f (+ $a (/ $dx 2)) (lambda $x (+ $x $dx)) $b) $dx))
+    (* (sum $f (+ $a (/ $dx 2)) (lambda1 $x (+ $x $dx)) $b) $dx))
 
-;once again, in sake of performance, 0.1 is used (not 0.01 or 0.001 as in book)
+; Once again, in sake of performance, 0.1 is used (not 0.01 or 0.001 as in book)
 
 !(assertEqual
     (integral cube 0 1 0.1)
@@ -84,13 +91,13 @@
 
 (= (inc2 $x) (+ $x 2))
 
-;since metta currently doesn't support '+', '*' etc with 3+ parameters:
+; Since metta currently doesn't support '+', '*' etc with 3+ parameters:
 (= (+4 $a $b $c $d) (+ (+ $a $b) (+ $c $d)))
 
 (= (integral-simpson $f $a $b $n)
     (let $func-h (lambda0 (/ (- $b $a) $n))
-        (let $element-y (lambda $x ($f (+ $a (* $x $func-h))))
-            (/ (* $func-h (+4 ($element-y 0) ($element-y $n)
+        (let $element-y (lambda1 $x ($f (+ $a (* $x ($func-h)))))
+            (/ (* ($func-h) (+4 ($element-y 0) ($element-y $n)
                                                 (* 4 (sum $element-y 1 inc2 (- $n 1)))
                                                 (* 2 (sum $element-y 2 inc2 (- $n 1))))) 3))))
 
@@ -98,7 +105,7 @@
     (integral-simpson cube 0 1 10)
     0.25)
 
-; -----------------------End of Excercise 1.29----------------------------
+; -----------------------End of Exercise 1.29----------------------------
 
 
 ; Exercise 1.30.
@@ -106,12 +113,12 @@
 ; The sum procedure above generates a linear recursion.
 ; The procedure can be rewritten so that the sum is performed iteratively.
 
-;this variant unfortunately doesnt work since we're calling $iter inside its definition.
+; This variant unfortunately doesnt work since we're calling $iter inside its definition.
 ;(= (sum-iter $term $a $next $b) (let $iter (lambda2 $a $result
 ;                                        (if (> $a $b) $result ($iter ($next $a) (+ $result ($term $a)))))
 ;                                        ($iter $a 0)))
 
-; and here we will use lambda3 to bypass it
+; and thus we will use lambda3 to bypass it
 
 (= (isum $term $a $next $b)
     (let $iter (lambda3 $z $result $self
@@ -126,7 +133,7 @@
   (sum-cubes 1 10)
   (isum-cubes 1 10))
 
-; -----------------------End of Excercise 1.30----------------------------
+; -----------------------End of Exercise 1.30----------------------------
 
 ; Exercise 1.31
 ;
@@ -144,13 +151,13 @@
 ;     an iterative process. If it generates an iterative process, write one that generates
 ;     a recursive process.
 
-;recursive
+; Recursive
 (= (rproduct $term $a $next $b)
         (if (> $a $b)
             1
             (* ($term $a) (rproduct $term ($next $a) $next $b))))
 
-;iterative
+; Iterative
 (= (iproduct $term $a $next $b) (let $iter (lambda3 $z $result $self
                                         (if (> $z $b) $result ($self ($next $z) (* $result ($term $z)) $self)))
                                         ($iter $a 1 $iter)))
@@ -168,17 +175,17 @@
   (ifactorial 6))
 
 (= (jw_pivalue $n)
-    (let $next_divident-element (lambda $x (* (* 2.0 $x) (* 2.0 (+ $x 1.0))))
-        (let $next_divisor-element (lambda $y (sqr (+ 1.0 (* 2.0 $y))))
+    (let $next_divident-element (lambda1 $x (* (* 2.0 $x) (* 2.0 (+ $x 1.0))))
+        (let $next_divisor-element (lambda1 $y (sqr (+ 1.0 (* 2.0 $y))))
             (* 4.0 (/ (iproduct $next_divident-element 1.0 inc $n)
                         (iproduct $next_divisor-element 1.0 inc $n))))))
 
-; in sake of performance we will use only 5 iters to calculate pi-value
+; In sake of performance we will use only 5 iters to calculate pi-value
 !(assertEqual
     (jw_pivalue 5)
     3.2751010413348074)
 
-; -----------------------End of Excercise 1.31----------------------------
+; -----------------------End of Exercise 1.31----------------------------
 
 ; Exercise 1.32.
 ;
@@ -211,16 +218,16 @@
                             ($self ($next $z) ($combiner $result ($term $z)) $self)))
       ($iter $a $null-value $iter)))
 
-;for test reasons of defined accumulate function:
+; For test reasons of defined accumulate function:
 (= (racc-sum $term $a $next $b) (raccumulate + 0 $term $a $next $b))
 (= (iacc-sum $term $a $next $b) (iaccumulate + 0 $term $a $next $b))
 
-(= (pi-raccsum $a $b) (let $pi-term (lambda $x (/ 1.0 (* $x (+ $x 2))))
-                        (let $pi-next (lambda $y (+ $y 4.0))
+(= (pi-raccsum $a $b) (let $pi-term (lambda1 $x (/ 1.0 (* $x (+ $x 2))))
+                        (let $pi-next (lambda1 $y (+ $y 4.0))
                             (racc-sum $pi-term $a $pi-next $b))))
 
-(= (pi-iaccsum $a $b) (let $pi-term (lambda $x (/ 1.0 (* $x (+ $x 2))))
-                        (let $pi-next (lambda $y (+ $y 4.0))
+(= (pi-iaccsum $a $b) (let $pi-term (lambda1 $x (/ 1.0 (* $x (+ $x 2))))
+                        (let $pi-next (lambda1 $y (+ $y 4.0))
                             (iacc-sum $pi-term $a $pi-next $b))))
 
 !(assertEqual
@@ -231,7 +238,7 @@
     (* 8 (pi-raccsum 1 10))
     (* 8 (pi-iaccsum 1 10)))
 
-; -----------------------End of Excercise 1.32----------------------------
+; -----------------------End of Exercise 1.32----------------------------
 
 ; Exercise 1.33.
 ;
@@ -288,7 +295,7 @@
 (= (prime? $n)
     (== $n (smallest-divisor $n)))
 
-;since $filter in filtered-accumulate could depend on two inputs, prime with two params is needed.
+; Since $filter in filtered-accumulate could depend on two inputs, prime with two params is needed.
 (= (prime? $n $b)
     (prime? $n))
 
@@ -320,7 +327,7 @@
 !(assertEqual
     (prod-simple_i_to_n 5 15)
     112112)
-; -----------------------End of Excercise 1.33----------------------------
+; -----------------------End of Exercise 1.33----------------------------
 
 (= (average $a $b) (/ (+ $a $b) 2))
 
@@ -355,13 +362,13 @@
     -0.0001220703125)
 
 !(assertEqual
-    (half-interval-method (lambda $x (- (- (cube $x) (* 2 $x)) 3)) 1 2)
+    (half-interval-method (lambda1 $x (- (- (cube $x) (* 2 $x)) 3)) 1 2)
     1.89306640625)
 
 (= (tolerance) 0.1)
 
-;here we had to switch places for $try and $close-enough local functions definitions (not like in SICP book)
-;or it just won't work
+; Here we had to switch places for $try and $close-enough local functions definitions (not like in SICP book)
+; or it just won't work
 
 (= (fixed-point $f $first-guess)
     (let $try (lambda2 $guess $self-try
@@ -372,13 +379,13 @@
                     ($self-try $next $self-try)))))
     ($try $first-guess $try)))
 
-;!!!!!!Works only if type for lambda2 not defined!!!!!!
+; Requires correct lambda type to work (see note to the lambda2 definition above)
 ;!(assertEqual
 ;    (fixed-point sqr 0.5)
 ;    0.00390625)
-;sqrt approximation using fixed-point function
+; Sqrt approximation using fixed-point function
 ;!(assertEqual
-;    (fixed-point (lambda $y (average $y (/ 2 $y))) 1.0)
+;    (fixed-point (lambda1 $y (average $y (/ 2 $y))) 1.0)
 ;    1.4166666666666665)
 
 
@@ -387,12 +394,12 @@
 ; Show that the golden ratio Phi (section 1.2.2) is a fixed point of the
 ; transformation x ->  1 + 1/x, and use this fact to compute by means of the fixed-point procedure.
 
-;!!!!!!Works only if type for lambda2 not defined!!!!!!
+; Requires correct lambda type to work (see note to the lambda2 definition above)
 ;!(assertEqual
-;    (fixed-point (lambda $x (+ 1 (/ 1 $x))) 1.0)
+;    (fixed-point (lambda1 $x (+ 1 (/ 1 $x))) 1.0)
 ;    1.6)
 
-; -----------------------End of Excercise 1.35----------------------------
+; -----------------------End of Exercise 1.35----------------------------
 
 ; Exercise 1.36.
 ;
@@ -403,9 +410,9 @@
 ; Compare the number of steps this takes with and without average damping.
 ; (Note that you cannot start fixed-point with a guess of 1, as this would cause division by log(1) = 0.)
 
-;currently there is no printing function in metta so pass this excercise
+; Currently there is no printing function in metta so pass this exercise
 
-; -----------------------End of Excercise 1.36----------------------------
+; -----------------------End of Exercise 1.36----------------------------
 
 
 ; Exercise 1.37.
@@ -446,8 +453,8 @@
 ; cont-frac such that evaluating (cont-frac n d k) computes the value of the k-term
 ; finite continued fraction. Check your procedure by approximating 1/Phi using
 ;
-; (cont-frac (lambda (i) 1.0)
-;            (lambda (i) 1.0)
+; (cont-frac (lambda1 (i) 1.0)
+;            (lambda1 (i) 1.0)
 ;            k)
 ;
 ; for successive values of k. How large must you make k in order to get an approximation
@@ -456,7 +463,7 @@
 ; b) If your cont-frac procedure generates a recursive process, write one that generates an
 ; iterative process. If it generates an iterative process, write one that generates a recursive process.
 
-;recursive
+; Recursive
 (= (finite_continued_fraction $n $d $k)
     (let $rec
         (lambda2 $i $self
@@ -466,10 +473,10 @@
     ($rec 0 $rec)))
 
 !(assertEqual
-    (finite_continued_fraction (lambda $x 1.0) (lambda $x 1.0) 10)
+    (finite_continued_fraction (lambda1 $x 1.0) (lambda1 $x 1.0) 10)
     0.6180555555555556)
 
-;iterative
+; Iterative
 
 (= (ifinite_continued_fraction $n $d $k)
     (let $iter (lambda3 $a $result $self-iter
@@ -481,5 +488,5 @@
     ($iter $k 0 $iter)))
 
 !(assertEqual
-    (ifinite_continued_fraction (lambda $x 1.0) (lambda $x 1.0) 10)
+    (ifinite_continued_fraction (lambda1 $x 1.0) (lambda1 $x 1.0) 10)
     0.6180555555555556)

@@ -50,11 +50,11 @@
     (>= 6 5)
     True)
 
-; excercise 1.3
+; Exercise 1.3
 ; Define procedure that takes three numbers as arguments and returns
 ; the sum of the squares of the two larger numbers
 
-;I haven't got an idea of function's name
+; I haven't got an idea of function's name
 (= (exercise_1_3 $x1 $x2 $x3)
   (if (and (>= $x1 $x2) (>= $x3 $x2))
     (sum-of-squares $x1 $x3)
@@ -62,7 +62,7 @@
         (sum-of-squares $x2 $x3)
         (sum-of-squares $x1 $x2))))
 
-;check function using all permutations of 1 2 and 5
+; Check function using all permutations of 1 2 and 5
 !(assertEqual
     (exercise_1_3 1 2 5)
     29)
@@ -81,7 +81,7 @@
 !(assertEqual
     (exercise_1_3 5 2 1)
     29)
-; -----------------------End of Excercise 1.3----------------------------
+; -----------------------End of Exercise 1.3----------------------------
 
 (= (a-plus-abs-b $a $b)
     ((if (> $b 0) + -) $a $b))
@@ -91,17 +91,19 @@
     10)
 
 
-;test to determine whether the interpreter he is faced with is using
-;applicative-order evaluation or normal-order evaluation
+; Test to determine whether the interpreter he is faced with is using
+; applicative-order evaluation or normal-order evaluation
+(: test (-> Number Atom Atom))
 (= (p) (p))
 (= (test $x $y)
     (if (== $x 0)
     0
     $y))
 
-;in case of metta, this test crashes with segmentation fault after a while
-;so it seems that metta is using applicative order evaluation
-;!(test 0 (p))
+; In the case of metta, evaluation type depends on the type definition of function "test".
+; Default type which is %undefined% implies applicative-order,
+; while (: test (-> Number Atom Atom)) implies normal-order evaluation.
+!(test 0 (p))
 
 (= (average $x $y)
     (/ (+ $x $y) 2))
@@ -162,7 +164,7 @@
     (better-sqrt (sqr 1000))
     1000)
 
-; -----------------------End of Excercise 1.7----------------------------
+; -----------------------End of Exercise 1.7----------------------------
 
 ; Exercise 1.8.
 ; Newton's method for cube roots is based on the fact that
@@ -188,4 +190,4 @@
 !(assertEqual
     (cube (cubert 8))
     8.000000000144743)
-; -----------------------End of Excercise 1.8----------------------------
+; -----------------------End of Exercise 1.8----------------------------
