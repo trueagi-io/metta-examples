@@ -12,10 +12,16 @@
 ; and use it like this:
 ; (let $sum (lambda ($a $b $c) (+ (+ $a $b) $c)) ($sum (1 2 3))
 
+; quoted prevents wrapped atom from being interpreted
+(: quoted (-> Atom Atom))
+
+; Note: quoted is used in lambda implementations below to prevent $body to be
+; evaluated inside let.
+
 ; Needed for putting lambda functions as input to functions
 (: lambda1 (-> Variable Atom (-> $a $t)))
 (= ((lambda1 $var $body) $val)
-    (let $var $val $body) )
+    (let (quoted $var) (quoted $val) $body) )
 
 ; For lambda without any input
 (: lambda0 (-> Atom (-> $t)))
@@ -24,13 +30,13 @@
 ; For lambda with two inputs
 (: lambda2 (-> Variable Variable Atom (-> $a $b $t)))
 (= ((lambda2 $var1 $var2 $body) $val1 $val2)
-    (let ($var1 $var2) ($val1 $val2) $body))
+    (let (quoted ($var1 $var2)) (quoted ($val1 $val2)) $body))
 
 ; For lambda with three inputs. But actually we will use it to bypass recursive limitation while
 ; defining function using let
 (: lambda3 (-> Variable Variable Variable Atom (-> $a $b $c $t)))
 (= ((lambda3 $var1 $var2 $var3 $body) $val1 $val2 $val3)
-    (let ($var1 $var2 $var3) ($val1 $val2 $val3) $body))
+    (let (quoted ($var1 $var2 $var3)) (quoted ($val1 $val2 $val3)) $body))
 
 ; Sum from $a to $b with pre-defined transition from $a to $(a+1) $next and function $term applied to $a
 (= (sum $term $a $next $b)
