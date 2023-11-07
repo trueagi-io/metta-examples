@@ -101,7 +101,7 @@
     $y))
 
 ; In the case of metta, evaluation type depends on the type definition of function "test".
-; Default type which is %undefined% implies applicative-order,
+; Default type which is %Undefined% implies applicative-order,
 ; while (: test (-> Number Atom Atom)) implies normal-order evaluation.
 !(test 0 (p))
 
