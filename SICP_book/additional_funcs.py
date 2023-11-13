@@ -16,13 +16,9 @@ def getRandInt(start, end):
 def getCurTime():
     return time.time_ns() / (10 ** 6)
 
-def getRemainder(a, b):
-    return a % b
-
 @register_atoms
 def my_glob_atoms():
     return {
         'randomint!': OperationAtom("randomint!", getRandInt),
         'timems!': OperationAtom("timems!", getCurTime),
-        'remainder!': OperationAtom("remainder!", getRemainder),
         }

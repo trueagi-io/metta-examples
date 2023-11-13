@@ -6,9 +6,6 @@
 
 (= (sqr $x) (* $x $x))
 
-(= (>= $x $y) (or (> $x $y) (== $x $y)))ex
-(= (<= $x $y) (or (< $x $y) (== $x $y)))
-
 ; Since +,/,*,- in metta takes only two arguments as input:
 (= (+3 $a $b $c) (+ $a (+ $b $c)))
 (= (*3 $a $b $c) (* $a (* $b $c)))
@@ -36,7 +33,6 @@
     (ifactorial 5)
     120)
 
-; Currently there is no cond in metta, so we are just using several ifs.
 ; Recursive
 (= (fib $n)
     (if (== $n 0)
@@ -179,36 +175,14 @@
             (sqr (fast-expt $b (/ $n 2)))
             (* $b (fast-expt $b (dec $n))))))
 
+(= (Abs $x) (if (< $x 0) (* $x -1) $x))
+
 (= (even? $n)
     (== (remainder $n 2) 0))
 
-; Remainder is the standard function in Scheme. But not in Metta. So:
-(= (Abs $x) (if (< $x 0) (* $x -1) $x))
+; Remainder is the standard function in Scheme. In Metta we have "%":
 
-(= (Floor_ $x) (if (< $x 1)
-                        0
-                        (inc (Floor_ (dec $x)))))
-
-(= (Floor $x) (if (< $x 0)
-                        (dec (* (Floor_ (Abs $x)) -1))
-                        (Floor_ $x)))
-
-(= (Ceil $x) (if (< $x 0)
-                        (* (Floor_ (Abs $x)) -1)
-                        (inc (Floor_ $x))))
-
-(= (truncate $x)
-    (if (== $x 0)
-            0
-            (if (< $x 0)
-                    (Ceil $x)
-                    (Floor $x))))
-
-; After I've wrote remainder I've tested it in every following functions and this showed me that this remainder is too slow
-; so I've imported it from python. If you willing to test performance of self-written remainder just uncomment following
-; line and comment one below it.
-;(= (remainder $x $y) (- $x (* $y (truncate (/ $x $y)))))
-(= (remainder $x $y) (remainder! $x $y))
+(= (remainder $x $y) (% $x $y))
 
 !(assertEqual
     (fast-expt 2 3)
