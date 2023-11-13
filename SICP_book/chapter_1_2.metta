@@ -630,16 +630,3 @@
 !(assertEqual
     (miller-rabin-test 561)
     False)
-
-
-
-
-
-
-
-
-
-
-
-
-
