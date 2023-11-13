@@ -420,7 +420,7 @@
 ; Compare the number of steps this takes with and without average damping.
 ; (Note that you cannot start fixed-point with a guess of 1, as this would cause division by log(1) = 0.)
 
-; Currently there is no printing function in metta so pass this exercise
+; Currently fixed-point is not working (see note above).
 
 ; -----------------------End of Exercise 1.36----------------------------
 
