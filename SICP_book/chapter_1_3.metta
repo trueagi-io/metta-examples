@@ -103,13 +103,14 @@
 
 ; Since metta currently doesn't support '+', '*' etc with 3+ parameters:
 (= (+4 $a $b $c $d) (+ (+ $a $b) (+ $c $d)))
+(= (+3 $a $b $c) (+ (+ $a $b) $c))
 
 (= (integral-simpson $f $a $b $n)
     (let $func-h (lambda0 (/ (- $b $a) $n))
         (let $element-y (lambda1 $x ($f (+ $a (* $x ($func-h)))))
             (/ (* ($func-h) (+4 ($element-y 0) ($element-y $n)
-                                                (* 4 (sum $element-y 1 inc2 (- $n 1)))
-                                                (* 2 (sum $element-y 2 inc2 (- $n 1))))) 3))))
+                                                (* 4 (sum $element-y 1 inc2 (dec $n)))
+                                                (* 2 (sum $element-y 2 inc2 (dec $n))))) 3))))
 
 !(assertEqual
     (integral-simpson cube 0 1 10)
@@ -185,10 +186,10 @@
   (ifactorial 6))
 
 (= (jw_pivalue $n)
-    (let $next_divident-element (lambda1 $x (* (* 2.0 $x) (* 2.0 (+ $x 1.0))))
-        (let $next_divisor-element (lambda1 $y (sqr (+ 1.0 (* 2.0 $y))))
-            (* 4.0 (/ (iproduct $next_divident-element 1.0 inc $n)
-                        (iproduct $next_divisor-element 1.0 inc $n))))))
+    (let $next_divident-element (lambda1 $x (* (* 2 $x) (* 2 (inc $x))))
+        (let $next_divisor-element (lambda1 $y (sqr (inc (* 2 $y))))
+            (* 4 (/ (iproduct $next_divident-element 1 inc $n)
+                        (iproduct $next_divisor-element 1 inc $n))))))
 
 ; In sake of performance we will use only 5 iters to calculate pi-value
 !(assertEqual
@@ -232,12 +233,12 @@
 (= (racc-sum $term $a $next $b) (raccumulate + 0 $term $a $next $b))
 (= (iacc-sum $term $a $next $b) (iaccumulate + 0 $term $a $next $b))
 
-(= (pi-raccsum $a $b) (let $pi-term (lambda1 $x (/ 1.0 (* $x (+ $x 2))))
-                        (let $pi-next (lambda1 $y (+ $y 4.0))
+(= (pi-raccsum $a $b) (let $pi-term (lambda1 $x (/ 1 (* $x (inc2 $x))))
+                        (let $pi-next (lambda1 $y (+ $y 4))
                             (racc-sum $pi-term $a $pi-next $b))))
 
-(= (pi-iaccsum $a $b) (let $pi-term (lambda1 $x (/ 1.0 (* $x (+ $x 2))))
-                        (let $pi-next (lambda1 $y (+ $y 4.0))
+(= (pi-iaccsum $a $b) (let $pi-term (lambda1 $x (/ 1 (* $x (inc2 $x))))
+                        (let $pi-next (lambda1 $y (+ $y 4))
                             (iacc-sum $pi-term $a $pi-next $b))))
 
 !(assertEqual
@@ -266,28 +267,7 @@
 ; b. the product of all the positive integers less than n that are relatively prime
 ;    to n (i.e., all positive integers i < n such that GCD(i,n) = 1).
 
-(= (Abs $x) (if (< $x 0) (* $x -1) $x))
-
-(= (Floor_ $x) (if (< $x 1)
-                        0
-                        (inc (Floor_ (dec $x)))))
-
-(= (Floor $x) (if (< $x 0)
-                        (dec (* (Floor_ (Abs $x)) -1))
-                        (Floor_ $x)))
-
-(= (Ceil $x) (if (< $x 0)
-                        (* (Floor_ (Abs $x)) -1)
-                        (inc (Floor_ $x))))
-
-(= (truncate $x)
-    (if (== $x 0)
-            0
-            (if (< $x 0)
-                    (Ceil $x)
-                    (Floor $x))))
-
-(= (remainder $x $y) (- $x (* $y (truncate (/ $x $y)))))
+(= (remainder $x $y) (% $x $y))
 
 (= (smallest-divisor $n)
     (find-divisor $n 2))
@@ -355,6 +335,8 @@
                     (search $f $midpoint $pos-point)
                     $midpoint))))))
 
+(= (Abs $x) (if (< $x 0) (* $x -1) $x))
+
 (= (close-enough? $x $y)
     (< (Abs (- $x $y)) 0.001))
 
@@ -389,13 +371,13 @@
                     ($self-try $next $self-try)))))
     ($try $first-guess $try)))
 
-; FIXME: Requires correct lambda type to work (see note to the lambda2 definition above)
+; FIXME: Requires correct lambda type to work (see note to the lambda2 definition above). Works currently with no typedef.
 ;!(assertEqual
 ;    (fixed-point sqr 0.5)
 ;    0.00390625)
 ; Sqrt approximation using fixed-point function
 ;!(assertEqual
-;    (fixed-point (lambda1 $y (average $y (/ 2 $y))) 1.0)
+;    (fixed-point (lambda1 $y (average $y (/ 2 $y))) 1)
 ;    1.4166666666666665)
 
 
@@ -404,9 +386,9 @@
 ; Show that the golden ratio Phi (section 1.2.2) is a fixed point of the
 ; transformation x ->  1 + 1/x, and use this fact to compute by means of the fixed-point procedure.
 
-; FIXME: Requires correct lambda type to work (see note to the lambda2 definition above)
+; FIXME: Requires correct lambda2 type to work (see note to the lambda2 definition above). Works currently with no typedef.
 ;!(assertEqual
-;    (fixed-point (lambda1 $x (+ 1 (/ 1 $x))) 1.0)
+;    (fixed-point (lambda1 $x (inc (/ 1 $x))) 1)
 ;    1.6)
 
 ; -----------------------End of Exercise 1.35----------------------------
@@ -420,7 +402,7 @@
 ; Compare the number of steps this takes with and without average damping.
 ; (Note that you cannot start fixed-point with a guess of 1, as this would cause division by log(1) = 0.)
 
-; Currently fixed-point is not working (see note above).
+; FIXME: Requires correct lambda2 type to work (see note to the lambda2 definition above). Works currently with no typedef.
 
 ; -----------------------End of Exercise 1.36----------------------------
 
@@ -463,8 +445,8 @@
 ; cont-frac such that evaluating (cont-frac n d k) computes the value of the k-term
 ; finite continued fraction. Check your procedure by approximating 1/Phi using
 ;
-; (cont-frac (lambda1 (i) 1.0)
-;            (lambda1 (i) 1.0)
+; (cont-frac (lambda1 (i) 1)
+;            (lambda1 (i) 1)
 ;            k)
 ;
 ; for successive values of k. How large must you make k in order to get an approximation
@@ -483,7 +465,7 @@
     ($rec 0 $rec)))
 
 !(assertEqual
-    (finite_continued_fraction (lambda1 $x 1.0) (lambda1 $x 1.0) 10)
+    (finite_continued_fraction (lambda1 $x 1) (lambda1 $x 1) 10)
     0.6180555555555556)
 
 ; Iterative
@@ -498,5 +480,332 @@
     ($iter $k 0 $iter)))
 
 !(assertEqual
-    (ifinite_continued_fraction (lambda1 $x 1.0) (lambda1 $x 1.0) 10)
+    (ifinite_continued_fraction (lambda1 $x 1) (lambda1 $x 1) 10)
     0.6180555555555556)
+; -----------------------End of Exercise 1.37----------------------------
+
+; Exercise 1.38.
+;
+; In 1737, the Swiss mathematician Leonhard Euler published a memoir
+; De Fractionibus Continuis, which included a continued fraction expansion
+; for e - 2, where e is the base of the natural logarithms. In this fraction,
+; the Ni are all 1, and the Di are successively 1, 2, 1, 1, 4, 1, 1, 6, 1, 1, 8, ....
+; Write a program that uses your cont-frac procedure from exercise 1.37 to
+; approximate e, based on Euler's expansion.
+
+(= (incomplete_partial $a $b) (/ (- $a (remainder $a $b)) $b))
+
+(= (euler_e $k)
+    (let $n (lambda1 $a 1)
+        (let $d (lambda1 $a2
+                        (if (== (remainder $a2 3) 1)
+                                            (* 2 (inc (incomplete_partial $a2 3)))
+                                            1))
+        (+ 2 (finite_continued_fraction $n $d $k)))))
+
+!(assertEqual
+    (euler_e 10)
+    2.7182818352059925)
+
+; -----------------------End of Exercise 1.38----------------------------
+
+; Exercise 1.39.
+; A continued fraction representation of the tangent function was published
+; in 1770 by the German mathematician J.H. Lambert:
+;
+;                 x
+; tan x =  ---------------------
+;                       x^2
+;           1 -  ---------------
+;                         x^3
+;                 3 - ----------
+;                       5 - ....
+;
+; where x is in radians.
+;
+; Define a procedure (tan-cf x k) that computes an approximation to the tangent
+; function based on Lambert's formula. K specifies the number of terms to compute,
+; as in exercise 1.37.
+
+; Iterative
+(= (pow $x $y)
+    (let $iter (lambda2 $a $self
+                        (if (== $a 0)
+                                1
+                                (* $x ($self (dec $a) $self))))
+    ($iter $y $iter)))
+
+; Recursive
+(= (rpow $x $y)
+    (if (== $y 1)
+        $x
+        (* $x (rpow $x (dec $y)))))
+
+(= (tan-cf $x $k)
+  (let $n (lambda1 $a
+             (if
+                 (== $a 0)
+                 $x
+                 (* -1 (rpow $x (inc $a)))))
+  (finite_continued_fraction $n (lambda1 $a2 (inc (* 2 $a2))) $k)))
+
+!(assertEqual
+    (tan-cf 1 10)
+    1.557407724654902)
+
+; -----------------------End of Exercise 1.39----------------------------
+
+(= (average-damp $f)
+    (lambda1 $x (average $x ($f $x))))
+
+!(assertEqual
+    ((average-damp sqr) 10)
+    55)
+
+(= (cube-root $x)
+    (fixed-point (average-damp (lambda1 $y (/ $x (sqr $y)))) 1))
+
+; FIXME: Requires correct lambda2 type to work (see note to the lambda2 definition above). Works currently with no typedef.
+;!(assertEqual
+;    (cube-root 5)
+;    1.6799045138888888)
+
+(= (dx) 0.00001)
+
+(= (deriv $g)
+    (lambda1 $x (/ (- ($g (+ $x (dx))) ($g $x)) (dx))))
+
+!(assertEqual
+    ((deriv cube) 5)
+    75.00014999664018)
+
+(= (newton-transform $g)
+  (lambda1 $x
+    (- $x (/ ($g $x) ((deriv $g) $x)))))
+
+(= (newtons-method $g $guess)
+  (fixed-point (newton-transform $g) $guess))
+
+(= (newton_sqrt $x)
+  (newtons-method (lambda1 $y (- (sqr $y) $x))
+                  1))
+
+; FIXME: Requires correct lambda2 type to work (see note to the lambda2 definition above). Works currently with no typedef.
+;!(assertEqual
+;    (newton_sqrt 5)
+;    2.238095396823653)
+
+(= (fixed-point-of-transform $g $transform $guess)
+  (fixed-point ($transform $g) $guess))
+
+(= (yet_another_sqrt $x)
+  (fixed-point-of-transform (lambda1 $y (/ $x $y))
+                            average-damp
+                            1))
+
+
+(= (and_another_sqrt $x)
+  (fixed-point-of-transform (lambda1 $y (- (sqr $y) $x))
+                            newton-transform
+                            1))
+
+; FIXME: Requires correct lambda2 type to work (see note to the lambda2 definition above). Works currently with no typedef.
+;!(assertEqual
+;    (yet_another_sqrt 5)
+;    2.238095238095238)
+
+;!(assertEqual
+;    (and_another_sqrt 5)
+;    2.238095396823653)
+
+; Exercise 1.40.
+;
+; Define a procedure cubic that can be used together with the newtons-method
+; procedure in expressions of the form
+;
+; (newtons-method (cubic a b c) 1)
+;
+; to approximate zeros of the cubic x^3 + ax^2 + bx + c.
+;
+; --------------------------------------------------------
+
+(= (cubic $a $b $c)
+  (lambda1 $x (+4 (cube $x) (* $a (sqr $x)) (* $b $x) $c)))
+
+; FIXME: Requires correct lambda2 type to work (see note to the lambda2 definition above). Works currently with no typedef.
+;!(assertEqual
+;    (newtons-method (cubic 1 2 3) 1)
+;    -1.2762090909231458)
+
+; -----------------------End of Exercise 1.40----------------------------
+
+; Exercise 1.41.
+;
+; Define a procedure double that takes a procedure of one argument
+; as argument and returns a procedure that applies the original procedure
+; twice. For example, if inc is a procedure that adds 1 to its argument,
+; then (double inc) should be a procedure that adds 2. What value is returned by
+;
+; (((double (double double)) inc) 5)
+
+(= (double_apply $f)
+  (lambda1 $x ($f ($f $x))))
+
+!(assertEqual
+    ((double_apply inc) 1)
+    3)
+
+!(assertEqual
+    (((double_apply (double_apply double_apply)) inc) 5)
+    21)
+
+; -----------------------End of Exercise 1.41----------------------------
+
+; Exercise 1.42.
+;
+; Let f and g be two one-argument functions. The composition f after g is defined
+; to be the function x -> f(g(x)). Define a procedure compose that implements composition.
+; For example, if inc is a procedure that adds 1 to its argument,
+;
+; ((compose square inc) 6) to give 49 as result
+;
+; -------------------------------------------------
+
+(= (compose $f $g)
+  (lambda1 $x ($f ($g $x))))
+
+!(assertEqual
+    ((compose sqr inc) 6)
+    49)
+; -----------------------End of Exercise 1.42----------------------------
+
+
+; Exercise 1.43.
+;
+; If f is a numerical function and n is a positive integer, then we can form
+; the nth repeated application of f, which is defined to be the function whose
+; value at x is f(f(...(f(x))...)). For example, if f is the function x ->  x + 1,
+; then the nth repeated application of f is the function x ->  x + n. If f is the
+; operation of squaring a number, then the nth repeated application of f is the function
+; that raises its argument to the 2nth power. Write a procedure that takes as inputs a
+; procedure that computes f and a positive integer n and returns the procedure that
+; computes the nth repeated application of f. Your procedure should be able to be used as follows:
+;
+; ((repeated square 2) 5) and to produce 625 as result
+
+(= (repeated_f $f $n)
+    (if (== $n 1)
+        $f
+      (compose (repeated_f $f (dec $n)) $f)))
+
+!(assertEqual
+    ((repeated_f sqr 2) 5)
+    625)
+
+; -----------------------End of Exercise 1.43----------------------------
+
+
+; Exercise 1.44.
+;
+; The idea of smoothing a function is an important concept in signal processing.
+; If f is a function and dx is some small number, then the smoothed version of f
+; is the function whose value at a point x is the average of f(x - dx), f(x), and f(x + dx).
+;
+; Write a procedure smooth that takes as input a procedure that computes f and returns a procedure that
+; computes the smoothed f. It is sometimes valuable to repeatedly smooth a function (that is, smooth the
+; smoothed function, and so on) to obtained the n-fold smoothed function.
+; Show how to generate the n-fold smoothed function of any given function using smooth and repeated from exercise 1.43.
+
+(= (smooth $f)
+  (lambda1 $y
+    (/ (+3 ($f $y) ($f (- $y (dx))) ($f (+ $y (dx)))) 3)))
+
+!(assertEqual
+    ((smooth sqr) 5)
+    25.000000000066663)
+
+!(assertEqual
+    ((smooth (smooth sqr)) 5)
+    (((repeated_f smooth 2) sqr) 5))
+
+; -----------------------End of Exercise 1.44----------------------------
+
+; Exercise 1.45.
+;
+; We saw in section 1.3.3 that attempting to compute square roots by naively finding a
+; fixed point of y -> x/y does not converge, and that this can be fixed by average damping.
+; The same method works for finding cube roots as fixed points of the average-damped y -> x/y^2.
+; Unfortunately, the process does not work for fourth roots -- a single average damp is not
+; enough to make a fixed-point search for y -> x/y3 converge. On the other hand, if we
+; average damp twice (i.e., use the average damp of the average damp of y -> x/y3) the fixed-point
+; search does converge. Do some experiments to determine how many average damps are required to
+; compute nth roots as a fixed-point search based upon repeated average damping of y -> x/yn-1.
+; Use this to implement a simple procedure for computing nth roots using fixed-point, average-damp,
+; and the repeated procedure of exercise 1.43. Assume that any arithmetic operations you need
+; are available as primitives.
+
+(= (closest_pow2 $x)
+  (let $iter (lambda3 $y $counter $self
+    (if (< (/ $y 2) 1)
+        $counter
+        ($self (/ $y 2) (inc $counter) $self)))
+  ($iter $x 0 $iter)))
+
+!(assertEqual
+    (closest_pow2 12)
+    3)
+
+(= (n_root $n $x)
+  (fixed-point-of-transform (lambda1 $y (/ $x (rpow $y (dec $n))))
+                            (repeated_f average-damp (closest_pow2 $n))
+                            1))
+
+; FIXME: Requires correct lambda2 type to work (see note to the lambda2 definition above). Works currently with no typedef.
+;!(assertEqual
+;    (n_root 5 8)
+;    1.5170557601762498)
+
+; -----------------------End of Exercise 1.45----------------------------
+
+; Exercise 1.46.
+;
+; Several of the numerical methods described in this chapter are instances of an
+; extremely general computational strategy known as iterative improvement. Iterative
+; improvement says that, to compute something, we start with an initial guess for the
+; answer, test if the guess is good enough, and otherwise improve the guess and continue
+; the process using the improved guess as the new guess. Write a procedure iterative-improve
+; that takes two procedures as arguments: a method for telling whether a guess is good enough
+; and a method for improving a guess. Iterative-improve should return as its value a procedure
+; that takes a guess as argument and keeps improving the guess until it is good enough.
+; Rewrite the sqrt procedure of section 1.1.7 and the fixed-point procedure of
+; section 1.3.3 in terms of iterative-improve.
+
+
+(= (iterative-improve $check $improve)
+    (let $iter (lambda2 $x $self
+        (let $next ($improve $x)
+            (if ($check $x $next)
+                $next
+                ($self $next $self))))
+    (lambda1 $guess ($iter $guess $iter))))
+
+(= (ii_sqrt $x)
+  ((iterative-improve close-enough? (lambda1 $y (average $y (/ $x $y)))) 1))
+
+; FIXME: Requires correct lambda2 type to work (see note to the lambda2 definition above). Works currently with no typedef.
+;!(assertEqual
+;    (ii_sqrt 2)
+;    1.4142135623746899)
+
+(= (new_fixed-point $f $first-guess)
+    (let $close-enough?
+        (lambda2 $v1 $v2
+            (< (Abs (- $v1 $v2)) (tolerance)))
+    ((iterative-improve $close-enough? $f) $first-guess)))
+
+; FIXME: Requires correct lambda2 type to work (see note to the lambda2 definition above). Works currently with no typedef.
+;!(assertEqual
+;    (new_fixed-point sqr 0.3)
+;    0.0081)
+
+; -----------------------End of Exercise 1.46----------------------------
