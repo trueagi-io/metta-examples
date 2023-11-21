@@ -18,7 +18,7 @@ def test():
                 ; convert (a b c) to (Cons a (Cons b (Cons c Nil)))
                 (: makelist (-> Atom Atom))
                 (= (makelist $x)
-                    (if (== () $x) Nil (let $cdr (cdr-atom $x) 
+                    (if (== () $x) Nil (let $cdr (cdr-atom $x)
                                                 (Cons (car-atom $x) (makelist $cdr)))
                     )
                 )
@@ -31,7 +31,7 @@ def test():
                 ; direct translation of prolog code for member/2
                 (= (memb $X Nil) False)
 
-                ; member(X, [X|_]). 
+                ; member(X, [X|_]).
                 (= (memb $X (Cons $X $Tail)) True)
 
                 ;member(X, [_|Tail]) :-
@@ -45,11 +45,29 @@ def test():
                 (= (eq $X $Y)
                     (let $C (same $X $Y) (if (== $C True) True False)))
 
-                    
-                ; works like nth0_det from swipl lists.pl, won't work yet with $index as variable
-                (= (nth1 $index Nil $item) False)
-                (= (nth1 $index (Cons $H $Tail) $item)
-                    (if (eq $index 1) (eq $H $item) (nth1 (- $index 1) $Tail $item)))
+                ; suggested by Patrick Hammer
+                (= (variable $x)
+                   (case (let $x 1 True)
+                         (($1 (case (let $x 2 True) (($2 $2) (%void% False))))
+                          (%void% False))))
+
+                (= (nth-var-top $index (Cons $H $Tail) $item $base)
+                     (nth-var $Tail $item $H $base $index))
+                (= (nth-var $List $item $item $base $base) True)
+                (= (nth-var (Cons $H $Tail) $item $prev_head $N $base)
+                     (let $M (+ $N 1) (nth-var $Tail $item $H $M $base)))
+
+                (= (nth $index Nil $item $base) False)
+                (= (nth $index (Cons $H $Tail) $item $base)
+                   (if (variable $index)  (nth-var-top $index (Cons $H $Tail) $item $base) (nth-det $index (Cons
+                   $H $Tail) $item $base)))
+
+                ; works like nth0_det from swipl lists.pl, won't work with $index as variable
+                (= (nth-det $index (Cons $H $Tail) $item $base)
+                         (if (eq $index $base) (eq $H $item) (nth1 (- $index 1) $Tail $item)))
+
+                (= (nth1 $index $list $item) (nth $index $list $item 1))
+                    index 1) (eq $H $item) (nth1 (- $index 1) $Tail $item)))
 
                 (= (nextto $x $y $list)
                     (let $r (nextto-impl $x $y $list)
@@ -63,8 +81,8 @@ def test():
                 (= (nextto-impl $x $y (Cons $head $Tail))
                     (nextto-impl $x $y $Tail))
 
-                    
-                    
+
+
 
                 ;foo :-
                 ;    Employers=[_ , _ , _],
@@ -79,9 +97,9 @@ def test():
                 ;    print(Employers), nl.
 
 
-                (= (foo $Employers) 
+                (= (foo $Employers)
                             (and2 (eq $Employers (makelist ($A $B $C)))
-                                (and2    
+                                (and2
                                     (memb (makelist (boris $Y has_sister)) $Employers)
                                     (and2
                                         (nth1 1 $Employers (makelist ($Z cashier no_sister)))
