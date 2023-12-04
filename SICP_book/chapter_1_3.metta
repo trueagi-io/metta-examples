@@ -85,7 +85,6 @@
     (integral cube 0 1 0.1)
     0.24874999999999994)
 
-
 ; Exercise 1.29.
 ;
 ; Simpson's Rule is a more accurate method of numerical integration than the method
@@ -103,13 +102,14 @@
 
 ; Since metta currently doesn't support '+', '*' etc with 3+ parameters:
 (= (+4 $a $b $c $d) (+ (+ $a $b) (+ $c $d)))
+(= (+3 $a $b $c) (+ (+ $a $b) $c))
 
 (= (integral-simpson $f $a $b $n)
     (let $func-h (lambda0 (/ (- $b $a) $n))
         (let $element-y (lambda1 $x ($f (+ $a (* $x ($func-h)))))
             (/ (* ($func-h) (+4 ($element-y 0) ($element-y $n)
-                                                (* 4 (sum $element-y 1 inc2 (- $n 1)))
-                                                (* 2 (sum $element-y 2 inc2 (- $n 1))))) 3))))
+                                                (* 4 (sum $element-y 1 inc2 (dec $n)))
+                                                (* 2 (sum $element-y 2 inc2 (dec $n))))) 3))))
 
 !(assertEqual
     (integral-simpson cube 0 1 10)
@@ -185,10 +185,10 @@
   (ifactorial 6))
 
 (= (jw_pivalue $n)
-    (let $next_divident-element (lambda1 $x (* (* 2.0 $x) (* 2.0 (+ $x 1.0))))
-        (let $next_divisor-element (lambda1 $y (sqr (+ 1.0 (* 2.0 $y))))
-            (* 4.0 (/ (iproduct $next_divident-element 1.0 inc $n)
-                        (iproduct $next_divisor-element 1.0 inc $n))))))
+    (let $next_divident-element (lambda1 $x (* (* 2 $x) (* 2 (inc $x))))
+        (let $next_divisor-element (lambda1 $y (sqr (inc (* 2 $y))))
+            (* 4 (/ (iproduct $next_divident-element 1 inc $n)
+                        (iproduct $next_divisor-element 1 inc $n))))))
 
 ; In sake of performance we will use only 5 iters to calculate pi-value
 !(assertEqual
@@ -232,12 +232,12 @@
 (= (racc-sum $term $a $next $b) (raccumulate + 0 $term $a $next $b))
 (= (iacc-sum $term $a $next $b) (iaccumulate + 0 $term $a $next $b))
 
-(= (pi-raccsum $a $b) (let $pi-term (lambda1 $x (/ 1.0 (* $x (+ $x 2))))
-                        (let $pi-next (lambda1 $y (+ $y 4.0))
+(= (pi-raccsum $a $b) (let $pi-term (lambda1 $x (/ 1 (* $x (inc2 $x))))
+                        (let $pi-next (lambda1 $y (+ $y 4))
                             (racc-sum $pi-term $a $pi-next $b))))
 
-(= (pi-iaccsum $a $b) (let $pi-term (lambda1 $x (/ 1.0 (* $x (+ $x 2))))
-                        (let $pi-next (lambda1 $y (+ $y 4.0))
+(= (pi-iaccsum $a $b) (let $pi-term (lambda1 $x (/ 1 (* $x (inc2 $x))))
+                        (let $pi-next (lambda1 $y (+ $y 4))
                             (iacc-sum $pi-term $a $pi-next $b))))
 
 !(assertEqual
@@ -266,28 +266,7 @@
 ; b. the product of all the positive integers less than n that are relatively prime
 ;    to n (i.e., all positive integers i < n such that GCD(i,n) = 1).
 
-(= (Abs $x) (if (< $x 0) (* $x -1) $x))
-
-(= (Floor_ $x) (if (< $x 1)
-                        0
-                        (inc (Floor_ (dec $x)))))
-
-(= (Floor $x) (if (< $x 0)
-                        (dec (* (Floor_ (Abs $x)) -1))
-                        (Floor_ $x)))
-
-(= (Ceil $x) (if (< $x 0)
-                        (* (Floor_ (Abs $x)) -1)
-                        (inc (Floor_ $x))))
-
-(= (truncate $x)
-    (if (== $x 0)
-            0
-            (if (< $x 0)
-                    (Ceil $x)
-                    (Floor $x))))
-
-(= (remainder $x $y) (- $x (* $y (truncate (/ $x $y)))))
+(= (remainder $x $y) (% $x $y))
 
 (= (smallest-divisor $n)
     (find-divisor $n 2))
@@ -355,6 +334,8 @@
                     (search $f $midpoint $pos-point)
                     $midpoint))))))
 
+(= (Abs $x) (if (< $x 0) (* $x -1) $x))
+
 (= (close-enough? $x $y)
     (< (Abs (- $x $y)) 0.001))
 
@@ -376,54 +357,6 @@
     1.89306640625)
 
 (= (tolerance) 0.1)
-
-; Here we had to switch places for $try and $close-enough local functions definitions (not like in SICP book)
-; or it just won't work
-
-(= (fixed-point $f $first-guess)
-    (let $try (lambda2 $guess $self-try
-        (let $next ($f $guess)
-            (let $close-enough? (lambda2 $v1 $v2 (< (Abs (- $v1 $v2)) (tolerance)))
-                (if ($close-enough? $guess $next)
-                    $next
-                    ($self-try $next $self-try)))))
-    ($try $first-guess $try)))
-
-; FIXME: Requires correct lambda type to work (see note to the lambda2 definition above)
-;!(assertEqual
-;    (fixed-point sqr 0.5)
-;    0.00390625)
-; Sqrt approximation using fixed-point function
-;!(assertEqual
-;    (fixed-point (lambda1 $y (average $y (/ 2 $y))) 1.0)
-;    1.4166666666666665)
-
-
-; Exercise 1.35.
-;
-; Show that the golden ratio Phi (section 1.2.2) is a fixed point of the
-; transformation x ->  1 + 1/x, and use this fact to compute by means of the fixed-point procedure.
-
-; FIXME: Requires correct lambda type to work (see note to the lambda2 definition above)
-;!(assertEqual
-;    (fixed-point (lambda1 $x (+ 1 (/ 1 $x))) 1.0)
-;    1.6)
-
-; -----------------------End of Exercise 1.35----------------------------
-
-; Exercise 1.36.
-;
-; Modify fixed-point so that it prints the sequence of approximations
-; it generates, using the newline and display primitives shown in exercise 1.22.
-; Then find a solution to x^x = 1000 by finding a fixed point of x -> log(1000)/log(x).
-; (Use Scheme's primitive log procedure, which computes natural logarithms.)
-; Compare the number of steps this takes with and without average damping.
-; (Note that you cannot start fixed-point with a guess of 1, as this would cause division by log(1) = 0.)
-
-; Currently fixed-point is not working (see note above).
-
-; -----------------------End of Exercise 1.36----------------------------
-
 
 ; Exercise 1.37.
 ;
@@ -463,8 +396,8 @@
 ; cont-frac such that evaluating (cont-frac n d k) computes the value of the k-term
 ; finite continued fraction. Check your procedure by approximating 1/Phi using
 ;
-; (cont-frac (lambda1 (i) 1.0)
-;            (lambda1 (i) 1.0)
+; (cont-frac (lambda1 (i) 1)
+;            (lambda1 (i) 1)
 ;            k)
 ;
 ; for successive values of k. How large must you make k in order to get an approximation
@@ -483,7 +416,7 @@
     ($rec 0 $rec)))
 
 !(assertEqual
-    (finite_continued_fraction (lambda1 $x 1.0) (lambda1 $x 1.0) 10)
+    (finite_continued_fraction (lambda1 $x 1) (lambda1 $x 1) 10)
     0.6180555555555556)
 
 ; Iterative
@@ -498,5 +431,185 @@
     ($iter $k 0 $iter)))
 
 !(assertEqual
-    (ifinite_continued_fraction (lambda1 $x 1.0) (lambda1 $x 1.0) 10)
+    (ifinite_continued_fraction (lambda1 $x 1) (lambda1 $x 1) 10)
     0.6180555555555556)
+; -----------------------End of Exercise 1.37----------------------------
+
+; Exercise 1.38.
+;
+; In 1737, the Swiss mathematician Leonhard Euler published a memoir
+; De Fractionibus Continuis, which included a continued fraction expansion
+; for e - 2, where e is the base of the natural logarithms. In this fraction,
+; the Ni are all 1, and the Di are successively 1, 2, 1, 1, 4, 1, 1, 6, 1, 1, 8, ....
+; Write a program that uses your cont-frac procedure from exercise 1.37 to
+; approximate e, based on Euler's expansion.
+
+(= (incomplete_partial $a $b) (/ (- $a (remainder $a $b)) $b))
+
+(= (euler_e $k)
+    (let $n (lambda1 $a 1)
+        (let $d (lambda1 $a2
+                        (if (== (remainder $a2 3) 1)
+                                            (* 2 (inc (incomplete_partial $a2 3)))
+                                            1))
+        (+ 2 (finite_continued_fraction $n $d $k)))))
+
+!(assertEqual
+    (euler_e 10)
+    2.7182818352059925)
+
+; -----------------------End of Exercise 1.38----------------------------
+
+; Exercise 1.39.
+; A continued fraction representation of the tangent function was published
+; in 1770 by the German mathematician J.H. Lambert:
+;
+;                 x
+; tan x =  ---------------------
+;                       x^2
+;           1 -  ---------------
+;                         x^3
+;                 3 - ----------
+;                       5 - ....
+;
+; where x is in radians.
+;
+; Define a procedure (tan-cf x k) that computes an approximation to the tangent
+; function based on Lambert's formula. K specifies the number of terms to compute,
+; as in exercise 1.37.
+
+; Iterative
+(= (pow $x $y)
+    (let $iter (lambda2 $a $self
+                        (if (== $a 0)
+                                1
+                                (* $x ($self (dec $a) $self))))
+    ($iter $y $iter)))
+
+; Recursive
+(= (rpow $x $y)
+    (if (== $y 1)
+        $x
+        (* $x (rpow $x (dec $y)))))
+
+(= (tan-cf $x $k)
+  (let $n (lambda1 $a
+             (if
+                 (== $a 0)
+                 $x
+                 (* -1 (rpow $x (inc $a)))))
+  (finite_continued_fraction $n (lambda1 $a2 (inc (* 2 $a2))) $k)))
+
+!(assertEqual
+    (tan-cf 1 10)
+    1.557407724654902)
+
+; -----------------------End of Exercise 1.39----------------------------
+
+(= (average-damp $f)
+    (lambda1 $x (average $x ($f $x))))
+
+!(assertEqual
+    ((average-damp sqr) 10)
+    55)
+
+(= (dx) 0.00001)
+
+(= (deriv $g)
+    (lambda1 $x (/ (- ($g (+ $x (dx))) ($g $x)) (dx))))
+
+!(assertEqual
+    ((deriv cube) 5)
+    75.00014999664018)
+
+
+; Exercise 1.41.
+;
+; Define a procedure double that takes a procedure of one argument
+; as argument and returns a procedure that applies the original procedure
+; twice. For example, if inc is a procedure that adds 1 to its argument,
+; then (double inc) should be a procedure that adds 2. What value is returned by
+;
+; (((double (double double)) inc) 5)
+
+(= (double_apply $f)
+  (lambda1 $x ($f ($f $x))))
+
+!(assertEqual
+    ((double_apply inc) 1)
+    3)
+
+!(assertEqual
+    (((double_apply (double_apply double_apply)) inc) 5)
+    21)
+
+; -----------------------End of Exercise 1.41----------------------------
+
+; Exercise 1.42.
+;
+; Let f and g be two one-argument functions. The composition f after g is defined
+; to be the function x -> f(g(x)). Define a procedure compose that implements composition.
+; For example, if inc is a procedure that adds 1 to its argument,
+;
+; ((compose square inc) 6) to give 49 as result
+;
+; -------------------------------------------------
+
+(= (compose $f $g)
+  (lambda1 $x ($f ($g $x))))
+
+!(assertEqual
+    ((compose sqr inc) 6)
+    49)
+; -----------------------End of Exercise 1.42----------------------------
+
+
+; Exercise 1.43.
+;
+; If f is a numerical function and n is a positive integer, then we can form
+; the nth repeated application of f, which is defined to be the function whose
+; value at x is f(f(...(f(x))...)). For example, if f is the function x ->  x + 1,
+; then the nth repeated application of f is the function x ->  x + n. If f is the
+; operation of squaring a number, then the nth repeated application of f is the function
+; that raises its argument to the 2nth power. Write a procedure that takes as inputs a
+; procedure that computes f and a positive integer n and returns the procedure that
+; computes the nth repeated application of f. Your procedure should be able to be used as follows:
+;
+; ((repeated square 2) 5) and to produce 625 as result
+
+(= (repeated_f $f $n)
+    (if (== $n 1)
+        $f
+      (compose (repeated_f $f (dec $n)) $f)))
+
+!(assertEqual
+    ((repeated_f sqr 2) 5)
+    625)
+
+; -----------------------End of Exercise 1.43----------------------------
+
+
+; Exercise 1.44.
+;
+; The idea of smoothing a function is an important concept in signal processing.
+; If f is a function and dx is some small number, then the smoothed version of f
+; is the function whose value at a point x is the average of f(x - dx), f(x), and f(x + dx).
+;
+; Write a procedure smooth that takes as input a procedure that computes f and returns a procedure that
+; computes the smoothed f. It is sometimes valuable to repeatedly smooth a function (that is, smooth the
+; smoothed function, and so on) to obtained the n-fold smoothed function.
+; Show how to generate the n-fold smoothed function of any given function using smooth and repeated from exercise 1.43.
+
+(= (smooth $f)
+  (lambda1 $y
+    (/ (+3 ($f $y) ($f (- $y (dx))) ($f (+ $y (dx)))) 3)))
+
+!(assertEqual
+    ((smooth sqr) 5)
+    25.000000000066663)
+
+!(assertEqual
+    ((smooth (smooth sqr)) 5)
+    (((repeated_f smooth 2) sqr) 5))
+
+; -----------------------End of Exercise 1.44----------------------------
