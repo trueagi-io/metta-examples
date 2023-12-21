@@ -9,7 +9,7 @@ if __name__ == "__main__":
     gtos = amrlib.load_gtos_model()
     metta = MeTTa()
 
-    metta.add_parse(
+    metta.run(
     '''
     (Has Person Name)
     (Has Person Age)
@@ -47,5 +47,5 @@ if __name__ == "__main__":
                :ARG2 (m / mother))))
     )
     ''')
-    sens, _ = gtos.generate([repr(metta.interpret("(amr (Mother user))")[0])])
+    sens, _ = gtos.generate([repr(metta.run("(amr (Mother user))")[0][0])])
     print(sens)
