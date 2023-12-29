@@ -13,10 +13,12 @@ determine who has what position
 
 def test():
         program = '''
-                (: quote (-> Atom Atom))
+                (: List (-> $t Type))
+                (: Nil (List $t))
+                (: Cons (-> $t (List $t) (List $t)))
 
                 ; convert (a b c) to (Cons a (Cons b (Cons c Nil)))
-                (: makelist (-> Atom Atom))
+                (: makelist (-> Atom (List $t)))
                 (= (makelist $x)
                     (if (== () $x) Nil (let $cdr (cdr-atom $x)
                                                 (Cons (car-atom $x) (makelist $cdr)))
@@ -24,8 +26,8 @@ def test():
                 )
 
                 ; works like ,/2
-                (: and2 (-> Atom Atom Bool))
-                (= (and2 $first $second)
+                (: and-seq (-> Atom Atom Bool))
+                (= (and-seq $first $second)
                     (if $first $second False))
 
                 ; direct translation of prolog code for member/2
@@ -43,31 +45,30 @@ def test():
                 (= (same $X $X) True)
                 ; works like =/2
                 (= (eq $X $Y)
-                    (let $C (same $X $Y) (if (== $C True) True False)))
+                   (let $C (same $X $Y) (if (== $C True) True False)))
 
-                ; suggested by Patrick Hammer
-                (= (variable $x)
-                   (case (let $x 1 True)
-                         (($1 (case (let $x 2 True) (($2 $2) (%void% False))))
-                          (%void% False))))
-
-                (= (nth-var-top $index (Cons $H $Tail) $item $base)
+                (= (is-variable $x)
+                    (let $type (get-metatype $x) (if (== $type Variable) True False)))
+                (= (nth-var-iter $index (Cons $H $Tail) $item $base)
                      (nth-var $Tail $item $H $base $index))
                 (= (nth-var $List $item $item $base $base) True)
                 (= (nth-var (Cons $H $Tail) $item $prev_head $N $base)
                      (let $M (+ $N 1) (nth-var $Tail $item $H $M $base)))
 
+
                 (= (nth $index Nil $item $base) False)
                 (= (nth $index (Cons $H $Tail) $item $base)
-                   (if (variable $index)  (nth-var-top $index (Cons $H $Tail) $item $base) (nth-det $index (Cons
-                   $H $Tail) $item $base)))
+                   (if (is-variable $index)
+                            (nth-var-iter $index (Cons $H $Tail) $item $base)
+                            (nth-det $index (Cons $H $Tail) $item $base)) )
 
                 ; works like nth0_det from swipl lists.pl, won't work with $index as variable
+                (= (nth-det $index Nil $item $base) False)
                 (= (nth-det $index (Cons $H $Tail) $item $base)
-                         (if (eq $index $base) (eq $H $item) (nth1 (- $index 1) $Tail $item)))
+                      (if (eq $index $base) (eq $H $item) (nth-det (- $index 1) $Tail $item 1)))
+
 
                 (= (nth1 $index $list $item) (nth $index $list $item 1))
-                    index 1) (eq $H $item) (nth1 (- $index 1) $Tail $item)))
 
                 (= (nextto $x $y $list)
                     (let $r (nextto-impl $x $y $list)
@@ -98,23 +99,22 @@ def test():
 
 
                 (= (foo $Employers)
-                            (and2 (eq $Employers (makelist ($A $B $C)))
-                                (and2
+                            (and-seq (eq $Employers (makelist ($A $B $C)))
+                                (and-seq
                                     (memb (makelist (boris $Y has_sister)) $Employers)
-                                    (and2
+                                    (and-seq
                                         (nth1 1 $Employers (makelist ($Z cashier no_sister)))
-                                        (and2
+                                        (and-seq
                                             (nextto (makelist ($p controller $v))
                                                     (makelist (semyon $v1 $v2))
                                                     $Employers)
-                                            (and2 (memb (makelist (ivan $v3 $v4)) $Employers)
+                                            (and-seq (memb (makelist (ivan $v3 $v4)) $Employers)
                                                     (memb (makelist ($v5 supervisor $v6)) $Employers))
                                         )
                                     )
                                 )
                             )
                 )
-
 
                 !(let $r (foo $Employers) (if $r $Employers None))
         '''
