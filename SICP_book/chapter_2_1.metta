@@ -64,10 +64,10 @@
 
 (= (one-half) (make-rat 1 2))
 
-(= (numer $x) (let $x ($a . $b) $a))
+(= (numer $x) (let ($a . $b) $x $a))
 
 (= (denom $x)
-    (let $x ($a . $b) $b))
+    (let ($a . $b) $x $b))
 
 ; This line should print [(1 / 2)]
 ;!(print-rat (make-rat 1 2))
