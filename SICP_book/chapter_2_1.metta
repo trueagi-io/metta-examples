@@ -1,4 +1,4 @@
-; This cond is not a part of a chapter 2.1 but I wanted to implement this for further usage. 
+; This cond is not a part of a chapter 2.1 but I wanted to implement this for further usage.
 
 (= (cond $com_list)
     (if (== $com_list ())
@@ -35,6 +35,9 @@
 
 (= (make-pair $x $y) ($x . $y))
 
+(= (first-pair $x) (let ($a . $b) $x $a))
+(= (second-pair $x) (let ($a . $b) $x $b))
+
 (= (make-rat $x $y) (make-pair $x $y))
 
 (= (add-rat $x $y)
@@ -59,8 +62,11 @@
   (= (* (numer $x) (denom $y))
      (* (numer $y) (denom $x))))
 
+; get-rat func is introduced to use assertEqual instead of print-rat.
+(= (get-rat $x)
+    ((numer $x)/(denom $x)))
 (= (print-rat $x)
-    (println! ((numer $x)/(denom $x))))
+    (println! (get-rat $x)))
 
 (= (one-half) (make-rat 1 2))
 
@@ -71,12 +77,24 @@
 
 ; This line should print [(1 / 2)]
 ;!(print-rat (make-rat 1 2))
+!(assertEqual
+    (get-rat (make-rat 1 2))
+    (1 / 2))
+
 
 (= (one-third) (make-rat 1 3))
 
-;!(print-rat (add-rat (one-half) (one-third)))
-;!(print-rat (mul-rat (one-half) (one-third)))
-;!(print-rat (add-rat (one-third) (one-third)))
+!(assertEqual
+    (get-rat (add-rat (one-half) (one-third)))
+    (5 / 6))
+
+!(assertEqual
+    (get-rat (mul-rat (one-half) (one-third)))
+    (1 / 6))
+
+!(assertEqual
+    (get-rat (add-rat (one-third) (one-third)))
+    (6 / 9))
 
 (= (remainder $x $y) (% $x $y))
 
@@ -94,8 +112,9 @@
                (* (numer $y) (denom $x)))
             (* (denom $x) (denom $y))))
 
-; In Scheme it (2 / 3) will be printed, but in our case - (2.0 / 3.0)
-;!((print-rat (add-rat2 (one-third) (one-third))))
+!(assertEqual
+    (get-rat (add-rat2 (one-third) (one-third)))
+    (2.0 / 3.0))
 
 ; Exercise 2.1.
 ;
@@ -109,12 +128,24 @@
     (let $g (gcd $n $d)
         (if (or (< $n 0) (< $d 0))
             (make-pair (/ $n $g) (Abs (/ $d $g)))
-            (make-pair (Abs (/ $n $g)) (Abs (/ $d $g))))))
+            (make-pair (/ $n $g) (/ $d $g)))))
 
-;!(print-rat (better_make-rat 1 2)) ; 1.0 / 2.0
-;!(print-rat (better_make-rat -1 2)) ; - 1.0 / 2.0
-;!(print-rat (better_make-rat 1 -2)) ; - 1.0 / 2.0
-;!(print-rat (better_make-rat -1 -2)); 1.0 / 2.0
+!(assertEqual
+    (get-rat (better_make-rat 1 2))
+    (1.0 / 2.0))
+
+!(assertEqual
+    (get-rat (better_make-rat -1 2))
+    (-1.0 / 2.0))
+
+!(assertEqual
+    (get-rat (better_make-rat 1 -2))
+    (-1.0 / 2.0))
+
+!(assertEqual
+    (get-rat (better_make-rat -1 -2))
+    (1.0 / 2.0))
+
 
 ; -----------------------End of Exercise 2.1----------------------------
 
@@ -130,15 +161,15 @@
 ; (the point whose coordinates are the average of the coordinates of the endpoints). To try your procedures,
 ; you'll need a way to print points
 
-(= (make-segment $start $end) (cons-atom $start $end))
+(= (make-segment $start $end) ($start . $end))
 
-(= (start-segment $seg) (car-atom $seg))
-(= (end-segment $seg) (cdr-atom $seg))
+(= (start-segment $seg) (first-pair $seg))
+(= (end-segment $seg) (second-pair $seg))
 
 (= (make-point $x $y) (make-pair $x $y))
 
-(= (x-point $pt) (let ($x . $y) $pt $x))
-(= (y-point $pt) (let ($x . $y) $pt $y))
+(= (x-point $pt) (first-pair $pt))
+(= (y-point $pt) (second-pair $pt))
 
 !(assertEqual
     (make-point 5 2)
@@ -146,7 +177,7 @@
 
 !(assertEqual
     (make-segment (make-point 1 2) (make-point 5 7))
-    ((1 . 2) 5 . 7))
+    ((1 . 2) . (5 . 7)))
 
 (= (midpoint-segment $seg)
     (let*
@@ -162,11 +193,18 @@
     (midpoint-segment (make-segment (make-point 1 2) (make-point 5 7)))
     (3.0 . 4.5))
 
+; Same as get-rat
+(= (get-point $p)
+    ((x-point $p),(y-point $p)))
 (= (print-point $p)
-    (println! ((x-point $p),(y-point $p))))
+    (println! (get-point $p)))
 
 ; This one will print (3.0 , 4.5)
 ;!(print-point (midpoint-segment (make-segment (make-point 1 2) (make-point 5 7))))
+
+!(assertEqual
+    (get-point (midpoint-segment (make-segment (make-point 1 2) (make-point 5 7))))
+    (3.0 , 4.5))
 
 ; -----------------------End of Exercise 2.2----------------------------
 
@@ -178,44 +216,30 @@
 ; work using either representation?
 
 
-; First representation of rect will be four points (top-left, top-right, bottom-left, bottom-right.
+; First representation of rect will be four points (top-left, top-right, bottom-left, bottom-right).
 
-; This variant doesn't work for me:
-;(= (make-rect $top-left $top-right $bottom-left $bottom-right)
-;  (cons $bottom-left (cons $top-left (cons $top-right $bottom-right))))
-
-; Using this variant, simple_rect looks like this:
-; [((1 . 2) cons-atom (1 . 3) ((2 . 3) 2 . 2))]
-
-; So instead, I wrote make-rect this way:
+(= (cons-atom' $head $tail) (cons-atom $head $tail))
 
 (= (make-rect $top-left $top-right $bottom-left $bottom-right)
-    (let $right (cons-atom $top-right $bottom-right)
-        (let $top_and_right (cons-atom $top-left $right)
-            (cons-atom $bottom-left $top_and_right))))
+  (cons-atom' $bottom-left (cons-atom' $top-left (cons-atom' $top-right ($bottom-right)))))
 
 (= (simple_rect) (make-rect (make-point 1 3) (make-point 2 3) (make-point 1 2) (make-point 2 2)))
 
 !(assertEqual
     (simple_rect)
-    ((1 . 2) (1 . 3) (2 . 3) 2 . 2))
+    ((1 . 2) (1 . 3) (2 . 3) (2 . 2)))
 
 (= (get-top-left $rect)
-    (let $tail (cdr-atom $rect)
-        (car-atom $tail)))
+    (let ($bl $tl $tr $br) $rect $tl))
 
 (= (get-top-right $rect)
-    (let $tail (cdr-atom $rect)
-        (let $tailtail (cdr-atom $tail)
-            (car-atom $tailtail))))
+    (let ($bl $tl $tr $br) $rect $tr))
 
 (= (get-bottom-left $rect)
-  (car-atom $rect))
+  (let ($bl $tl $tr $br) $rect $bl))
 
 (= (get-bottom-right $rect)
-    (let $tail (cdr-atom $rect)
-        (let $tailtail (cdr-atom $tail)
-            (cdr-atom $tailtail))))
+    (let ($bl $tl $tr $br) $rect $br))
 
 !(assertEqual
     (get-bottom-left (simple_rect))
@@ -256,9 +280,7 @@
 ; Second representation is the top-left corner, width and height.
 
 (= (make-rect2 $top $left $width $height)
-    (let $wh (cons-atom $width ($height))
-        (let $lwh (cons-atom $left $wh)
-            (cons-atom $top $lwh))))
+    (cons-atom' $top (cons-atom' $left (cons-atom' $width ($height)))))
 
 (= (simple_rect2) (make-rect2 1 2 4 6))
 
@@ -285,10 +307,9 @@
 ; -----------------------End of Exercise 2.3----------------------------
 
 
-(: quoted (-> Atom Atom))
 (: lambda1 (-> Variable Atom (-> $a $t)))
 (= ((lambda1 $var $body) $val)
-    (let (quoted $var) (quoted $val) $body))
+    (let (quote $var) (quote $val) $body))
 
 (= (cons $x $y)
   (let $dispatch (lambda1 $m
@@ -296,7 +317,7 @@
         $x
         (if (== $m 1)
             $y
-            (Error. Argument to cons should be only 0 or 1))))
+            (Error (cons $x $y) "Argument to cons should be only 0 or 1"))))
             $dispatch))
 
 (= (car $z) ($z 0))
@@ -325,7 +346,7 @@
 
 (: lambda2 (-> Variable Variable Atom (-> $a $b $t)))
 (= ((lambda2 $var1 $var2 $body) $val1 $val2)
-    (let (quoted ($var1 $var2)) (quoted ($val1 $val2)) $body))
+    (let (quote ($var1 $var2)) (quote ($val1 $val2)) $body))
 
 (= (cons2 $x $y)
   (lambda1 $m ($m $x $y)))
@@ -376,7 +397,7 @@
 
 (: lambda3 (-> Variable Variable Variable Atom (-> $a $b $c $t)))
 (= ((lambda3 $var1 $var2 $var3 $body) $val1 $val2 $val3)
-    (let (quoted ($var1 $var2 $var3)) (quoted ($val1 $val2 $val3)) $body))
+    (let (quote ($var1 $var2 $var3)) (quote ($val1 $val2 $val3)) $body))
 
 (= (inc $x) (+ $x 1))
 
@@ -575,42 +596,34 @@
     (interval-width (r2))
     0.10000000000000003)
 
+(= (cmp-float $a $b)
+    (let $diff (- $a $b)
+        (if (< (Abs $diff) 1e-10) EQ
+            (if (< $diff 0) LT GT))))
+
 ; Well, width of sum-intervals indeed equal to sum of widths, but due to rounding inside metta I can't directly compare
-; results using assertEqual. But we will consider 0.125 and 0.12500000000000006 equal.
-!(assertEqual
-    (interval-width (add-interval (r1) (r2)))
-    0.125)
+; results using assertEqual. Thanks to Vitaly's advice, we can use cmp-float to do that.
 
 !(assertEqual
-    (+ (interval-width (r2)) (interval-width (r1)))
-    0.12500000000000006)
+    (cmp-float (interval-width (add-interval (r1) (r2))) (+ (interval-width (r2)) (interval-width (r1))))
+    EQ)
 
 ; Same here
 
 !(assertEqual
-    (interval-width (sub-interval (r2) (r1)))
-    0.07500000000000007)
+    (cmp-float (interval-width (sub-interval (r2) (r1))) (- (interval-width (r2)) (interval-width (r1))))
+    EQ)
 
-!(assertEqual
-    (- (interval-width (r2)) (interval-width (r1)))
-    0.07500000000000002)
 
 ; Different results for multiplication and division:
 !(assertEqual
-    (interval-width (mul-interval (r2) (r1)))
-    0.04250000000000001)
+    (cmp-float (interval-width (mul-interval (r2) (r1))) (* (interval-width (r2)) (interval-width (r1))))
+    GT)
 
 !(assertEqual
-    (* (interval-width (r2)) (interval-width (r1)))
-    0.002500000000000002)
+    (cmp-float (interval-width (div-interval (r2) (r1))) (/ (interval-width (r2)) (interval-width (r1))))
+    LT)
 
-!(assertEqual
-    (interval-width (div-interval (r2) (r1)))
-    1.416666666666667)
-
-!(assertEqual
-    (/ (interval-width (r2)) (interval-width (r1)))
-    4.0)
 ; -----------------------End of Exercise 2.9----------------------------
 
 ; Exercise 2.10.
@@ -623,7 +636,7 @@
 (= (better-div-interval $x $y)
     (if (or (and (< (upper-bound $y) 0) (> (lower-bound $y) 0))
              (and (< (lower-bound $y) 0) (> (upper-bound $y) 0)))
-        (Error: Divisor interval spans zero)
+        (Error (better-div-interval $x $y) "Divisor interval spans zero")
         (mul-interval $x
                 (make-interval (/ 1.0 (upper-bound $y))
                                (/ 1.0 (lower-bound $y))))))
@@ -636,7 +649,7 @@
 
 !(assertEqual
     (better-div-interval (r1) (r3))
-    (Error: Divisor interval spans zero))
+    (Error (better-div-interval (0.15 . 0.2) (-0.4 . 0.5)) "Divisor interval spans zero"))
 
 ; -----------------------End of Exercise 2.10---------------------------
 
@@ -673,7 +686,7 @@
         (make-interval (* $y1 $y2) (* $x1 $x2))
     (if (and4 (>= $x1 0) (>= $y1 0) (>= $x2 0) (>= $y2 0))
         (make-interval (* $x1 $x2) (* $y1 $y2))
-        (Error: Unknown variant))))))))))))
+        (Error (better-mul-interval $int1 $int2) "Unknown variant"))))))))))))
 
 !(assertEqual
     (mul-interval (r3) (r2))
