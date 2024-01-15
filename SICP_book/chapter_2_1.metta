@@ -161,7 +161,7 @@
 ; (the point whose coordinates are the average of the coordinates of the endpoints). To try your procedures,
 ; you'll need a way to print points
 
-(= (make-segment $start $end) ($start . $end))
+(= (make-segment $start $end) (make-pair $start $end))
 
 (= (start-segment $seg) (first-pair $seg))
 (= (end-segment $seg) (second-pair $seg))
@@ -218,10 +218,8 @@
 
 ; First representation of rect will be four points (top-left, top-right, bottom-left, bottom-right).
 
-(= (cons-atom' $head $tail) (cons-atom $head $tail))
-
 (= (make-rect $top-left $top-right $bottom-left $bottom-right)
-  (cons-atom' $bottom-left (cons-atom' $top-left (cons-atom' $top-right ($bottom-right)))))
+  ($bottom-left $top-left $top-right $bottom-right))
 
 (= (simple_rect) (make-rect (make-point 1 3) (make-point 2 3) (make-point 1 2) (make-point 2 2)))
 
@@ -280,7 +278,7 @@
 ; Second representation is the top-left corner, width and height.
 
 (= (make-rect2 $top $left $width $height)
-    (cons-atom' $top (cons-atom' $left (cons-atom' $width ($height)))))
+    ($top $left $width $height))
 
 (= (simple_rect2) (make-rect2 1 2 4 6))
 
