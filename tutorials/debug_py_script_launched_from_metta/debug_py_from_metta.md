@@ -98,9 +98,3 @@ while being attached to the process in a special window (see below pic). Here we
 
 This concludes debug tutorial of python scripts which are called inside metta using Pycharm GUI. Of course it won't 
 help you to debug metta files themselves but will totally help you to check if everything is fine on the python side. 
-
-
-
-
-
-
