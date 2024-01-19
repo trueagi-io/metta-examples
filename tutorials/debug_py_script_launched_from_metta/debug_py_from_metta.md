@@ -104,15 +104,3 @@ help you to debug metta files themselves but will totally help you to check if e
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
