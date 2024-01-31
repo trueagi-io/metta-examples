@@ -98,25 +98,25 @@ def test():
                 ;    print(Employers), nl.
 
 
-                (= (foo $Employers)
-                            (and-seq (eq $Employers (makelist ($A $B $C)))
+                (= (foo $Employees)
+                            (and-seq (eq $Employees (makelist ($A $B $C)))
                                 (and-seq
-                                    (memb (makelist (boris $Y has_sister)) $Employers)
+                                    (memb (makelist (boris $Y has_sister)) $Employees)
                                     (and-seq
-                                        (nth1 1 $Employers (makelist ($Z cashier no_sister)))
+                                        (nth1 1 $Employees (makelist ($Z cashier no_sister)))
                                         (and-seq
                                             (nextto (makelist ($p controller $v))
                                                     (makelist (semyon $v1 $v2))
-                                                    $Employers)
-                                            (and-seq (memb (makelist (ivan $v3 $v4)) $Employers)
-                                                    (memb (makelist ($v5 supervisor $v6)) $Employers))
+                                                    $Employees)
+                                            (and-seq (memb (makelist (ivan $v3 $v4)) $Employees)
+                                                    (memb (makelist ($v5 supervisor $v6)) $Employees))
                                         )
                                     )
                                 )
                             )
                 )
 
-                !(let $r (foo $Employers) (if $r $Employers None))
+                !(let $r (foo $Employees) (if $r $Employees None))
         '''
         runner = MeTTa()
         result = runner.run(program)
