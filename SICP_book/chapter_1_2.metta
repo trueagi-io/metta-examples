@@ -1,5 +1,5 @@
 ; Extension is used for several examples which requires random and current-inexact-milliseconds functions from Scheme
-!(extend-py! additional_funcs)
+!(extend-py! additional_funcs.py)
 
 (= (inc $x) (+ $x 1))
 (= (dec $x) (- $x 1))
@@ -51,8 +51,8 @@
 
 (= (fib-iter $a $b $count)
     (if (== $count 0)
-    $b
-    (fib-iter (+ $a $b) $a (- $count 1))))
+        $b
+        (fib-iter (+ $a $b) $a (- $count 1))))
 
 !(assertEqual
     (ifib 7)

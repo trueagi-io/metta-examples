@@ -737,7 +737,7 @@
     (enumerate-interval 2 7)
     (2 3 4 5 6 7))
 
-; Returns lists of the $tree:
+; Returns leaves of the $tree:
 (= (enumerate-tree $tree)
     (if (null? $tree)
         ()
@@ -763,12 +763,13 @@
     35)
 
 ; Just regular Fibonacci numbers generator:
+(= (fib-iter $a $b $count)
+    (if (== $count 0)
+        $b
+        (fib-iter (+ $a $b) $a (- $count 1))))
+
 (= (fib $n)
-    (if (== $n 0)
-        0
-        (if (== $n 1)
-            1
-            (+ (fib (- $n 1)) (fib (- $n 2))))))
+    (fib-iter 1 0 $n))
 
 (= (even? $x)
     (== (% $x 2) 0))
@@ -953,6 +954,7 @@
 
 ; In Scheme there is a map from standard library which takes several sequences. In case of Metta I've wrote map2 which
 ; takes two $items:
+
 (= (map2 $proc $items1 $items2)
     (if (or (null? $items1) (null? $items2))
         ()
@@ -1292,7 +1294,7 @@
 ; section a bit since some exercises uses results of not implemented yet functions
 ; (since they are implemented during further exercises).
 
-!(extend-py! draw_line)
+!(extend-py! draw_line.py)
 
 ; Exercise 2.46.  A two-dimensional vector v running from the origin to
 ; a point can be represented as a pair consisting of an x-coordinate and
@@ -1573,6 +1575,9 @@
                      (make-vect 0 0)
                      (make-vect 1 1)))
 
+; Usage example:
+;!((rotate270 (rtrap-paint)) (baseframe))
+;!(finishdraw!)
 
 ; -----------------------End of Exercise 2.50---------------------------
 
@@ -1606,7 +1611,7 @@
 (= (below-r $painter1 $painter2)
     (rotate90 (beside (rotate270 $painter2) (rotate270 $painter1))))
 
-; Usage
+; Usage:
 ;!((below-r (rtrap-paint) (x-paint)) (baseframe))
 ;!(finishdraw!)
 
