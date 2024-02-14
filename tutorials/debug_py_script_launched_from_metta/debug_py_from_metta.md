@@ -19,7 +19,7 @@ but i guess it will do. So we have python script:
 
 And we want to call *concatstr!* from metta script:
 
-    !(extend-py! additional_funcs) ; additional_funcs is our python script's name
+    !(extend-py! additional_funcs.py) ; additional_funcs is our python script's name
     
     !(concatstr! "Hello" "World")
 
@@ -98,3 +98,32 @@ while being attached to the process in a special window (see below pic). Here we
 
 This concludes debug tutorial of python scripts which are called inside metta using Pycharm GUI. Of course it won't 
 help you to debug metta files themselves but will totally help you to check if everything is fine on the python side. 
+_______________________________________________________
+
+### Alternative way
+
+One can also use Pycharm in a different way for this task. Pycharm provides a way to create run/debug configuration 
+in which we can provide path to script metta.py from hyperon-experimental repo and provide script to metta script as
+an argument. Steps to debug this way are show below on pics.
+
+![Edit configurations](./6.png)
+
+After opening Pycharm we first need to create run/debug configuration. Click *Current file* in right top corner of 
+Pycharm window and then *Edit configurations*. 
+
+![Run/debug Configurations](./7.png)
+
+After clicking *Edit configurations* new window will appear named *Run/Debug Configurations*. Here we need to click on 
+*+* sign, scroll down and click *Python*. Also we could click *Add new configuration* and same list of configurations 
+will appear. 
+
+![Choose pathes](./8.png)
+
+In the next window we need to put path to metta.py to the *Script path* field and path to metta script we want to run to
+the *Parameters* field. Also we need to choose *Python interpreter* in the corresponding field. Interpreter should 
+contain installed Metta. 
+
+![Debug script](./9.png)
+
+And after clicking *Ok* in the previous step, we can click *Debug* button in the right top corner of the Pycharm. Of 
+course we need to set breakpoint in the right place.
