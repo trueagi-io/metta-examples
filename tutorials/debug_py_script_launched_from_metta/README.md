@@ -1,6 +1,6 @@
 ### Debugging python script called from Metta using Pycharm
 
-(In this tutorial Pycharm version 2022.2.1 was used. If you have another Pycharm version everything could be little bit different, but main idea is the same. Just different placement)
+(In this tutorial Pycharm version 2022.2.1 was used. If you have another Pycharm version there could be some differences, but main idea is the same. Just different placement)
 
 Probably someone like me really like to debug using GUI like Pycharm, so this guide will show you how to debug python
 scripts that was launched from Metta script using Pycharm (so you'll need to download it, Community Edition will do).
