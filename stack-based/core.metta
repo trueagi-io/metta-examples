@@ -20,6 +20,7 @@
 ; [((E 1) 1)]
 
 ; defining some stack manipulation
+(= (($s $x) dup) (($s $x) $x))
 (= ((($s $x) $y) swap) (($s $y) $x))
 (= (($s $x) drop) $s)
 (= (((($s $x) $y) $z) rot) ((($s $y) $z) $x))
@@ -30,12 +31,11 @@
 
 ; side effecting and destroying print
 (= (($s $x) say) (let  $_ (println! $x) $s))
-!((((E (put 2)) (put 3)) add) say2)
+!((((E (put 2)) (put 3)) add) say)
 ; 5
 ; [E]
 
 ; first class functions
-(= (($s (func $s $r)) apply3) $r)
-; !(((((E (put 2)) (put 3)) mul) (put (func ($s $x) ($s (T $x))))) apply3)
-; ^CInterrupt received, stopping MeTTa...
-; doesn't work yet
+(= (($s (Cons $f $r)) apply) ((($s $f) $r) apply))
+(= (($s Nil) apply) $s)
+!(((E 6) (Cons dup (Cons mul Nil))) apply)
