@@ -6,21 +6,22 @@
 (= (? $pattern) (transform $pattern $pattern))
 
 ; what are all the id's
-!(transform (json $_ (id (@value $id))) $id)
+!(transform (json $_ (id $id)) $id)
 ; define nodes
-!(transform_ (, (json $i (id (@value $id))) (json $i (label $label)))
+!(transform_ (, (json $i (id $id))
+                (json $i (label $label)))
              (Node $label $id))
 ; define properties
-!(transform_ (, (json $i (id (@value $id)))
-                 (json $i (properties (age 0 (value (@value $age))))))
+!(transform_ (, (json $i (id $id))
+                (json $i (properties (age 0 (value $age)))))
              (Prop age $age $id))
-!(transform_ (, (json $i (id (@value $id)))
-                 (json $i (properties (name 0 (value $name)))))
+!(transform_ (, (json $i (id $id))
+                (json $i (properties (name 0 (value $name)))))
              (Prop name $name $id))
 ; define edges
-!(transform_ (, (json $i (id (@value $src)))
-                (json $i (outE ($label $k (inV (@value $dst)))))
-                (json $i (outE ($label $k (properties (weight (@value $weight)))))))
+!(transform_ (, (json $i (id $src))
+                (json $i (outE ($label $k (inV $dst))))
+                (json $i (outE ($label $k (properties (weight $weight))))))
              (Outgoing $src $label $dst $weight))
 
 (= (E) (? (Outgoing $src $label $dst $weight)))

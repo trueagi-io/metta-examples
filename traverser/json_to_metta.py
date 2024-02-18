@@ -1,5 +1,8 @@
 from json import loads
 
+untyped = True
+
+
 with open("tinkerpop-modern.json") as f:
     ds = [loads(line) for line in f.readlines()]
 
@@ -7,14 +10,15 @@ with open("tinkerpop-modern.json") as f:
 def dict_generator(indict, pre=None):
     pre = pre[:] if pre else []
     if isinstance(indict, dict):
+        if untyped and "@value" in indict and "@type" in indict:
+            yield pre + [indict["@value"]]
+            return
         for key, value in indict.items():
             if isinstance(value, dict):
-                for d in dict_generator(value, pre + [key]):
-                    yield d
+                yield from dict_generator(value, pre + [key])
             elif isinstance(value, list) or isinstance(value, tuple):
                 for i, v in enumerate(value):
-                    for d in dict_generator(v, pre + [(key, i)]):
-                        yield d
+                    yield from dict_generator(v, pre + [(key, i)])
             else:
                 yield pre + [key, value]
     else:
