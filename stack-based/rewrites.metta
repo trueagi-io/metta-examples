@@ -39,3 +39,10 @@
 (= (($s (Cons $f $r)) apply) ((($s $f) $r) apply))
 (= (($s Nil) apply) $s)
 !(((E 6) (Cons dup (Cons mul Nil))) apply)
+; [(E 36)]
+
+; multi valued functions work as expected
+!(((E (put (superpose (1 2)))) dup) add)
+; [(E 2), (E 4)]
+!(((E (put (superpose (3 5)))) dup) (superpose (add mul)))
+; [(E 6), (E 9), (E 10), (E 25)]
