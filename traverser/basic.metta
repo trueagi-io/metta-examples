@@ -1,7 +1,7 @@
 ; https://tinkerpop.apache.org/docs/3.7.1/images/tinkerpop-modern.png
 !(import! &self tinkerpop-modern.metta)
 
-(= (transform_ $pattern $query) (match &self $pattern (add-atom &self $query)))
+(= (transform_ $pattern $query) (match &self $pattern (let $_ (add-atom &self $query) $query)))
 (= (transform $pattern $query) (match &self $pattern $query))
 (= (? $pattern) (transform $pattern $pattern))
 
