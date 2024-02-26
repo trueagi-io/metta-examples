@@ -19,7 +19,7 @@ but i guess it will do. So we have python script:
 
 And we want to call *concatstr!* from metta script:
 
-    !(extend-py! additional_funcs.py) ; additional_funcs is our python script's name
+    !(import! &self additional_funcs) ; additional_funcs is our python script's name
     
     !(concatstr! "Hello" "World")
 
@@ -104,7 +104,8 @@ _______________________________________________________
 
 One can also use Pycharm in a different way for this task. Pycharm provides a way to create run/debug configuration 
 in which we can provide path to script metta.py from hyperon-experimental repo and provide script to metta script as
-an argument. Steps to debug this way are show below on pics.
+an argument. Steps to debug this way are show below on pics (please be careful since in newer releases of metta import
+should be done like this: !(import! &self additional_funcs). Variant from the pic is outdated).
 
 ![Edit configurations](./6.png)
 
