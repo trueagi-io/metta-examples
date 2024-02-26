@@ -1294,7 +1294,7 @@
 ; section a bit since some exercises uses results of not implemented yet functions
 ; (since they are implemented during further exercises).
 
-!(extend-py! draw_line.py)
+!(import! &self draw_line)
 
 ; Exercise 2.46.  A two-dimensional vector v running from the origin to
 ; a point can be represented as a pair consisting of an x-coordinate and

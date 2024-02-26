@@ -1,5 +1,5 @@
 ; Extension is used for several examples which requires random and current-inexact-milliseconds functions from Scheme
-!(extend-py! additional_funcs.py)
+!(import! &self additional_funcs)
 
 (= (inc $x) (+ $x 1))
 (= (dec $x) (- $x 1))
