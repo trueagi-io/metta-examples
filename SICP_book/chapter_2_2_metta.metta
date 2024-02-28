@@ -1034,7 +1034,7 @@
     1.5)
 
 !(assertEqual
-    (fold-left / 1 (list (1 2 3)))
+    (fold-left / 1.0 (list (1.0 2.0 3.0)))
     0.16666666666666666)
 
 !(assertEqual
