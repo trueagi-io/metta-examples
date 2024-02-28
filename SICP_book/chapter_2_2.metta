@@ -22,12 +22,7 @@
 (= (null? $list)
     (== $list ()))
 
-(= (list $varlist)
-    (if (null? $varlist)
-        ()
-        (if (null? (cdr $varlist))
-            ((car $varlist))
-            (cons (car $varlist) (list (cdr $varlist))))))
+(= (list $varlist) $varlist)
 
 (= (one-through-four) (list (1 2 3 4)))
 
