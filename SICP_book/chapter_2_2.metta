@@ -1022,7 +1022,7 @@
 ; What are the values of
 
 !(assertEqual
-    (accumulate / 1 (list (1 2 3)))
+    (accumulate / 1.0 (list (1.0 2.0 3.0)))
     1.5)
 
 !(assertEqual
