@@ -530,7 +530,7 @@
     (total-weight (more-complex-mobile))
     100)
 
-(= (isbalanced $mobile)
+(= (isbalanced? $mobile)
    (case $mobile (
      ((Cons $x $xs)
         (let*
