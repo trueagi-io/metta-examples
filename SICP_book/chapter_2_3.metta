@@ -25,6 +25,9 @@
 (= (caddr $x)
     (car (cdr (cdr $x))))
 
+(= (cadddr $x)
+    (car (cdr (cdr (cdr $x)))))
+
 (= (list $expr)
    (if (== (get-metatype $expr) Expression)
        (if (null? $expr)
@@ -296,6 +299,8 @@
                 (make-product $exponent (make-product $base $dbase))
                 (make-product (make-product $exponent (** $base (- $exponent 1))) $dbase)))))
 
+
+
 ;!(assertEqual
 ;    (deriv2 (** ('* x 3) 5) x)
 ;    ('* ('* 5 (** ('* x 3) 4)) 3))
@@ -324,7 +329,6 @@
 ; Well actually it is not third implementation but just to make naming consistent with deriv3.
 (= (addend3 $x) (cadr $x))
 
-(: augend3 (-> %Undefined% %Undefined%))
 (= (augend3 $x)
     (if (> (length $x) 3)
         (cons '+ (cddr $x))
@@ -338,45 +342,217 @@
         (cddr $x)))
 
 ; Once again I'm copying deriv implementation and renaming it so every (almost) previous asserts will work correctly.
+; Unfortunately I need to add two lets so augend3 and multiplicand3 works correctly inside deriv3.
 (= (deriv3 $exp $var)
       (if (number? $exp)
             0
             (if (variable? $exp)
                 (if (same-variable? $exp $var) 1 0)
                 (if (sum? $exp)
-                     (make-sum (deriv3 (addend3 $exp) $var)
-                               (deriv3 (augend3 $exp) $var))
+                     (make-sum (deriv (addend3 $exp) $var)
+                               (deriv (augend3 $exp) $var))
                      (if (product? $exp)
                          (make-sum
                               (make-product (multiplier3 $exp)
-                                            (deriv3 (multiplicand3 $exp) $var))
-                              (make-product (deriv3 (multiplier3 $exp) $var)
+                                            (deriv (multiplicand3 $exp) $var))
+                              (make-product (deriv (multiplier3 $exp) $var)
                                             (multiplicand3 $exp)))
                          (if (exponentiation? $exp)
                             (make-exponentiation (base $exp) (deriv3 (base $exp) $var) (exponent $exp))
                             (Error (deriv3 $exp $var) "Unknown expression type")))))))
 
-(= (exp) ('+ x 1))
-(augend3 ('+ x 1))
-!(let $exp ('+ x ('+ x 1)) (deriv3 $exp x))
-(augend3 (exp))
-(get-type x)
+(= (exp) ('+ x y ('+ x 1)))
+
+;On regular Metta this doesn't work due to caching and equality of 1 and True.
+(deriv3 (exp) x)
+
+; -----------------------End of Exercise 2.57---------------------------
+
+; Exercise 2.58.
+;
+; Suppose we want to modify the differentiation program so that
+; it works with ordinary mathematical notation, in which + and * are infix
+; rather than prefix operators. Since the differentiation program is defined in
+; terms of abstract data, we can modify it to work with different
+; representations of expressions solely by changing the predicates, selectors,
+; and constructors that define the representation of the algebraic expressions
+; on which the differentiator is to operate.
+
+; a. Show how to do this in order to differentiate algebraic expressions
+; presented in infix form, such as (x + (3 * (x + (y + 2)))). To simplify the
+; task, assume that + and * always take two arguments and that expressions are
+; fully parenthesized.
+
+; b. The problem becomes substantially harder if we allow standard algebraic
+; notation, such as (x + 3 * (x + y + 2)), which drops unnecessary parentheses
+; and assumes that multiplication is done before addition. Can you design
+; appropriate predicates, selectors, and constructors for this notation such
+; that our derivative program still works?
+
+; a.
+
+(= (sum4? $x)
+    (and (== (get-metatype $x) Expression) (== (cadr $x) '+)))
+
+(= (addend4 ($x '+ $y)) $x)
+
+(= (augend4 ($x '+ $y)) $y)
+
+(= (product4? $x)
+    (and (== (get-metatype $x) Expression) (== (cadr $x) '*)))
+
+(= (multiplier4 ($x '* $y)) $x)
+
+(= (multiplicand4 ($x '* $y)) $y)
+
+(= (make-sum4 $a1 $a2)
+  (if (=number? $a1 0)
+        $a2
+        (if (=number? $a2 0)
+            $a1
+            (if (and (number? $a1) (number? $a2))
+                (+ $a1 $a2)
+                ($a1 '+ $a2)))))
+
+(= (make-product4 $m1 $m2)
+  (if (or (=number? $m1 0) (=number? $m2 0))
+        0
+        (if (=number? $m1 1)
+            $m2
+            (if (=number? $m2 1)
+                $m1
+                (if (and (number? $m1) (number? $m2))
+                    (* $m1 $m2)
+                    ($m1 '* $m2))))))
+
+(= (deriv4 $exp $var)
+      (if (number? $exp)
+            0
+            (if (variable? $exp)
+                (if (same-variable? $exp $var) 1 0)
+                (if (sum4? $exp)
+                     (make-sum4 (deriv4 (addend4 $exp) $var)
+                               (deriv4 (augend4 $exp) $var))
+                     (if (product4? $exp)
+                         (make-sum
+                              (make-product4 (multiplier4 $exp)
+                                            (deriv4 (multiplicand4 $exp) $var))
+                              (make-product4 (deriv4 (multiplier4 $exp) $var)
+                                            (multiplicand4 $exp)))
+                         (if (exponentiation? $exp)
+                            (make-exponentiation (base $exp) (deriv4 (base $exp) $var) (exponent $exp))
+                            (Error (deriv4 $exp $var) "Unknown expression type")))))))
+
+; In our case I've left '+ instead of + since for this (exp2) cdr-atom not working since its result should be
+; (+ (3 '* (x + (y + 2)))) and metta tries to evaluate it as i understand. With '+, '* everything works fine.
+(= (exp2) (x '+ (3 '* (x '+ (y '+ 2)))))
+
+;!(assertEqual
+;    (deriv4 (exp2) x)
+;    4)
+
+; b
+
+(= (addend5 $x) (car $x))
+
+(= (multiplier5 $x) (car $x))
+
+(= (augend5 $x)
+    (if (> (length $x) 3)
+        (cddr $x)
+        (caddr $x)))
+
+(= (multiplicand5 $x)
+    (if (> (length $x) 3)
+        (cddr $x)
+        (caddr $x)))
+
+(= (deriv5 $exp $var)
+      (if (number? $exp)
+            0
+            (if (variable? $exp)
+                (if (same-variable? $exp $var) 1 0)
+                (if (sum4? $exp)
+                     (make-sum4 (deriv5 (addend5 $exp) $var)
+                               (deriv5 (augend5 $exp) $var))
+                     (if (product4? $exp)
+                         (make-sum
+                              (make-product4 (multiplier5 $exp)
+                                            (deriv5 (multiplicand5 $exp) $var))
+                              (make-product4 (deriv5 (multiplier5 $exp) $var)
+                                            (multiplicand5 $exp)))
+                         (if (exponentiation? $exp)
+                            (make-exponentiation (base $exp) (deriv5 (base $exp) $var) (exponent $exp))
+                            (Error (deriv5 $exp $var) "Unknown expression type")))))))
+
+(= (exp3) (x '+ 3 '* (x '+ y '+ 2)))
+
+;!(assertEqual
+;    (deriv5 (exp3) x)
+;    4)
+; -----------------------End of Exercise 2.58---------------------------
 
 
+; Representation of sets.
+; Lists as representation of sets.
+
+(= (element-of-set? $x $set)
+  (if (null? $set)
+    False
+    (if (== $x (car $set))
+        True
+        (element-of-set? $x (cdr $set)))))
+
+(= (set1) (1 2 3))
+(= (set2) (4 5 3))
+
+;(assertEqual
+;   (element-of-set? 3 (set1))
+;   True)
+
+;!(assertEqual
+;    (element-of-set? 4 (set1))
+;    False)
+
+(= (adjoin-set $x $set)
+    (if (element-of-set? $x $set)
+        $set
+        (cons $x $set)))
+
+;!(assertEqual
+;    (adjoin-set 4 (set1))
+;    (4 1 2 3))
+
+;!(assertEqual
+;    (adjoin-set 3 (set1))
+;    (1 2 3))
+
+(= (intersection-set $set1 $set2)
+  (if (or (null? $set1) (null? $set2))
+    ()
+    (if (element-of-set? (car $set1) $set2)
+        (cons (car $set1) (intersection-set (cdr $set1) $set2))
+        (intersection-set (cdr $set1) $set2))))
+
+;!(assertEqual
+;    (intersection-set (set1) (set2))
+;    (3))
 
 
+; Exercise 2.59.
+;
+; Implement the union-set operation for the
+; unordered-list representation of sets.
 
+(= (union-set $set1 $set2)
+    (if (null? $set1)
+        $set2
+        (if (null? $set2)
+        (if (element-of-set? (car $set1) $set2)
+            (union-set (cdr $set1) $set2)
+            (cons (car $set1) (union-set (cdr $set1) $set2)))))
 
-
-
-
-
-
-
-
-
-
-
+!(union-set () (set1))
 
 
 
