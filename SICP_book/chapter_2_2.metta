@@ -10,32 +10,29 @@
 
 (= (list $expr)
    (if (null? $expr)
-       Nil
-       (if (== (get-type $expr) Number)
-        $expr
-        (Cons (list (car-atom $expr)) (list (cdr-atom $expr))))))
-
-; Makelist helps to construct list from already constructed (using list func) lists. It will be possible to manipulate
-; resulting lists using car-list, cdr-list as it should be.
-
-(= (makelist $x)
-    (if (null? $x)
         Nil
-        (let $cdr (cdr-atom $x)
-            (Cons (car-atom $x) (makelist $cdr)))))
+        (Cons (car-atom $expr) (list (cdr-atom $expr)))))
+
+(= (tree $expr)
+   (if (null? $expr)
+        Nil
+        (let* (($head (car-atom $expr)) ($tail (cdr-atom $expr)))
+            (if (== (get-metatype $head) Expression)
+                (Cons (tree $head) (tree $tail))
+                (Cons $head (tree $tail))))))
 
 (= (one-through-four) (list (1 2 3 4)))
 
 (= (car-list (Cons $x $xs))
     $x)
 
-(= (car-list (Nil))
+(= (car-list Nil)
     Nil)
 
 (= (cdr-list (Cons $x $xs))
     $xs)
 
-(= (cdr-list (Nil))
+(= (cdr-list Nil)
     Nil)
 
 (= (cadr-list $x)
@@ -372,31 +369,17 @@
     Nil)
 ; -----------------------End of Exercise 2.23---------------------------
 
-; Procedure to count leaves on Scheme looks like this:
-;(define (count-leaves x)
-;    (cond ((null? x) 0)
-;        ((not (pair? x)) 1)
-;        (else (+ (count-leaves (car x))
-;            (count-leaves (cdr x))))))
+; Procedure to count leaves:
 
-; But in Metta, we do not have function pair? So, I'm using a workaround - checking type of current input. List in Metta
-; will be something like that (Number Number (Number Number)) for list (1 5 (6 4)). So, when we are reaching "not-pair?"
-; we are actually reaching just Number in our program. Of course this check won't work if we are working with list of
-; letters not numbers, but this is a workaround I've got in mind. Feel free to share your vision.
-
-(= (count-leaves Nil)
-    0)
-(= (count-leaves $x)
-        (if (== (get-type $x) Number)
-            1
-            (empty)))
-(= (count-leaves (Cons $x $xs))
-        (+ (count-leaves $x)
-            (count-leaves $xs)))
+(= (count-leaves $tree)
+   (case $tree
+   ((Nil 0)
+     ((Cons $x $xs) (+ (count-leaves $x) (count-leaves $xs)))
+     ($_ 1))))
 
 
 ; (x) is a simple tree
-(= (x) (list ((1 2) 3 4)))
+(= (x) (tree ((1 2) 3 4)))
 
 !(assertEqual
     (length (x))
@@ -407,11 +390,11 @@
     4)
 
 !(assertEqual
-    (length (makelist ((x) (x))))
+    (length (list ((x) (x))))
     2)
 
 !(assertEqual
-    (count-leaves (makelist ((x) (x))))
+    (count-leaves (list ((x) (x))))
     8)
 
 
@@ -429,22 +412,20 @@
 
 ; !(deep-reverse (x)) -> ((4 3) (2 1))
 
-(= (deep-reverse Nil)
-    Nil)
-(= (deep-reverse $x)
-    (if (== (get-type $x) Number)
-        $x
-        (empty)))
-(= (deep-reverse (Cons $x $xs))
-    (append (deep-reverse $xs) (makelist ((deep-reverse $x)))))
+(= (deep-reverse $tree)
+   (case $tree (
+     (Nil Nil)
+     ((Cons $x $xs) (append (deep-reverse $xs) (list ((deep-reverse $x)))))
+     ($_ $tree) )))
+
 
 !(assertEqual
-    (deep-reverse (list ((1 2) (3 4))))
-    (list ((4 3) (2 1))))
+    (deep-reverse (tree ((1 2) (3 4))))
+    (tree ((4 3) (2 1))))
 
 !(assertEqual
-    (deep-reverse (list ((1 2 3) (4 5 6) (7 8 9))))
-    (list ((9 8 7) (6 5 4) (3 2 1))))
+    (deep-reverse (tree ((1 2 3) (4 5 6) (7 8 9))))
+    (tree ((9 8 7) (6 5 4) (3 2 1))))
 
 ; -----------------------End of Exercise 2.23---------------------------
 
@@ -459,21 +440,18 @@
 
 ; !(fringe (list (x x))) -> (1 2 3 4 1 2 3 4)
 
-(= (fringe $x)
-    (if (== (get-type $x) Number)
-        (list ($x))
-        (empty)))
-(= (fringe (Cons $x Nil))
-    (fringe $x))
-(= (fringe (Cons $x $xs))
-    (append (fringe $x) (fringe $xs)))
+(= (fringe $tree)
+   (case $tree (
+     ((Cons $x Nil) (fringe $x))
+     ((Cons $x $xs) (append (fringe $x) (fringe $xs)))
+     ($_ (list ($tree))))))
 
 !(assertEqual
-    (fringe (makelist ((list (1 2)) (list (3 4)))))
+    (fringe (list ((list (1 2)) (list (3 4)))))
     (list (1 2 3 4)))
 
 !(assertEqual
-    (fringe (makelist ((makelist ((list (1 2)) (list (3 4)))) (makelist ((list (1 2)) (list (3 4)))))))
+    (fringe (list ((list ((list (1 2)) (list (3 4)))) (list ((list (1 2)) (list (3 4)))))))
     (list (1 2 3 4 1 2 3 4)))
 
 ; -----------------------End of Exercise 2.28---------------------------
@@ -487,13 +465,13 @@
 ; constructing it from two branches (for example, using list):
 
 (= (make-mobile $left $right)
-  (makelist ($left $right)))
+  (list ($left $right)))
 
 ; A branch is constructed from a length (which must be a number) together
 ; with a structure, which may be either a number (representing a simple weight) or another mobile:
 
 (= (make-branch $length $structure)
-  (makelist ($length $structure)))
+  (list ($length $structure)))
 
 ; a.  Write the corresponding selectors left-branch and right-branch,
 ;     which return the branches of a mobile, and branch-length and
@@ -542,33 +520,33 @@
                             (make-branch 7 (complex-mobile))
                              (make-branch 8 (complex-mobile))))
 
-
 (= (total-weight $mobile)
-    (if (== (get-type $mobile) Number)
-        $mobile
-        (+ (total-weight (branch-structure (left-branch $mobile)))
-            (total-weight (branch-structure (right-branch $mobile))))))
+   (case $mobile (
+     ((Cons $x $xs) (+ (total-weight (branch-structure (left-branch $mobile)))
+                        (total-weight (branch-structure (right-branch $mobile)))))
+     ($_ $mobile))))
 
 !(assertEqual
     (total-weight (more-complex-mobile))
     100)
 
-(= (isbalanced? $mobile)
-     (if (== (get-type $mobile) Number)
-        True
+(= (isbalanced $mobile)
+   (case $mobile (
+     ((Cons $x $xs)
         (let*
-        (
-            ($left-br (left-branch $mobile))
-            ($right-br (right-branch $mobile))
-            ($left-br-str (branch-structure $left-br))
-            ($right-br-str (branch-structure $right-br))
-            ($left-br-len (branch-length $left-br))
-            ($right-br-len (branch-length $right-br))
-        )
-        (if (== (* $left-br-len (total-weight $left-br-str))
-                (* $right-br-len (total-weight $right-br-str)))
-                (and (isbalanced? $left-br-str) (isbalanced? $right-br-str))
-                False))))
+            (
+                ($left-br (left-branch $mobile))
+                ($right-br (right-branch $mobile))
+                ($left-br-str (branch-structure $left-br))
+                ($right-br-str (branch-structure $right-br))
+                ($left-br-len (branch-length $left-br))
+                ($right-br-len (branch-length $right-br))
+            )
+            (if (== (* $left-br-len (total-weight $left-br-str))
+                    (* $right-br-len (total-weight $right-br-str)))
+                    (and (isbalanced? $left-br-str) (isbalanced? $right-br-str))
+                    False)))
+     ($_ True))))
 
 !(assertEqual
     (isbalanced? (simple-mobile))
@@ -580,31 +558,28 @@
 ; -----------------------End of Exercise 2.29---------------------------
 
 ; Same as scale-list, but for trees
-(= (scale-tree $x $factor)
-    (if (== (get-type $x) Number)
-        (* $x $factor)
-        (empty)))
-(= (scale-tree Nil $factor)
-    Nil)
-(= (scale-tree (Cons $x $xs) $factor)
-    (Cons (scale-tree $x $factor)
-          (scale-tree $xs $factor)))
+
+(= (scale-tree $tree $factor)
+   (case $tree (
+     (Nil Nil)
+     ((Cons $x $xs) (Cons (scale-tree $x $factor)
+                            (scale-tree $xs $factor)))
+     ($_ (* $tree $factor)))))
 
 !(assertEqual
-    (scale-tree (makelist (1 (makelist (2 (list (3 4)) 5)) (list (6 7)))) 10)
-    (list (10 (20 (30 40) 50) (60 70))))
+    (scale-tree (list (1 (list (2 (list (3 4)) 5)) (list (6 7)))) 10)
+    (tree (10 (20 (30 40) 50) (60 70))))
 
 ; Scale tree but using map for definition
 (= (scale-tree-m $tree $factor)
     (map (lambda1 $sub-tree
-        (if (== (get-type $sub-tree) Number)
-            (* $sub-tree $factor)
-            (scale-tree-m $sub-tree $factor)))
+        (case $sub-tree
+            (((Cons $x $xs) (scale-tree-m $sub-tree $factor))
+            ($_ (* $sub-tree $factor)))))
             $tree))
-
 !(assertEqual
-    (scale-tree-m (makelist (1 (makelist (2 (list (3 4)) 5)) (list (6 7)))) 10)
-    (list (10 (20 (30 40) 50) (60 70))))
+    (scale-tree-m (list (1 (list (2 (list (3 4)) 5)) (list (6 7)))) 10)
+    (tree (10 (20 (30 40) 50) (60 70))))
 
 
 ; Exercise 2.30.
@@ -622,30 +597,28 @@
 
 ;Directly
 
-(= (square-tree Nil)
-    Nil)
-(= (square-tree $x)
-    (if (== (get-type $x) Number)
-            (* $x $x)
-            (empty)))
-(= (square-tree (Cons $x $xs))
-    (Cons (square-tree $x) (square-tree $xs)))
+(= (square-tree $tree)
+    (case $tree
+        ((Nil Nil)
+        ((Cons $x $xs) (Cons (square-tree $x) (square-tree $xs)))
+        ($_  (* $tree $tree)))))
 
 !(assertEqual
-    (square-tree (makelist (1 (makelist (2 (list (3 4)) 5)) (list (6 7)))))
-    (list (1 (4 (9 16) 25) (36 49))))
+    (square-tree (list (1 (list (2 (list (3 4)) 5)) (list (6 7)))))
+    (tree (1 (4 (9 16) 25) (36 49))))
 
+;Using map function
 
 (= (square-tree-m $tree)
     (map (lambda1 $sub-tree
-        (if (== (get-type $sub-tree) Number)
-            (* $sub-tree $sub-tree)
-            (square-tree-m $sub-tree)))
+        (case $sub-tree
+            (((Cons $x $xs) (square-tree-m $sub-tree))
+            ($_ (* $sub-tree $sub-tree)))))
             $tree))
 
 !(assertEqual
-    (square-tree-m (makelist (1 (makelist (2 (list (3 4)) 5)) (list (6 7)))))
-    (list (1 (4 (9 16) 25) (36 49))))
+    (square-tree-m (list (1 (list (2 (list (3 4)) 5)) (list (6 7)))))
+    (tree (1 (4 (9 16) 25) (36 49))))
 
 ; -----------------------End of Exercise 2.30---------------------------
 
@@ -657,20 +630,17 @@
 
 ; (= (square-tree $tree) (tree-map square $tree))
 
-(= (tree-map $proc Nil)
-    Nil)
-(= (tree-map $proc $x)
-    (if (== (get-type $x) Number)
-            ($proc $x)
-            (empty)))
-(= (tree-map $proc (Cons $x $xs))
-    (Cons (tree-map $proc $x) (tree-map $proc $xs)))
+(= (tree-map $proc $tree)
+    (case $tree
+        ((Nil Nil)
+        ((Cons $x $xs) (Cons (tree-map $proc $x) (tree-map $proc $xs)))
+        ($_ ($proc $tree)))))
 
 (= (square-tree-tm $tree) (tree-map square $tree))
 
 !(assertEqual
-    (square-tree-tm (makelist (1 (makelist (2 (list (3 4)) 5)) (list (6 7)))))
-    (list (1 (4 (9 16) 25) (36 49))))
+    (square-tree-tm (list (1 (list (2 (list (3 4)) 5)) (list (6 7)))))
+    (tree (1 (4 (9 16) 25) (36 49))))
 
 ; -----------------------End of Exercise 2.31---------------------------
 
@@ -684,14 +654,14 @@
 ; and give a clear explanation of why it works:
 
 (= (subsets Nil)
-    (list (())))
+    (list (Nil)))
 (= (subsets (Cons $x $xs))
     (let $rest (subsets $xs)
-        (append $rest (map (lambda1 $y (append $y (makelist ($x)))) $rest))))
+        (append $rest (map (lambda1 $y (append $y (list ($x)))) $rest))))
 
 !(assertEqual
     (subsets (list (1 2 3)))
-    (list (() (3) (2) (3 2) (1) (3 1) (2 1) (3 2 1))))
+    (tree (Nil (3) (2) (3 2) (1) (3 1) (2 1) (3 2 1))))
 
 ; -----------------------End of Exercise 2.32---------------------------
 
@@ -742,19 +712,15 @@
     (list (2 3 4 5 6 7)))
 
 ; Returns leaves of the $tree:
-(= (enumerate-tree Nil)
-    Nil)
-(= (enumerate-tree $x)
-    (if (== (get-type $x) Number)
-        (list ($x))
-        (empty)))
-(= (enumerate-tree (Cons $x $xs))
-    (append (enumerate-tree $x)
-            (enumerate-tree $xs)))
-
+(= (enumerate-tree $tree)
+    (case $tree
+        ((Nil Nil)
+        ((Cons $x $xs) (append (enumerate-tree $x)
+                        (enumerate-tree $xs)))
+        ($_ (list ($tree))))))
 
 !(assertEqual
-    (enumerate-tree (makelist (1 (makelist (2 (list (3 4)))) 5)))
+    (enumerate-tree (list (1 (list (2 (list (3 4)))) 5)))
     (list (1 2 3 4 5)))
 
 ; Definition of some functions using accumulate and map. For example function which returns sum of squares of odd numbers
@@ -767,7 +733,7 @@
                 (enumerate-tree $tree)))))
 
 !(assertEqual
-    (sum-odd-squares (makelist (1 (makelist (2 (list (3 4)))) 5)))
+    (sum-odd-squares (list (1 (list (2 (list (3 4)))) 5)))
     35)
 
 ; Just regular Fibonacci numbers generator:
@@ -892,8 +858,8 @@
     (map (lambda1 $x 1) (enumerate-tree $t))))
 
 !(assertEqual
-    (count-leaves-acc (makelist (1 (makelist (2 (list (3 4)))) 5)))
-    (count-leaves (makelist (1 (makelist (2 (list (3 4)))) 5))))
+    (count-leaves-acc (list (1 (list (2 (list (3 4)))) 5)))
+    (count-leaves (list (1 (list (2 (list (3 4)))) 5))))
 
 ; -----------------------End of Exercise 2.35---------------------------
 
@@ -922,7 +888,7 @@
 ; This one takes long time to complete
 
 !(assertEqual
-    (accumulate-n + 0 (list ((1 2 3) (4 5 6) (7 8 9) (10 11 12))))
+    (accumulate-n + 0 (tree ((1 2 3) (4 5 6) (7 8 9) (10 11 12))))
     (list (22 26 30)))
 ; -----------------------End of Exercise 2.36---------------------------
 
@@ -975,7 +941,7 @@
 
 (= (vec1) (list (1 3 -5)))
 (= (vec2) (list (4 -2 -1)))
-(= (mat) (makelist ((vec2) (vec1) (vec2))))
+(= (mat) (list ((vec2) (vec1) (vec2))))
 
 !(assertEqual
     (dot-product (vec1) (vec2))
@@ -993,18 +959,18 @@
 
 !(assertEqual
     (transpose (mat))
-    (list ((4 1 4) (-2 3 -2) (-1 -5 -1))))
+    (tree ((4 1 4) (-2 3 -2) (-1 -5 -1))))
 
 (= (matrix-*-matrix $m $n)
   (let $cols (transpose $n)
     (map (lambda1 $x (matrix-*-vector $cols $x)) $m)))
 
-(= (mat2) (list ((1 3 5) (2 3 9) (2 4 7))))
+(= (mat2) (tree ((1 3 5) (2 3 9) (2 4 7))))
 
 ; this one takes ~ 5 mins
 !(assertEqual
     (matrix-*-matrix (mat2) (mat))
-    (list ((27 -3 -21) (47 -13 -26) (40 -6 -29))))
+    (tree ((27 -3 -21) (47 -13 -26) (40 -6 -29))))
 
 ; -----------------------End of Exercise 2.37---------------------------
 
@@ -1113,14 +1079,14 @@
 
 !(assertEqual
     (prime-sum-pairs 5)
-    (list ((2 1 3) (3 2 5) (4 1 5) (4 3 7) (5 2 7))))
+    (tree ((2 1 3) (3 2 5) (4 1 5) (4 3 7) (5 2 7))))
 
 (= (remove $item $sequence)
     (filter (lambda1 $x (not (== $x $item)))
         $sequence))
 
 (= (permutations Nil)
-    (makelist (Nil)))
+    (list (Nil)))
 (= (permutations (Cons $x $xs))
     (let $s (Cons $x $xs)
         (flatmap
@@ -1131,7 +1097,7 @@
 
 !(assertEqual
     (permutations (list (2 1 5)))
-    (list ((2 1 5) (2 5 1) (1 2 5) (1 5 2) (5 2 1) (5 1 2))))
+    (tree ((2 1 5) (2 5 1) (1 2 5) (1 5 2) (5 2 1) (5 1 2))))
 
 
 ; Exercise 2.40.
@@ -1154,7 +1120,7 @@
 
 !(assertEqual
     (prime-sum-pairs-up 5)
-    (list ((2 1 3) (3 2 5) (4 1 5) (4 3 7) (5 2 7))))
+    (tree ((2 1 3) (3 2 5) (4 1 5) (4 3 7) (5 2 7))))
 
 ; -----------------------End of Exercise 2.40---------------------------
 
@@ -1182,7 +1148,7 @@
 
 !(assertEqual
     (triples-sum 3)
-    (list ((1 1 1))))
+    (tree ((1 1 1))))
 
 ; -----------------------End of Exercise 2.41---------------------------
 
@@ -1271,7 +1237,7 @@
 (= (queens $board-size)
   (let $queen-cols (lambda2 $k $self
     (if (== $k 0)
-        (makelist ((empty-board)))
+        (list ((empty-board)))
         (filter
          (lambda1 $positions (safe? $k $positions))
          (flatmap
@@ -1298,8 +1264,8 @@
 ;        (map (lambda1 $new-row
 ;               (adjoin-position $new-row 2 $rest-of-queens))
 ;             (enumerate-interval 1 4)))
-;      (list (((1 1)) ((1 2)) ((1 3)) ((1 4))))))
-;    (list (((1 1) (2 3)) ((1 1) (2 4)) ((1 2) (2 4)) ((1 3) (2 1)) ((1 4) (2 1)) ((1 4) (2 2)))))
+;      (tree (((1 1)) ((1 2)) ((1 3)) ((1 4))))))
+;    (tree (((1 1) (2 3)) ((1 1) (2 4)) ((1 2) (2 4)) ((1 3) (2 1)) ((1 4) (2 1)) ((1 4) (2 2)))))
 
 ; -----------------------End of Exercise 2.42---------------------------
 
@@ -1352,7 +1318,7 @@
 ; Exercise 2.47.  Here are two possible constructors for frames:
 
 (= (make-frame $origin $edge1 $edge2)
-    (makelist ($origin $edge1 $edge2)))
+    (list ($origin $edge1 $edge2)))
 
 (= (make-frame_2 $origin $edge1 $edge2)
     (Cons $origin (Cons $edge1 (Cons $edge2 Nil))))
@@ -1456,7 +1422,7 @@
 
 ; a
 (= (rect-paint)
-    (segments_painter (makelist ((make-segment (make-vect 0 0) (make-vect 1 0))
+    (segments_painter (list ((make-segment (make-vect 0 0) (make-vect 1 0))
                               (make-segment (make-vect 1 0) (make-vect 1 1))
                               (make-segment (make-vect 1 1) (make-vect 0 1))
                               (make-segment (make-vect 0 1) (make-vect 0 0))))))
@@ -1464,14 +1430,14 @@
 ;b
 (= (x-paint)
     (segments_painter
-        (makelist
+        (list
           ((make-segment (make-vect 0 0) (make-vect 1 1))
           (make-segment (make-vect 0 1) (make-vect 1 0))))))
 
 ;c
 (= (rhomb-paint)
   (segments_painter
-    (makelist
+    (list
       ((make-segment (make-vect 0.5 0) (make-vect 1 0.5))
       (make-segment (make-vect 1 0.5) (make-vect 0.5 1))
       (make-segment (make-vect 0.5 1) (make-vect 0 0.5))
@@ -1481,7 +1447,7 @@
 ; something not symmetrical. I've decided to make rectangular trapezoid
 
 (= (rtrap-paint)
-    (segments_painter (makelist ((make-segment (make-vect 0 0) (make-vect 0 1))
+    (segments_painter (list ((make-segment (make-vect 0 0) (make-vect 0 1))
                               (make-segment (make-vect 0 1) (make-vect 0.6 0.75))
                               (make-segment (make-vect 0.6 0.75) (make-vect 0.6 0))
                               (make-segment (make-vect 0.6 0) (make-vect 0 0))))))
