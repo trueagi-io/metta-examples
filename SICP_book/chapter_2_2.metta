@@ -1,90 +1,78 @@
-; Those three functions are not just wraps for convenient usage of car instead car-atom, but they will help to
-; avoid necessity of usage of let in some functions where cons, car and cdr will be used in recursion scheme.
+; So apparently this is not in metta-style to use car-atom/cdr-atom/cons-atom to manipulate numeric lists/trees etc.
+; because of that lists won't look like (1 2 3 4) but instead like (Cons 1 (Cons 2 (Cons 3 (Cons 4 Nil)))). So every
+; exercise will use this notation for lists.
 
-(= (cons $x $y)
-    (cons-atom $x $y))
+(= (null? $expr)
+    (== $expr ()))
 
-(= (car $x)
-    (car-atom $x))
+(= (null-list? $list)
+    (== $list Nil))
 
-(= (cdr $x)
-    (cdr-atom $x))
+(= (list $expr)
+   (if (null? $expr)
+       Nil
+       (if (== (get-type $expr) Number)
+        $expr
+        (Cons (list (car-atom $expr)) (list (cdr-atom $expr))))))
 
-(= (cadr $x)
-    (car (cdr $x)))
+; Makelist helps to construct list from already constructed (using list func) lists. It will be possible to manipulate
+; resulting lists using car-list, cdr-list as it should be.
 
-(= (cddr $x)
-    (cdr (cdr $x)))
-
-(= (caddr $x)
-    (car (cddr $x)))
-
-(= (null? $list)
-    (== $list ()))
-
-(= (list $varlist) $varlist)
+(= (makelist $x)
+    (if (null? $x)
+        Nil
+        (let $cdr (cdr-atom $x)
+            (Cons (car-atom $x) (makelist $cdr)))))
 
 (= (one-through-four) (list (1 2 3 4)))
 
+(= (car-list (Cons $x $xs))
+    $x)
+
+(= (car-list (Nil))
+    Nil)
+
+(= (cdr-list (Cons $x $xs))
+    $xs)
+
+(= (cdr-list (Nil))
+    Nil)
+
+(= (cadr-list $x)
+    (car-list (cdr-list $x)))
+
+(= (cddr-list $x)
+    (cdr-list (cdr-list $x)))
+
+(= (caddr-list $x)
+    (car-list (cddr-list $x)))
+
+(= (cdar-list $x)
+    (cdr-list (car-list $x)))
+
 !(assertEqual
     (one-through-four)
-    (1 2 3 4))
-
-; In Metta car-atom, cons-atom, cdr-atom are not evaluating their arguments. Because of that you can't use them as car,
-; cdr, cons from something like Scheme:
+    (Cons 1 (Cons 2 (Cons 3 (Cons 4 Nil)))))
 
 !(assertEqual
-    (car-atom (one-through-four))
-    one-through-four)
-
-; Usage of "let" can bypass this problem since in this case second argument of let is being evaluated:
-!(assertEqual
-    (let $list (one-through-four) (car-atom $list))
+    (car-list (one-through-four))
     1)
 
-; But instead I've wrapped those -atom functions to functions car/cdr/cons respectively which helps to avoid
-; over-complication with many "let"s:
 !(assertEqual
-    (car (one-through-four))
-    1)
-
-; Same goes here:
-!(assertEqual
-    (cdr-atom (one-through-four))
-    ())
+    (cdr-list (one-through-four))
+    (list (2 3 4)))
 
 !(assertEqual
-    (cdr (one-through-four))
-    (2 3 4))
-
-; Consequent application of car-atom, cdr-atom is also requires some extra "let"s:
-!(assertEqual
-    (car-atom (cdr-atom (one-through-four)))
-    cdr-atom)
-
-!(assertEqual
-    (let $list (1 2 3 4)
-        (let $tail (cdr-atom $list)
-            (car-atom $tail)))
-    2)
-
-; But it is simpler to do this:
-
-!(assertEqual
-    (car (cdr (1 2 3 4)))
-    2)
-
-!(assertEqual
-    (cons 10 (one-through-four))
-    (10 1 2 3 4))
+    (Cons 10 (one-through-four))
+    (list (10 1 2 3 4)))
 
 ; Get n-th element from list:
-(= (list-ref $items $n)
-    (if (null? $items)
-        (Error (list-ref $items $n) "Index out of bounds")
+(= (list-ref $list $n)
+    (if (null-list? $list)
+        (Error (list-ref $list $n) "Index out of bounds")
         (if (== $n 0)
-            (car $items)
-            (list-ref (cdr $items) (- $n 1)))))
+            (car-list $list)
+            (list-ref (cdr-list $list) (- $n 1)))))
 
 (= (squares) (list (1 4 9 16 25)))
 
@@ -92,11 +80,15 @@
     (list-ref (squares) 3)
     16)
 
+!(assertEqual
+    (list-ref (squares) 5)
+    (Error (list-ref Nil 0) "Index out of bounds"))
+
 ; Get list's length:
-(= (length $items)
-    (if (null? $items)
-        0
-        (+ 1 (length (cdr $items)))))
+(= (length Nil)
+    0)
+(= (length (Cons $x $xs))
+    (+ 1 (length $xs)))
 
 !(assertEqual
     (length (squares))
@@ -110,19 +102,18 @@
 
 ; Append one list to the end of another:
 
-(= (append $list1 $list2)
-    (if (null? $list1)
-        $list2
-        (cons (car $list1) (append (cdr $list1) $list2))))
+(= (append Nil $list2)
+   $list2)
+(= (append (Cons $x $xs) $list2)
+   (Cons $x (append $xs $list2)))
 
 !(assertEqual
     (append (squares) (odds))
-    (1 4 9 16 25 1 3 5 7))
+    (list (1 4 9 16 25 1 3 5 7)))
 
 !(assertEqual
     (append (odds) (squares))
-    (1 3 5 7 1 4 9 16 25))
-
+    (list (1 3 5 7 1 4 9 16 25)))
 
 ; Exercise 2.17.
 ; Define a procedure last-pair that returns the list that contains only the
@@ -130,10 +121,10 @@
 ;
 ; Example: (last-pair (list 10 12 41 32)) -> 32
 
-(= (last-pair $list)
-    (if (null? (cdr $list))
-        (car $list)
-        (last-pair (cdr $list))))
+(= (last-pair (Cons $x Nil))
+    $x)
+(= (last-pair (Cons $x (Cons $y $ys)))
+    (last-pair (Cons $y $ys)))
 
 !(assertEqual
     (last-pair (squares))
@@ -146,14 +137,15 @@
 ;
 ; Example: (reverse (list 1 4 9 16 25)) -> (25 16 9 4 1)
 
-(= (reverse $list)
-    (if (null? (cdr $list))
-        ((car $list))
-         (append (reverse (cdr $list)) ((car $list)))))
+
+(= (reverse (Cons $x Nil))
+    (Cons $x Nil))
+(= (reverse (Cons $x (Cons $y $ys)))
+    (append (reverse (Cons $y $ys)) (Cons $x Nil)))
 
 !(assertEqual
-    (reverse (squares))
-    (25 16 9 4 1))
+   (reverse (squares))
+   (list (25 16 9 4 1)))
 
 ; -----------------------End of Exercise 2.18---------------------------
 
@@ -198,13 +190,13 @@
 ; coin-values affect the answer produced by cc? Why or why not?
 
 (= (first-denomination $coin-values)
-    (car $coin-values))
+    (car-list $coin-values))
 
 (= (except-first-denomination $coin-values)
-    (cdr $coin-values))
+    (cdr-list $coin-values))
 
 (= (no-more? $coin-values)
-    (null? $coin-values))
+    (null-list? $coin-values))
 
 !(assertEqual
     (cc 20 (us-coins))
@@ -251,44 +243,44 @@
 
 ; Metta currently doesn't have such functionality. So, I'll use a workaround.
 
-(= (same-parity $x $arglist)
-    (if (null? $arglist)
-        ()
-        (let $recres (same-parity $x (cdr $arglist))
-            (if (== (% $x 2) (% (car $arglist) 2))
-                (cons (car $arglist) $recres)
-                $recres))))
+(= (same-parity $x Nil)
+    Nil)
+(= (same-parity $x (Cons $y $ys))
+    (let $recres (same-parity $x $ys)
+        (if (== (% $x 2) (% $y 2))
+            (Cons $y $recres)
+            $recres)))
 
 !(assertEqual
-    (same-parity 1 (2 3 4 5 6 7))
-    (3 5 7))
+    (same-parity 1 (list (2 3 4 5 6 7)))
+    (list (3 5 7)))
 
 !(assertEqual
-    (same-parity 2 (2 3 4 5 6 7))
-    (2 4 6))
+    (same-parity 2 (list (2 3 4 5 6 7)))
+    (list (2 4 6)))
 ; -----------------------End of Exercise 2.20---------------------------
 
 ; Multiply every list's element by same $factor:
-(= (scale-list $items $factor)
-    (if (null? $items)
-        ()
-        (cons (* (car $items) $factor) (scale-list (cdr $items) $factor))))
+
+(= (scale-list Nil $factor)
+    Nil)
+(= (scale-list (Cons $x $xs) $factor)
+    (Cons (* $x $factor) (scale-list $xs $factor)))
 
 !(assertEqual
     (scale-list (list (1 2 3 4 5)) 10)
-    (10 20 30 40 50))
+    (list (10 20 30 40 50)))
 
-; Apply $proc to every $items element and return list of results:
-(= (map $proc $items)
-    (if (null? $items)
-        ()
-         (cons ($proc (car $items)) (map $proc (cdr $items)))))
+(= (map $proc Nil)
+    Nil)
+(= (map $proc (Cons $x $xs))
+    (Cons ($proc $x) (map $proc $xs)))
 
 (= (abs $x) (if (< $x 0) (* $x -1) $x))
 
 !(assertEqual
     (map abs (list (-10 2.5 -11.6 17)))
-    (10 2.5 11.6 17))
+    (list (10 2.5 11.6 17)))
 
 (: lambda1 (-> Variable Atom (-> $a $t)))
 (= ((lambda1 $var $body) $val)
@@ -299,15 +291,14 @@
 
 !(assertEqual
     (map square (list (1 2 3 4)))
-    (1 4 9 16))
+    (list (1 4 9 16)))
 
-; Redefinition of scale-list using map:
 (= (scale-list-m $items $factor)
     (map (lambda1 $x (* $x $factor)) $items))
 
 !(assertEqual
     (scale-list-m (list (1 2 3 4 5)) 10)
-    (10 20 30 40 50))
+    (list (10 20 30 40 50)))
 
 
 ; Exercise 2.21.
@@ -318,22 +309,21 @@
 
 ; Here are two different definitions of square-list. Complete both of them by filling in the missing expressions:
 
-(= (square-list $items)
-    (if (null? $items)
-        ()
-        (let $head (car $items)
-            (cons (* $head $head) (square-list (cdr $items))))))
+(= (square-list Nil)
+    Nil)
+(= (square-list (Cons $x $xs))
+    (Cons (* $x $x) (square-list $xs)))
 
 (= (square-list-m $items)
     (map square $items))
 
 !(assertEqual
-    (square-list (1 2 3 4 5))
-    (1 4 9 16 25))
+    (square-list (list (1 2 3 4 5)))
+    (list (1 4 9 16 25)))
 
 !(assertEqual
-    (square-list-m (1 2 3 4 5))
-    (1 4 9 16 25))
+    (square-list-m (list (1 2 3 4 5)))
+    (list (1 4 9 16 25)))
 
 ; -----------------------End of Exercise 2.21---------------------------
 
@@ -355,31 +345,31 @@
 ; be something arbitrary, such as true. Give an implementation of for-each.
 
 ; one way to implement for-each is:
-;(= (for-each $proc $list)
-;    (if (null? $list)
-;        ()
-;        (let*
-;        (
-;            (() ($proc (car $list)))
-;            (() (for-each $proc (cdr $list)))
-;        )
-;        ())))
+;(= (for-each $proc Nil)
+;    Nil)
+;(= (for-each $proc (Cons $x $xs))
+;    (let*
+;    (
+;        (() ($proc $x))
+;        (() (for-each $proc $xs))
+;    )
+;    ()))
 
 ; This one was provided by Vitaly Bogdanov. And this implementation checks if there was an error during $proc call.
 ; This is helpful in exercise 2.49 when I'm using for-each to call python function.
-(= (for-each $proc $list)
-    (if (null? $list)
-        ()
-        (let $res ($proc (car $list))
+
+(= (for-each $proc Nil)
+    Nil)
+(= (for-each $proc (Cons $x $xs))
+    (let $res ($proc $x)
             (unify $res (Error $_atom $_msg)
             $res
-            (for-each $proc (cdr $list))))
-        ))
+            (for-each $proc $xs))))
 
 ; prints list
 !(assertEqual
     (for-each println! (list (57 321 88)))
-    ())
+    Nil)
 ; -----------------------End of Exercise 2.23---------------------------
 
 ; Procedure to count leaves on Scheme looks like this:
@@ -394,19 +384,19 @@
 ; we are actually reaching just Number in our program. Of course this check won't work if we are working with list of
 ; letters not numbers, but this is a workaround I've got in mind. Feel free to share your vision.
 
+(= (count-leaves Nil)
+    0)
 (= (count-leaves $x)
-    (if (null? $x)
-        0
         (if (== (get-type $x) Number)
             1
-            (+ (count-leaves (car $x))
-                (count-leaves (cdr $x))))))
+            (empty)))
+(= (count-leaves (Cons $x $xs))
+        (+ (count-leaves $x)
+            (count-leaves $xs)))
 
-(= (x) (let $list2 (list (3 4)) (cons (list (1 2)) $list2)))
 
-!(assertEqual
-    (x)
-    ((1 2) 3 4))
+; (x) is a simple tree
+(= (x) (list ((1 2) 3 4)))
 
 !(assertEqual
     (length (x))
@@ -417,11 +407,11 @@
     4)
 
 !(assertEqual
-    (length (list ((x) (x))))
+    (length (makelist ((x) (x))))
     2)
 
 !(assertEqual
-    (count-leaves (list ((x) (x))))
+    (count-leaves (makelist ((x) (x))))
     8)
 
 
@@ -439,20 +429,22 @@
 
 ; !(deep-reverse (x)) -> ((4 3) (2 1))
 
-(= (deep-reverse $list)
-    (if (null? $list)
-        ()
-        (if (== (get-type $list) Number)
-            $list
-                (append (deep-reverse (cdr $list)) (list ((deep-reverse (car $list))))))))
+(= (deep-reverse Nil)
+    Nil)
+(= (deep-reverse $x)
+    (if (== (get-type $x) Number)
+        $x
+        (empty)))
+(= (deep-reverse (Cons $x $xs))
+    (append (deep-reverse $xs) (makelist ((deep-reverse $x)))))
 
 !(assertEqual
-    (deep-reverse ((1 2) (3 4)))
-    ((4 3) (2 1)))
+    (deep-reverse (list ((1 2) (3 4))))
+    (list ((4 3) (2 1))))
 
 !(assertEqual
-    (deep-reverse ((1 2 3) (4 5 6) (7 8 9)))
-    ((9 8 7) (6 5 4) (3 2 1)))
+    (deep-reverse (list ((1 2 3) (4 5 6) (7 8 9))))
+    (list ((9 8 7) (6 5 4) (3 2 1))))
 
 ; -----------------------End of Exercise 2.23---------------------------
 
@@ -467,23 +459,24 @@
 
 ; !(fringe (list (x x))) -> (1 2 3 4 1 2 3 4)
 
-(= (fringe $list)
-    (if (null? $list)
-        ()
-        (if (== (get-type $list) Number)
-            ($list)
-            (append (fringe (car $list)) (fringe (cdr $list))))))
+(= (fringe $x)
+    (if (== (get-type $x) Number)
+        (list ($x))
+        (empty)))
+(= (fringe (Cons $x Nil))
+    (fringe $x))
+(= (fringe (Cons $x $xs))
+    (append (fringe $x) (fringe $xs)))
 
 !(assertEqual
-    (fringe (list ((list (1 2)) (list (3 4)))))
-    (1 2 3 4))
+    (fringe (makelist ((list (1 2)) (list (3 4)))))
+    (list (1 2 3 4)))
 
 !(assertEqual
-    (fringe (list ((list ((list (1 2)) (list (3 4)))) (list ((list (1 2)) (list (3 4)))))))
-    (1 2 3 4 1 2 3 4))
+    (fringe (makelist ((makelist ((list (1 2)) (list (3 4)))) (makelist ((list (1 2)) (list (3 4)))))))
+    (list (1 2 3 4 1 2 3 4)))
 
 ; -----------------------End of Exercise 2.28---------------------------
-
 
 
 ; Exercise 2.29.
@@ -494,13 +487,13 @@
 ; constructing it from two branches (for example, using list):
 
 (= (make-mobile $left $right)
-  (list ($left $right)))
+  (makelist ($left $right)))
 
 ; A branch is constructed from a length (which must be a number) together
 ; with a structure, which may be either a number (representing a simple weight) or another mobile:
 
 (= (make-branch $length $structure)
-  (list ($length $structure)))
+  (makelist ($length $structure)))
 
 ; a.  Write the corresponding selectors left-branch and right-branch,
 ;     which return the branches of a mobile, and branch-length and
@@ -513,18 +506,28 @@
 ;     equal to the corresponding product for the right side) and if each of the
 ;     submobiles hanging off its branches is balanced. Design a predicate that
 ;     tests whether a binary mobile is balanced.
+; d.  Suppose we change the representation of mobiles so that the constructors are
+
+; (= (make-mobile $left $right)
+;   (cons $left $right))
+; (= (make-branch $length $structure)
+;   (cons $length $structure))
+
+; Q: How much do you need to change your programs to convert to the new representation?
+; A: We will need to redefine functions left-branch, right-branch, branch-length and
+; branch-structure.
 
 (= (left-branch $mobile)
-    (car $mobile))
+    (car-list $mobile))
 
 (= (right-branch $mobile)
-    (car (cdr $mobile)))
+    (car-list (cdr-list $mobile)))
 
 (= (branch-structure $branch)
-    (car (cdr $branch)))
+    (car-list (cdr-list $branch)))
 
 (= (branch-length $branch)
-    (car $branch))
+    (car-list $branch))
 
 (= (simple-mobile)
     (make-mobile
@@ -539,6 +542,7 @@
                             (make-branch 7 (complex-mobile))
                              (make-branch 8 (complex-mobile))))
 
+
 (= (total-weight $mobile)
     (if (== (get-type $mobile) Number)
         $mobile
@@ -548,7 +552,6 @@
 !(assertEqual
     (total-weight (more-complex-mobile))
     100)
-
 
 (= (isbalanced? $mobile)
      (if (== (get-type $mobile) Number)
@@ -577,17 +580,19 @@
 ; -----------------------End of Exercise 2.29---------------------------
 
 ; Same as scale-list, but for trees
-(= (scale-tree $tree $factor)
-    (if (null? $tree)
-        ()
-        (if (== (get-type $tree) Number)
-            (* $tree $factor)
-            (cons (scale-tree (car $tree) $factor)
-                    (scale-tree (cdr $tree) $factor)))))
+(= (scale-tree $x $factor)
+    (if (== (get-type $x) Number)
+        (* $x $factor)
+        (empty)))
+(= (scale-tree Nil $factor)
+    Nil)
+(= (scale-tree (Cons $x $xs) $factor)
+    (Cons (scale-tree $x $factor)
+          (scale-tree $xs $factor)))
 
 !(assertEqual
-    (scale-tree (list (1 (list (2 (list (3 4)) 5)) (list (6 7)))) 10)
-    (10 (20 (30 40) 50) (60 70)))
+    (scale-tree (makelist (1 (makelist (2 (list (3 4)) 5)) (list (6 7)))) 10)
+    (list (10 (20 (30 40) 50) (60 70))))
 
 ; Scale tree but using map for definition
 (= (scale-tree-m $tree $factor)
@@ -598,8 +603,8 @@
             $tree))
 
 !(assertEqual
-    (scale-tree-m (list (1 (list (2 (list (3 4)) 5)) (list (6 7)))) 10)
-    (10 (20 (30 40) 50) (60 70)))
+    (scale-tree-m (makelist (1 (makelist (2 (list (3 4)) 5)) (list (6 7)))) 10)
+    (list (10 (20 (30 40) 50) (60 70))))
 
 
 ; Exercise 2.30.
@@ -617,16 +622,18 @@
 
 ;Directly
 
-(= (square-tree $tree)
-    (if (null? $tree)
-        ()
-        (if (== (get-type $tree) Number)
-            (* $tree $tree)
-                (cons (square-tree (car $tree)) (square-tree (cdr $tree))))))
+(= (square-tree Nil)
+    Nil)
+(= (square-tree $x)
+    (if (== (get-type $x) Number)
+            (* $x $x)
+            (empty)))
+(= (square-tree (Cons $x $xs))
+    (Cons (square-tree $x) (square-tree $xs)))
 
 !(assertEqual
-    (square-tree (list (1 (list (2 (list (3 4)) 5)) (list (6 7)))))
-    (1 (4 (9 16) 25) (36 49)))
+    (square-tree (makelist (1 (makelist (2 (list (3 4)) 5)) (list (6 7)))))
+    (list (1 (4 (9 16) 25) (36 49))))
 
 
 (= (square-tree-m $tree)
@@ -637,8 +644,9 @@
             $tree))
 
 !(assertEqual
-    (square-tree-m (list (1 (list (2 (list (3 4)) 5)) (list (6 7)))))
-    (1 (4 (9 16) 25) (36 49)))
+    (square-tree-m (makelist (1 (makelist (2 (list (3 4)) 5)) (list (6 7)))))
+    (list (1 (4 (9 16) 25) (36 49))))
+
 ; -----------------------End of Exercise 2.30---------------------------
 
 
@@ -649,18 +657,21 @@
 
 ; (= (square-tree $tree) (tree-map square $tree))
 
-(= (tree-map $proc $tree)
-    (if (null? $tree)
-        ()
-        (if (== (get-type $tree) Number)
-            ($proc $tree)
-            (cons (tree-map $proc (car $tree)) (tree-map $proc (cdr $tree))))))
+(= (tree-map $proc Nil)
+    Nil)
+(= (tree-map $proc $x)
+    (if (== (get-type $x) Number)
+            ($proc $x)
+            (empty)))
+(= (tree-map $proc (Cons $x $xs))
+    (Cons (tree-map $proc $x) (tree-map $proc $xs)))
 
 (= (square-tree-tm $tree) (tree-map square $tree))
 
 !(assertEqual
-    (square-tree-tm (list (1 (list (2 (list (3 4)) 5)) (list (6 7)))))
-    (1 (4 (9 16) 25) (36 49)))
+    (square-tree-tm (makelist (1 (makelist (2 (list (3 4)) 5)) (list (6 7)))))
+    (list (1 (4 (9 16) 25) (36 49))))
+
 ; -----------------------End of Exercise 2.31---------------------------
 
 ; Exercise 2.32.
@@ -672,16 +683,15 @@
 ; definition of a procedure that generates the set of subsets of a set
 ; and give a clear explanation of why it works:
 
-(= (subsets $s)
-    (if (null? $s)
-        (list (()))
-        (let $rest (subsets (cdr $s))
-            (append $rest (map (lambda1 $x (append $x (list ((car $s))))) $rest)))))
-
+(= (subsets Nil)
+    (list (())))
+(= (subsets (Cons $x $xs))
+    (let $rest (subsets $xs)
+        (append $rest (map (lambda1 $y (append $y (makelist ($x)))) $rest))))
 
 !(assertEqual
-    (subsets (1 2 3))
-    (() (3) (2) (3 2) (1) (3 1) (2 1) (3 2 1)))
+    (subsets (list (1 2 3)))
+    (list (() (3) (2) (3 2) (1) (3 1) (2 1) (3 2 1))))
 
 ; -----------------------End of Exercise 2.32---------------------------
 
@@ -689,26 +699,25 @@
 ; Functions in terms of signal processing. Kind of.
 
 ; Filter the $sequence using $predicate:
-(= (filter $predicate $sequence)
-    (if (null? $sequence)
-        ()
-        (let $car (car $sequence)
-            (let $recrescdr (filter $predicate (cdr $sequence))
-                (if ($predicate $car)
-                    (cons $car $recrescdr)
-                    $recrescdr)))))
+(= (filter $predicate Nil)
+    Nil)
+(= (filter $predicate (Cons $x $xs))
+    (let $recrescdr (filter $predicate $xs)
+        (if ($predicate $x)
+            (Cons $x $recrescdr)
+            $recrescdr)))
 
 (= (odd? $x) (== (% $x 2) 1))
 
 !(assertEqual
-    (filter odd? (1 2 3 4 5))
-    (1 3 5))
+    (filter odd? (list (1 2 3 4 5)))
+    (list (1 3 5)))
 
 ; Function which accumulate items from $sequence using procedure $op and $initial as start of accumulation:
-(= (accumulate $op $initial $sequence)
-    (if (null? $sequence)
-        $initial
-        ($op (car $sequence) (accumulate $op $initial (cdr $sequence)))))
+(= (accumulate $op $initial Nil)
+    $initial)
+(= (accumulate $op $initial (Cons $x $xs))
+    ($op $x (accumulate $op $initial $xs)))
 
 !(assertEqual
     (accumulate + 0 (list (1 2 3 4 5)))
@@ -719,30 +728,34 @@
     120)
 
 !(assertEqual
-    (accumulate cons () (list (1 2 3 4 5)))
-    (1 2 3 4 5))
+    (accumulate Cons Nil (list (1 2 3 4 5)))
+    (list (1 2 3 4 5)))
 
 ; Return list with arranged numbers from $low to $high:
 (= (enumerate-interval $low $high)
     (if (> $low $high)
-        ()
-        (cons $low (enumerate-interval (+ $low 1) $high))))
+        Nil
+        (Cons $low (enumerate-interval (+ $low 1) $high))))
 
 !(assertEqual
     (enumerate-interval 2 7)
-    (2 3 4 5 6 7))
+    (list (2 3 4 5 6 7)))
 
 ; Returns leaves of the $tree:
-(= (enumerate-tree $tree)
-    (if (null? $tree)
-        ()
-        (if (== (get-type $tree) Number)
-            (list ($tree))
-            (append (enumerate-tree (car $tree)) (enumerate-tree (cdr $tree))))))
+(= (enumerate-tree Nil)
+    Nil)
+(= (enumerate-tree $x)
+    (if (== (get-type $x) Number)
+        (list ($x))
+        (empty)))
+(= (enumerate-tree (Cons $x $xs))
+    (append (enumerate-tree $x)
+            (enumerate-tree $xs)))
+
 
 !(assertEqual
-    (enumerate-tree (list (1 (list (2 (list (3 4)))) 5)))
-    (1 2 3 4 5))
+    (enumerate-tree (makelist (1 (makelist (2 (list (3 4)))) 5)))
+    (list (1 2 3 4 5)))
 
 ; Definition of some functions using accumulate and map. For example function which returns sum of squares of odd numbers
 ; from $tree:
@@ -754,7 +767,7 @@
                 (enumerate-tree $tree)))))
 
 !(assertEqual
-    (sum-odd-squares (list (1 (list (2 (list (3 4)))) 5)))
+    (sum-odd-squares (makelist (1 (makelist (2 (list (3 4)))) 5)))
     35)
 
 ; Just regular Fibonacci numbers generator:
@@ -771,28 +784,27 @@
 
 ; Function which outputs only even numbers from Fibonacci sequence:
 (= (even-fibs $n)
-    (accumulate cons
-        ()
+    (accumulate Cons
+        Nil
         (filter even?
             (map fib
                 (enumerate-interval 0 $n)))))
 
 !(assertEqual
     (even-fibs 8)
-    (0 2 8))
+    (list (0 2 8)))
 
 ; Returns list of squared Fibonacci numbers:
 (= (list-fib-squares $n)
-    (accumulate cons
-    ()
+    (accumulate Cons
+    Nil
     (map square
         (map fib
             (enumerate-interval 0 $n)))))
 
 !(assertEqual
-    (list-fib-squares 7)
-    (0 1 1 4 9 25 64 169))
-
+    (list-fib-squares 10)
+    (list (0 1 1 4 9 25 64 169 441 1156 3025)))
 
 ; Function which returns product of squares of odd numbers from $sequence:
 (= (product-of-squares-of-odd-elements $sequence)
@@ -816,18 +828,18 @@
     (let (quote ($var1 $var2)) (quote ($val1 $val2)) $body))
 
 (= (acc-map $p $sequence)
-  (accumulate (lambda2 $x $y (cons ($p $x) $y)) () $sequence))
+  (accumulate (lambda2 $x $y (Cons ($p $x) $y)) Nil $sequence))
 
 !(assertEqual
     (acc-map square (list (1 2 3 4 5)))
-    (1 4 9 16 25))
+    (list (1 4 9 16 25)))
 
 (= (acc-append $seq1 $seq2)
-  (accumulate cons $seq2 $seq1))
+  (accumulate Cons $seq2 $seq1))
 
 !(assertEqual
     (acc-append (list (1 2 3 4 5)) (list (5 4 3 2 1)))
-    (1 2 3 4 5 5 4 3 2 1))
+    (list (1 2 3 4 5 5 4 3 2 1)))
 
 (= (acc-length $sequence)
   (accumulate (lambda2 $x $y (+ 1 $y)) 0 $sequence))
@@ -880,8 +892,8 @@
     (map (lambda1 $x 1) (enumerate-tree $t))))
 
 !(assertEqual
-    (count-leaves-acc (list (1 (list (2 (list (3 4)))) 5)))
-    (count-leaves (list (1 (list (2 (list (3 4)))) 5))))
+    (count-leaves-acc (makelist (1 (makelist (2 (list (3 4)))) 5)))
+    (count-leaves (makelist (1 (makelist (2 (list (3 4)))) 5))))
 
 ; -----------------------End of Exercise 2.35---------------------------
 
@@ -901,10 +913,13 @@
 ; Fill in the missing expressions in the following definition of accumulate-n:
 
 (= (accumulate-n $op $init $seqs)
-  (if (null? (car $seqs))
-      ()
-      (cons (accumulate $op $init (map (lambda1 $x (car $x)) $seqs))
-            (accumulate-n $op $init (map (lambda1 $x (cdr $x)) $seqs)))))
+  (if (null-list? (car-list $seqs))
+      Nil
+      (Cons (accumulate $op $init (map (lambda1 $x (car-list $x)) $seqs))
+            (accumulate-n $op $init (map (lambda1 $x (cdr-list $x)) $seqs)))))
+
+
+; This one takes long time to complete
 
 !(assertEqual
     (accumulate-n + 0 (list ((1 2 3) (4 5 6) (7 8 9) (10 11 12))))
@@ -933,8 +948,8 @@
 
 ; We can define the dot product as
 
-;(= (dot-product $v $w)
-;  (accumulate + 0 (map * $v $w))) ; map here is more general function (provided by Scheme) than map in current script.
+; (= (dot-product $v $w)
+;   (accumulate + 0 (map * $v $w)))
 
 ; Fill in the missing expressions in the following procedures for computing the
 ; other matrix operations. (The procedure accumulate-n is defined in exercise 2.36.)
@@ -944,23 +959,23 @@
 ; (= (transpose $mat)
 ;   (accumulate-n <??> <??> $mat))
 ; (= (matrix-*-matrix $m $n)
-;   (let $cols (transpose $n)
+;   (let ($cols (transpose $n))
 ;     (map <??> $m)))
 
-; In Scheme there is a map from standard library which takes several sequences. In case of Metta I've wrote map2 which
-; takes two $items:
 
 (= (map2 $proc $items1 $items2)
-    (if (or (null? $items1) (null? $items2))
-        ()
-         (cons ($proc (car $items1) (car $items2)) (map2 $proc (cdr $items1) (cdr $items2)))))
+    (if (or (null-list? $items1) (null-list? $items2))
+        Nil
+         (Cons ($proc (car-list $items1) (car-list $items2))
+                (map2 $proc (cdr-list $items1) (cdr-list $items2)))))
 
 (= (dot-product $v $w)
   (accumulate + 0 (map2 * $v $w)))
 
+
 (= (vec1) (list (1 3 -5)))
 (= (vec2) (list (4 -2 -1)))
-(= (mat) ((vec2) (vec1) (vec2)))
+(= (mat) (makelist ((vec2) (vec1) (vec2))))
 
 !(assertEqual
     (dot-product (vec1) (vec2))
@@ -971,27 +986,25 @@
 
 !(assertEqual
     (matrix-*-vector (mat) (vec1))
-    (3 35 3))
+    (list (3 35 3)))
 
 (= (transpose $mat)
-  (accumulate-n cons () $mat))
+  (accumulate-n Cons Nil $mat))
 
 !(assertEqual
     (transpose (mat))
-    ((4 1 4) (-2 3 -2) (-1 -5 -1)))
+    (list ((4 1 4) (-2 3 -2) (-1 -5 -1))))
 
 (= (matrix-*-matrix $m $n)
   (let $cols (transpose $n)
     (map (lambda1 $x (matrix-*-vector $cols $x)) $m)))
 
-(= (mat2) ((1 3 5) (2 3 9) (2 4 7)))
-(= (vec3) (1 2 3))
+(= (mat2) (list ((1 3 5) (2 3 9) (2 4 7))))
 
-; this one takes long to compute
+; this one takes ~ 5 mins
 !(assertEqual
     (matrix-*-matrix (mat2) (mat))
-    ((27 -3 -21) (47 -13 -26) (40 -6 -29)))
-
+    (list ((27 -3 -21) (47 -13 -26) (40 -6 -29))))
 
 ; -----------------------End of Exercise 2.37---------------------------
 
@@ -1008,10 +1021,10 @@
 
 (= (fold-left $op $initial $sequence)
   (let $iter (lambda3 $result $rest $self
-    (if (null? $rest)
+    (if (null-list? $rest)
         $result
-        ($self ($op $result (car $rest))
-              (cdr $rest) $self)))
+        ($self ($op $result (car-list $rest))
+              (cdr-list $rest) $self)))
   ($iter $initial $sequence $iter)))
 
 ; What are the values of
@@ -1025,16 +1038,17 @@
     0.16666666666666666)
 
 !(assertEqual
-    (accumulate list () (list (1 2 3)))
-    (list 1 (list 2 (list 3 ()))))
+    (accumulate list Nil (list (1 2 3)))
+    (list 1 (list 2 (list 3 Nil))))
 
 !(assertEqual
-    (fold-left list () (list (1 2 3)))
-    (list (list (list () 1) 2) 3))
+    (fold-left list Nil (list (1 2 3)))
+    (list (list (list Nil 1) 2) 3))
 
 ; It should be noted, that in case of third and fourth asserts in Scheme we will get (1 (2 (3 ()))) and (((() 1) 2) 3)
 ; accordingly. But since function list in our case takes only one argument and we can't make function with random number
-; of arguments yet I've left result as it is. Logically it is correct anyway.
+; of arguments yet. So I've left result as it is.
+
 
 ; -----------------------End of Exercise 2.38---------------------------
 
@@ -1044,9 +1058,9 @@
 ; (exercise 2.18) in terms of fold-right and fold-left from exercise 2.38:
 
 (= (reverse-a $sequence)
-    (accumulate (lambda2 $x $y (append $y ($x))) () $sequence))
+    (accumulate (lambda2 $x $y (append $y (list ($x)))) Nil $sequence))
 (= (reverse-fl $sequence)
-    (fold-left (lambda2 $x $y (cons $y $x)) () $sequence))
+    (fold-left (lambda2 $x $y (Cons $y $x)) Nil $sequence))
 
 !(assertEqual
     (reverse-a (list (1 2 3)))
@@ -1056,12 +1070,10 @@
     (reverse-fl (list (1 2 3)))
     (list (3 2 1)))
 
-
 ; -----------------------End of Exercise 2.39---------------------------
 
-
 (= (flatmap $proc $seq)
-    (accumulate append () (map $proc $seq)))
+    (accumulate append Nil (map $proc $seq)))
 
 ; Prime? from the previous chapters.
 
@@ -1085,13 +1097,10 @@
     (== $n (smallest-divisor $n)))
 
 (= (prime-sum? $pair)
-    (prime? (+ (car $pair) (cadr $pair))))
+    (prime? (+ (car-list $pair) (cadr-list $pair))))
 
 (= (make-pair-sum $pair)
-    (list ((car $pair) (cadr $pair) (+ (car $pair) (cadr $pair)))))
-
-; Function returns list of all pairs from 1 to $n which sum is odd number. Also function returns sum of elements for
-; every pair.
+    (list ((car-list $pair) (cadr-list $pair) (+ (car-list $pair) (cadr-list $pair)))))
 
 (= (prime-sum-pairs $n)
     (map make-pair-sum
@@ -1102,30 +1111,27 @@
                         (enumerate-interval 1 (- $i 1))))
                     (enumerate-interval 1 $n)))))
 
-; Pair (2 1) sum - 3. Result (2 1 3). And so on.
 !(assertEqual
     (prime-sum-pairs 5)
     (list ((2 1 3) (3 2 5) (4 1 5) (4 3 7) (5 2 7))))
 
-
-; Remove item from $sequence:
 (= (remove $item $sequence)
     (filter (lambda1 $x (not (== $x $item)))
         $sequence))
 
-; Returns all permutations for input $s'equence:
-(= (permutations $s)
-    (if (null? $s)
-        (())
+(= (permutations Nil)
+    (makelist (Nil)))
+(= (permutations (Cons $x $xs))
+    (let $s (Cons $x $xs)
         (flatmap
-            (lambda1 $x
-                (map (lambda1 $p (cons $x $p))
-                    (permutations (remove $x $s))))
+            (lambda1 $y
+                (map (lambda1 $p (Cons $y $p))
+                    (permutations (remove $y $s))))
             $s)))
 
 !(assertEqual
     (permutations (list (2 1 5)))
-    ((2 1 5) (2 5 1) (1 2 5) (1 5 2) (5 2 1) (5 1 2)))
+    (list ((2 1 5) (2 5 1) (1 2 5) (1 5 2) (5 2 1) (5 1 2))))
 
 
 ; Exercise 2.40.
@@ -1161,7 +1167,7 @@
 (= (unique-triples $s)
     (flatmap
         (lambda1 $i
-            (map (lambda1 $jk (cons $i $jk))
+            (map (lambda1 $jk (Cons $i $jk))
                 (flatmap
                     (lambda1 $j
                         (map (lambda1 $k (list ($k $j)))
@@ -1171,14 +1177,15 @@
 
 (= (triples-sum $s)
     (filter
-        (lambda1 $triple (== (+ (car $triple) (+ (cadr $triple) (cadr (cdr $triple)))) $s))
+        (lambda1 $triple (== (+ (car-list $triple) (+ (cadr-list $triple) (cadr-list (cdr-list $triple)))) $s))
         (unique-triples $s)))
 
-; Since this takes long to evaluate this one I've put 3 here. And only one triple's sum equals to 3 - (1 1 1).
 !(assertEqual
     (triples-sum 3)
     (list ((1 1 1))))
+
 ; -----------------------End of Exercise 2.41---------------------------
+
 
 ; Exercise 2.42.
 
@@ -1205,19 +1212,19 @@
 ; the sequence of all ways to place queens in the first k columns of the
 ; board.
 
-(= (queens $board-size)
-  (let $queen-cols (lambda2 $k $self
-    (if (== $k 0)
-        ((empty-board))
-        (filter
-         (lambda1 $positions (safe? $k $positions))
-         (flatmap
-          (lambda1 $rest-of-queens
-            (map (lambda1 $new-row
-                   (adjoin-position $new-row $k $rest-of-queens))
-                 (enumerate-interval 1 $board-size)))
-          ($self (- $k 1) $self)))))
-  ($queen-cols $board-size $queen-cols)))
+;(= (queens $board-size)
+;  (let $queen-cols (lambda2 $k $self
+;    (if (== $k 0)
+;        (list (empty-board))
+;        (filter
+;         (lambda1 $positions (safe? $k $positions))
+;         (flatmap
+;          (lambda1 $rest-of-queens
+;            (map (lambda1 $new-row
+;                   (adjoin-position $new-row $k $rest-of-queens))
+;                 (enumerate-interval 1 $board-size)))
+;          ($self (- $k 1) $self)))))
+;  ($queen-cols $board-size $queen-cols)))
 
 ; In this procedure rest-of-queens is a way to place k - 1 queens in the
 ; first k - 1 columns, and new-row is a proposed row in which to place
@@ -1232,35 +1239,48 @@
 ; respect to each other.)
 
 (= (empty-board)
-    ())
+    Nil)
 
 (= (adjoin-position $new-row $k $rest-of-queens)
-    (append $rest-of-queens (($k $new-row))))
+    (append $rest-of-queens (Cons (list ($k $new-row)) Nil)))
 
 (= (select-k $k $positions)
     (if (== $k 1)
-        (car $positions)
-        (select-k (- $k 1) (cdr $positions))))
+        (car-list $positions)
+        (select-k (- $k 1) (cdr-list $positions))))
 
 (= (row-safe? $k-col $k-row $positions)
-    (null? (filter
-                (lambda1 $x (and (== (cdr $x) (list ($k-row))) (not (== (car $x) $k-col))))
+    (null-list? (filter
+                (lambda1 $x (and (== (cdr-list $x) (list ($k-row))) (not (== (car-list $x) $k-col))))
                 $positions)))
 
 (= (col-safe? $k-row $positions)
     (let $iter (lambda3 $cur $pos $self
-        (if (null? $pos)
+        (if (null-list? $pos)
             True
-            (if (or (== (cdr (car $pos)) ((- $k-row $cur)))
-                    (== (cdr (car $pos)) ((+ $k-row $cur))))
+            (if (or (== (cdar-list $pos) (Cons (- $k-row $cur) Nil))
+                    (== (cdar-list $pos) (Cons (+ $k-row $cur) Nil)))
                 False
-                ($self (+ $cur 1) (cdr $pos) $self))))
-    ($iter 1 (cdr (reverse $positions)) $iter)))
+                ($self (+ $cur 1) (cdr-list $pos) $self))))
+    ($iter 1 (cdr-list (reverse $positions)) $iter)))
 
 (= (safe? $k $positions)
-    (let ($k-col $k-row) (select-k $k $positions)
+    (let (Cons $k-col (Cons $k-row Nil)) (select-k $k $positions)
         (and (col-safe? $k-row $positions) (row-safe? $k-col $k-row $positions))))
 
+(= (queens $board-size)
+  (let $queen-cols (lambda2 $k $self
+    (if (== $k 0)
+        (makelist ((empty-board)))
+        (filter
+         (lambda1 $positions (safe? $k $positions))
+         (flatmap
+          (lambda1 $rest-of-queens
+            (map (lambda1 $new-row
+                   (adjoin-position $new-row $k $rest-of-queens))
+                 (enumerate-interval 1 $board-size)))
+          ($self (- $k 1) $self)))))
+  ($queen-cols $board-size $queen-cols)))
 
 ;it works but I wasn't able to wait till it finishes calculations for (queens 4), though I've waited for ~12 hours.
 ;!(queens 4)
@@ -1278,8 +1298,8 @@
 ;        (map (lambda1 $new-row
 ;               (adjoin-position $new-row 2 $rest-of-queens))
 ;             (enumerate-interval 1 4)))
-;      (((1 1)) ((1 2)) ((1 3)) ((1 4)))))
-;    (((1 1) (2 3)) ((1 1) (2 4)) ((1 2) (2 4)) ((1 3) (2 1)) ((1 4) (2 1)) ((1 4) (2 2))))
+;      (list (((1 1)) ((1 2)) ((1 3)) ((1 4))))))
+;    (list (((1 1) (2 3)) ((1 1) (2 4)) ((1 2) (2 4)) ((1 3) (2 1)) ((1 4) (2 1)) ((1 4) (2 2)))))
 
 ; -----------------------End of Exercise 2.42---------------------------
 
@@ -1332,10 +1352,10 @@
 ; Exercise 2.47.  Here are two possible constructors for frames:
 
 (= (make-frame $origin $edge1 $edge2)
-    (list ($origin $edge1 $edge2)))
+    (makelist ($origin $edge1 $edge2)))
 
 (= (make-frame_2 $origin $edge1 $edge2)
-    (cons $origin (cons $edge1 $edge2)))
+    (Cons $origin (Cons $edge1 (Cons $edge2 Nil))))
 
 ; For each constructor supply the appropriate selectors to produce an
 ; implementation for frames.
@@ -1344,17 +1364,17 @@
 (= (frame2) (make-frame_2 (vect1) (vect2) (add-vect (vect1) (vect2))))
 
 (= (origin-frame $frame)
-  (car $frame))
+  (car-list $frame))
 
 (= (edge1-frame $frame)
-  (cadr $frame))
+  (cadr-list $frame))
 
 (= (edge2-frame $frame)
-  (caddr $frame))
+  (caddr-list $frame))
 
 ;the only difference in selector function is edge2-frame for these two cases of make-frame
 (= (edge2-frame_2 $frame)
-  (cddr $frame))
+  (caddr-list $frame))
 
 !(assertEqual
     (origin-frame (frame1))
@@ -1436,7 +1456,7 @@
 
 ; a
 (= (rect-paint)
-    (segments_painter (list ((make-segment (make-vect 0 0) (make-vect 1 0))
+    (segments_painter (makelist ((make-segment (make-vect 0 0) (make-vect 1 0))
                               (make-segment (make-vect 1 0) (make-vect 1 1))
                               (make-segment (make-vect 1 1) (make-vect 0 1))
                               (make-segment (make-vect 0 1) (make-vect 0 0))))))
@@ -1444,14 +1464,14 @@
 ;b
 (= (x-paint)
     (segments_painter
-        (list
+        (makelist
           ((make-segment (make-vect 0 0) (make-vect 1 1))
           (make-segment (make-vect 0 1) (make-vect 1 0))))))
 
 ;c
 (= (rhomb-paint)
   (segments_painter
-    (list
+    (makelist
       ((make-segment (make-vect 0.5 0) (make-vect 1 0.5))
       (make-segment (make-vect 1 0.5) (make-vect 0.5 1))
       (make-segment (make-vect 0.5 1) (make-vect 0 0.5))
@@ -1461,14 +1481,14 @@
 ; something not symmetrical. I've decided to make rectangular trapezoid
 
 (= (rtrap-paint)
-    (segments_painter (list ((make-segment (make-vect 0 0) (make-vect 0 1))
+    (segments_painter (makelist ((make-segment (make-vect 0 0) (make-vect 0 1))
                               (make-segment (make-vect 0 1) (make-vect 0.6 0.75))
                               (make-segment (make-vect 0.6 0.75) (make-vect 0.6 0))
                               (make-segment (make-vect 0.6 0) (make-vect 0 0))))))
 
 
 
-;those commands will draw rhomb, x and rectangle.
+;Those commands will draw rhomb, x and rectangle.
 ;(finishdraw!) is needed to remove previous paintings and close the window.
 
 ; Usage. Painting using segment_painter is quite long. So I won't uncomment those lines and leave them for possible
