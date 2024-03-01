@@ -4,9 +4,6 @@
 (= (null? $expr)
     (== $expr ()))
 
-(= (null-list? $list)
-    (== $list Nil))
-
 (= (cons $x $y)
     (cons-atom $x $y))
 
@@ -29,18 +26,20 @@
     (car (cdr (cdr (cdr $x)))))
 
 (= (list $expr)
-   (if (== (get-metatype $expr) Expression)
-       (if (null? $expr)
-           Nil
-           (Cons (list (car $expr)) (list (cdr $expr))))
-       $expr)
-)
-
-(= (makelist $x)
-    (if (null? $x)
+   (if (null? $expr)
         Nil
-        (Cons (car $x) (makelist (cdr $x)))))
+        (Cons (car-atom $expr) (list (cdr-atom $expr)))))
 
+(= (tree $expr)
+   (if (null? $expr)
+        Nil
+        (let* (($head (car-atom $expr)) ($tail (cdr-atom $expr)))
+            (if (== (get-metatype $head) Expression)
+                (Cons (tree $head) (tree $tail))
+                (Cons $head (tree $tail))))))
+
+(= (null-list? $list)
+    (== $list Nil))
 
 (= (car-list (Cons $x $xs))
     $x)
@@ -66,17 +65,16 @@
 (= (cdar-list $x)
     (cdr-list (car-list $x)))
 
-
 ;!(assertEqual
-;    (list (a (b c)))
+;    (tree (a (b c)))
 ;    (Cons a (Cons (Cons b (Cons c Nil)) Nil)))
 
 ;!(assertEqual
-;    (cdr-list (list (a (b c))))
+;    (cdr-list (tree (a (b c))))
 ;    (Cons (Cons b (Cons c Nil)) Nil))
 
 ;!(assertEqual
-;    (car-list (list (a (b c))))
+;    (car-list (tree (a (b c))))
 ;    a)
 
 ; function memq checks if symbol $item is in list $x and returns sublist of $x starting with $item first appearance.
@@ -93,7 +91,7 @@
 ;    False)
 
 ;!(assertEqual
-;    (memq apple (list (x (apple sauce) y apple pear)))
+;    (memq apple (tree (x (apple sauce) y apple pear)))
 ;    (list (apple pear)))
 
 ; Exercise 2.54.
@@ -130,30 +128,25 @@
                 (and (equal? (car-list $x) (car-list $y))
                      (equal? (cdr-list $x) (cdr-list $y))))))
 
-
-
 ;!(assertEqual
-;    (equal? (list (a (b c))) (list (a (b c))))
+;    (equal? (tree (a (b c))) (tree (a (b c))))
 ;    True)
-; But actually we can just use Metta's '==' function to get same results
+; But actually we can just use Metta's '==' function to get same results quicker
 ;!(assertEqual
-;    (== (list (a (b c))) (list (a (b c))))
+;    (== (tree (a (b c))) (tree (a (b c))))
 ;    True)
 
-(= (list1) (list (this (is a) list)))
-(= (list2) (list (this is a list)))
-
 ;!(assertEqual
-;    (equal? (list (this is a list)) (list (this (is a) list)))
+;    (equal? (list (this is a list)) (tree (this (is a) list)))
 ;    False)
 
 ;!(assertEqual
-;    (== (list (this is a list)) (list (this (is a) list)))
+;    (== (list (this is a list)) (tree (this (is a) list)))
 ;    False)
 ; -----------------------End of Exercise 2.54---------------------------
 
-; Symbolic differentiation
-
+; Symbolic differentiation. For symbolic differentiation I'll use regular cons-atom, cdr-atom, car-atom since we are
+; dealing with expressions here.
 
 ; Everywhere "'" symbol is added to the "*" and "+" signs to prevent correspondent functions to be evaluated.
 (= (deriv $exp $var)
@@ -211,7 +204,7 @@
 ;        ('* ('+ ('* x 0) ('* 1 y))
 ;        ('+ x 3))))
 
-; Now we want to replace some of constructors to more simplified results where numbers will be evaluated (+ and *).
+; Now we want to replace some of constructors so results will be simplified. Numbers will be evaluated (+ and *).
 ; Since we are replacing make-sum and make-product previous ones I'll comment and asserts won't work with new implementations.
 
 (= (make-sum $a1 $a2)
@@ -299,8 +292,6 @@
                 (make-product $exponent (make-product $base $dbase))
                 (make-product (make-product $exponent (** $base (- $exponent 1))) $dbase)))))
 
-
-
 ;!(assertEqual
 ;    (deriv2 (** ('* x 3) 5) x)
 ;    ('* ('* 5 (** ('* x 3) 4)) 3))
@@ -363,8 +354,10 @@
 
 (= (exp) ('+ x y ('+ x 1)))
 
-;On regular Metta this doesn't work due to caching and equality of 1 and True.
-(deriv3 (exp) x)
+;On regular Metta this could output an error due to caching and equality of 1 and True. But it works on minimal metta.
+;!(assertEqual
+;    (deriv3 (exp) x)
+;    2)
 
 ; -----------------------End of Exercise 2.57---------------------------
 
@@ -497,16 +490,16 @@
 ; Lists as representation of sets.
 
 (= (element-of-set? $x $set)
-  (if (null? $set)
+  (if (null-list? $set)
     False
-    (if (== $x (car $set))
+    (if (== $x (car-list $set))
         True
-        (element-of-set? $x (cdr $set)))))
+        (element-of-set? $x (cdr-list $set)))))
 
-(= (set1) (1 2 3))
-(= (set2) (4 5 3))
+(= (set1) (list (1 2 3)))
+(= (set2) (list (4 5 3)))
 
-;(assertEqual
+;!(assertEqual
 ;   (element-of-set? 3 (set1))
 ;   True)
 
@@ -517,26 +510,26 @@
 (= (adjoin-set $x $set)
     (if (element-of-set? $x $set)
         $set
-        (cons $x $set)))
+        (Cons $x $set)))
 
 ;!(assertEqual
 ;    (adjoin-set 4 (set1))
-;    (4 1 2 3))
+;    (list (4 1 2 3)))
 
 ;!(assertEqual
 ;    (adjoin-set 3 (set1))
-;    (1 2 3))
+;    (list (1 2 3)))
 
 (= (intersection-set $set1 $set2)
-  (if (or (null? $set1) (null? $set2))
-    ()
-    (if (element-of-set? (car $set1) $set2)
-        (cons (car $set1) (intersection-set (cdr $set1) $set2))
-        (intersection-set (cdr $set1) $set2))))
+  (if (or (null-list? $set1) (null-list? $set2))
+    Nil
+    (if (element-of-set? (car-list $set1) $set2)
+        (Cons (car-list $set1) (intersection-set (cdr-list $set1) $set2))
+        (intersection-set (cdr-list  $set1) $set2))))
 
 ;!(assertEqual
 ;    (intersection-set (set1) (set2))
-;    (3))
+;    (list (3)))
 
 
 ; Exercise 2.59.
@@ -545,14 +538,31 @@
 ; unordered-list representation of sets.
 
 (= (union-set $set1 $set2)
-    (if (null? $set1)
+    (if (null-list? $set1)
         $set2
-        (if (null? $set2)
-        (if (element-of-set? (car $set1) $set2)
-            (union-set (cdr $set1) $set2)
-            (cons (car $set1) (union-set (cdr $set1) $set2)))))
+        (if (null-list? $set2)
+            $set1
+            (if (element-of-set? (car-list $set1) $set2)
+                (union-set (cdr-list $set1) $set2)
+                (Cons (car-list $set1) (union-set (cdr-list $set1) $set2))))))
 
-!(union-set () (set1))
+;!(assertEqual
+;    (union-set (set2) (set1))
+;    (list (4 5 1 2 3)))
+; -----------------------End of Exercise 2.59---------------------------
+
+; Exercise 2.60.
+;
+; We specified that a set would be represented as a list
+; with no duplicates. Now suppose we allow duplicates. For instance, the
+; set {1,2,3} could be represented as the list (2 3 2 1 3 2 2). Design
+; procedures element-of-set?, adjoin-set, union-set, and
+; intersection-set that operate on this representation.
+
+; element-of-set? is just the same.
+
+(= (adjoin-set_2 $x $set)
+    (Cons $x $set))
 
 
 
