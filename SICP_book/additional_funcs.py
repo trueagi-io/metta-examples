@@ -16,9 +16,13 @@ def getRandInt(start, end):
 def getCurTime():
     return time.time_ns() / (10 ** 6)
 
+def quotient(x, y):
+    return x // y
+
 @register_atoms
 def my_glob_atoms():
     return {
         'randomint!': OperationAtom("randomint!", getRandInt),
         'timems!': OperationAtom("timems!", getCurTime),
+        '//': OperationAtom("//", quotient),
         }
