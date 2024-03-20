@@ -30,11 +30,11 @@ def dict_generator(indict, pre=None):
         yield pre + [indict]
 
 
-with open("royal92.json") as f:
+with open("G37S-9NQ.json") as f:
     ds = [load(f)]
 
 
-with open("royal92.metta", "w") as f:
+with open("G37S-9NQ.metta", "w") as f:
     for i, d in enumerate(ds):
         for path in dict_generator(d):
             s = path[-1]
