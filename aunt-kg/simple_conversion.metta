@@ -1,12 +1,9 @@
 ; Careful, these first three can take a long time
-; https://github.com/kennethreitz/context/blob/master/gedcom/familysearch/G37S-9NQ.ged
-!(import! &self G37S-9NQ.metta)
-
 ; https://github.com/Jisco/gedcom.json/blob/master/examples/royal92.json
 ; !(import! &self royal92.metta)
 
 ; https://github.com/kennethreitz/context/blob/master/gedcom/biblical/adameve.ged
-; !(import! &self adameve.metta)
+!(import! &self adameve.metta)
 
 ; https://github.com/Jisco/gedcom.json/blob/master/examples/lordOfTheRings.json
 ; !(import! &self lordOfTheRings.metta)
