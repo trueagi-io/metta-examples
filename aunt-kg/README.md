@@ -34,23 +34,23 @@ Simpsons Dataset (11 people)
 
 Lord of the Rings Dataset (86 people)  
 [simple_conversion.metta]() 0m2.171s  
-[baseline_formulation.metta]() ERROR: thread 'main' has overflowed its stack (at 8m26.809s and 16GiB)  
+[baseline_formulation.metta]() 0m4.872s  
 [sergey_rodionov_formulation.metta]() 0m43.516s  
 
 Adam and Eve Dataset (479 people)  
 [simple_conversion.metta]() 0m31.144s  
 [baseline_formulation.metta]() 0m53.724s  
-[sergey_rodionov_formulation.metta]() IN PROGRESS  
+[sergey_rodionov_formulation.metta]() 36m56.999s  
 
 royal92 Dataset (2998 people)  
 [simple_conversion.metta]() 36m52.226s  
 [baseline_formulation.metta]() ERROR: thread 'main' has overflowed its stack  
-[sergey_rodionov_formulation.metta]() IN PROGRESS  
+[sergey_rodionov_formulation.metta]() IN PROGRESS (12h+)  
 
 G37S-9NQ Dataset (8696 people)  
 [simple_conversion.metta]() 252m46.136s (partial results)  
 [baseline_formulation.metta]() ERROR: thread 'main' has overflowed its stack  
-[sergey_rodionov_formulation.metta]() IN PROGRESS  
+[sergey_rodionov_formulation.metta]() IN PROGRESS (12h+)
 
 
 ### CZ2
@@ -68,4 +68,3 @@ space-wide ops 0m0.201s
 
 G37S-9NQ Dataset (8696 people)  
 space-wide ops 0m0.556s
-
