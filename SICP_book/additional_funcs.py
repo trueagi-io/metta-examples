@@ -6,6 +6,8 @@ random.seed(123)
 
 import time
 
+import math
+
 def updateSeed():
     random.seed(getCurTime())
 
@@ -16,9 +18,25 @@ def getRandInt(start, end):
 def getCurTime():
     return time.time_ns() / (10 ** 6)
 
+def getSqrt(x):
+    return math.sqrt(x)
+
+def getAtan(x,y=1):
+    return math.atan2(x, y)
+
+def getCos(x):
+    return math.cos(x)
+
+def getSin(x):
+    return math.sin(x)
+
 @register_atoms
 def my_glob_atoms():
     return {
         'randomint!': OperationAtom("randomint!", getRandInt),
         'timems!': OperationAtom("timems!", getCurTime),
+        'sqrt!': OperationAtom("sqrt!", getSqrt),
+        'atan!': OperationAtom("atan!", getAtan),
+        'cos!': OperationAtom("cos!", getCos),
+        'sin!': OperationAtom("sin!", getSin),
         }
