@@ -18,6 +18,8 @@ def getRandInt(start, end):
 def getCurTime():
     return time.time_ns() / (10 ** 6)
 
+def quotient(x, y):
+    return x // y
 def getSqrt(x):
     return math.sqrt(x)
 
@@ -35,6 +37,7 @@ def my_glob_atoms():
     return {
         'randomint!': OperationAtom("randomint!", getRandInt),
         'timems!': OperationAtom("timems!", getCurTime),
+        '//': OperationAtom("//", quotient),
         'sqrt!': OperationAtom("sqrt!", getSqrt),
         'atan!': OperationAtom("atan!", getAtan),
         'cos!': OperationAtom("cos!", getCos),
