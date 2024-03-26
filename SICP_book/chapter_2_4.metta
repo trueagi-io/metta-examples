@@ -136,7 +136,6 @@
 (= (make-from-mag-ang-polar $r $a)
     (attach-tag polar (Cons $r $a)))
 
-
 (= (real-part_general $z)
     (case $z
         (((pair rectangular $contents) (real-part-rectangular $contents))
@@ -284,6 +283,10 @@
 (= ((lambda2 $var1 $var2 $body) $val1 $val2)
     (let (quoted ($var1 $var2)) (quoted ($val1 $val2)) $body))
 
+(: lambda3 (-> Variable Variable Variable Atom (-> $a $b $c $t)))
+(= ((lambda3 $var1 $var2 $var3 $body) $val1 $val2 $val3)
+    (let (quote ($var1 $var2 $var3)) (quote ($val1 $val2 $val3)) $body))
+
 (= (car-list (Cons $x $xs))
     $x)
 
@@ -295,6 +298,9 @@
 
 (= (cdr-list Nil)
     Nil)
+
+(= (cadr-list $x)
+    (car-list (cdr-list $x)))
 
 ; in the following code functions put and get are used. Those functions works with table and get/puts functions from/to
 ; it. Implementations of those functions is a part of further chapters so they won't be implemented here. So I'm not sure
@@ -402,50 +408,314 @@
 ; performed is deriv. We can transform this program into data-directed style by
 ; rewriting the basic derivative procedure as
 
-(= (deriv $exp $var)
+(= (number? $x) (and (== (get-type $x) Number) (not (== (get-metatype $x) Expression))))
+
+(= (variable? $x) (== (get-metatype $x) Symbol))
+
+(= (same-variable? $v1 $v2)
+    (and$ ((variable? $v1) (variable? $v2) (== $v1 $v2))))
+
+(= (car $x)
+    (car-atom $x))
+
+(= (cdr $x)
+    (cdr-atom $x))
+
+(= (operator $exp) (car $exp))
+(= (operands $exp) (cdr $exp))
+
+(= (apply-deriv $exp $var)
    (if (number? $exp)
-        0)
-         ((variable? exp) (if (same-variable? exp var) 1 0))
-         (else ((get 'deriv (operator exp)) (operands exp)
-                                            var))))
-(define (operator exp) (car exp))
-(define (operands exp) (cdr exp))
+        0
+        (if (variable? $exp)
+            (if (same-variable? $exp $var) 1 0)
+            ((get deriv (operator $exp)) (operands $exp) $var))))
 
-; a.  Explain what was done above. Why can't we assimilate the predicates
-; number? and same-variable? into the data-directed dispatch?
-
-; b.  Write the procedures for derivatives of sums and products, and the
+; Write the procedures for derivatives of sums and products, and the
 ; auxiliary code required to install them in the table used by the program
 ; above.
 
-; c.  Choose any additional differentiation rule that you like, such as the one
+; Choose any additional differentiation rule that you like, such as the one
 ; for exponents (exercise 2.56), and install it in this data-directed system.
 
-; d.  In this simple algebraic manipulator the type of an expression is the
-; algebraic operator that binds it together. Suppose, however, we indexed the
-; procedures in the opposite way, so that the dispatch line in deriv looked
-; like
+(= (cadr $x)
+    (car (cdr $x)))
 
-((get (operator exp) 'deriv) (operands exp) var)
+(= (caddr $x)
+    (car (cdr (cdr $x))))
 
-; What corresponding changes to the derivative system are required?
+(= (make-sum_simplified $a1 $a2)
+  (if (=number? $a1 0)
+        $a2
+        (if (=number? $a2 0)
+            $a1
+            (if (and (number? $a1) (number? $a2))
+                (+ $a1 $a2)
+                ('+ $a1 $a2)))))
+
+(= (make-product_simplified $m1 $m2)
+  (if (or (=number? $m1 0) (=number? $m2 0))
+        0
+        (if (=number? $m1 1)
+            $m2
+            (if (=number? $m2 1)
+                $m1
+                (if (and (number? $m1) (number? $m2))
+                    (* $m1 $m2)
+                    ('* $m1 $m2))))))
 
 
+; This one should probably add sum and project derivs to the table. I'll also added exponentiation here so I won't need
+; to split this to another install function with duplicative make-product.
+(= (install-sum-product-deriv)
+  (let*
+  (
+    ($addend (lambda1 $exp (cadr $exp)))
+    ($augend (lambda1 $exp (caddr $exp)))
+    ($=number? (lambda2 $exp $num (and (number? $exp) (== $exp $num))))
+    ($make-sum (lambda2 $a1 $a2
+        (if ($=number? $a1 0)
+            $a2
+            (if ($=number? $a2 0)
+                $a1
+                (if (and (number? $a1) (number? $a2))
+                    (+ $a1 $a2)
+                    ('+ $a1 $a2))))))
+    ($multiplier (lambda1 $exp (cadr $exp)))
+    ($multiplicand (lambda1 $exp (caddr $exp)))
+    ($make-product (lambda2 $m1 $m2
+        (if (or ($=number? $m1 0) ($=number? $m2 0))
+            0
+            (if ($=number? $m1 1)
+                $m2
+                (if ($=number? $m2 1)
+                    $m1
+                    (if (and (number? $m1) (number? $m2))
+                        (* $m1 $m2)
+                        ('* $m1 $m2)))))))
+    ($base (lambda1 $exp (cadr $exp)))
+    ($exponent (lambda1 $exp (caddr $exp)))
+    ($make-exponentiation (lambda3 $base $dbase $exponent
+        (let $newe (- $exponent 1)
+            (if (== $newe 0)
+                $dbase
+                (if (== $newe 1)
+                    ($make-product $exponent ($make-product $base $dbase))
+                    ($make-product ($make-product $exponent (** $base (- $exponent 1))) $dbase))))))
+  )
+      (let*
+      (
+        (() (put deriv '+ (lambda2 $exp $var ($make-sum (apply-deriv ($addend $exp) $var)
+                               (apply-deriv ($augend $exp) $var)))))
+        (() (put deriv '* (lambda2 $exp $var ($make-sum
+                              ($make-product ($multiplier $exp)
+                                            (apply-deriv ($multiplicand $exp) $var))
+                              ($make-product (apply-deriv ($multiplier $exp) $var)
+                                            ($multiplicand $exp))))))
+        (() (put deriv ** (lambda2 $exp $var ($make-exponentiation ($base $exp) (apply-deriv ($base $exp) $var) ($exponent $exp)))))
+      )
+      ())))
+
+; Once again I can't test it since we do not have put and get functions. So I'll call it an end of this exercise.
+
+; -----------------------End of Exercise 2.73---------------------------
+
+; Exercise 2.74.
+;
+; Insatiable Enterprises, Inc., is a highly decentralized
+; conglomerate company consisting of a large number of independent divisions
+; located all over the world. The company's computer facilities have just been
+; interconnected by means of a clever network-interfacing scheme that makes the
+; entire network appear to any user to be a single computer. Insatiable's
+; president, in her first attempt to exploit the ability of the network to
+; extract administrative information from division files, is dismayed to
+; discover that, although all the division files have been implemented as data
+; structures in Scheme, the particular data structure used varies from division
+; to division. A meeting of division managers is hastily called to search for a
+; strategy to integrate the files that will satisfy headquarters' needs while
+; preserving the existing autonomy of the divisions.
+
+; Show how such a strategy can be implemented with data-directed programming.
+; As an example, suppose that each division's personnel records consist of a
+; single file, which contains a set of records keyed on employees' names. The
+; structure of the set varies from division to division. Furthermore, each
+; employee's record is itself a set (structured differently from division to
+; division) that contains information keyed under identifiers such as address
+; and salary. In particular:
+
+; a.  Implement for headquarters a get-record procedure that retrieves a
+; specified employee's record from a specified personnel file. The procedure
+; should be applicable to any division's file. Explain how the individual
+; divisions' files should be structured. In particular, what type information
+; must be supplied?
+
+; b.  Implement for headquarters a get-salary procedure that returns the salary
+; information from a given employee's record from any division's personnel
+; file. How should the record be structured in order to make this operation
+; work?
+
+; c.  Implement for headquarters a find-employee-record procedure. This should
+; search all the divisions' files for the record of a given employee and return
+; the record. Assume that this procedure takes as arguments an employee's name
+; and a list of all the divisions' files.
+
+(= (null? $expr)
+    (== $expr ()))
+
+(= (list $expr)
+   (if (null? $expr)
+        Nil
+        (Cons (car-atom $expr) (list (cdr-atom $expr)))))
+
+(= (tree $expr)
+   (if (null? $expr)
+        Nil
+        (let* (($head (car-atom $expr)) ($tail (cdr-atom $expr)))
+            (if (== (get-metatype $head) Expression)
+                (Cons (tree $head) (tree $tail))
+                (Cons $head (tree $tail))))))
+
+(= (null-list? $list)
+    (== $list Nil))
+
+; Division1 record file and insert function.
+(= (division1-recordfile)
+    (tree
+        ((John John_address 1000$) (Jim Jim_address 300$))))
+
+; This one should insert necessary functions to retrieve info from division1's record file.
+(= (insert-division1-records)
+    (let*
+        (
+            ($emp_name (lambda1 $record_file (car-list (car-list $record_file))))
+            ($record_by_name (lambda3 $name $record_file $self
+                (if (null-list? $record_file)
+                    Nil
+                    (if (== $name ($emp_name $record_file))
+                        (car-list $record_file)
+                        ($self $name (cdr-list $record-file) $self)))))
+            ($salary (lambda1 $record (cadr-list $record)))
+            ($address (lambda1 $record (car-list $record)))
+        )
+        (let*
+        (
+            (() (put get-record division1 (lambda2 $name $record_file ($record_by_name $name $record_file $record_by_name))))
+            (() (put get-salary division1 (lambda1 $record ($salary $record))))
+        ))))
+
+; Division2 record file and insert function.
+
+(= (division2-recordfile)
+    (list
+        ((Peter . Peter_address . 5200$) (Kane . Kane_address 1500$))))
+
+(= (insert-division2-records)
+    (let*
+        (
+            ($emp_name (lambda1 ($name . $address . $salary) $name))
+            ($salary (lambda1 ($name . $address . $salary) $salary))
+            ($address (lambda1 ($name . $address . $salary) $address))
+            ($record_by_name (lambda3 $name $record_file $self
+                (if (null-list? $record_file)
+                    Nil
+                    (if (== $name ($emp_name $record_file))
+                        (car-list $record_file)
+                        ($self $name (cdr-list $record-file) $self)))))
+        )
+        (let*
+        (
+            (() (put get-record division2 (lambda2 $name $record_file ($record_by_name $name $record_file $record_by_name))))
+            (() (put get-salary division2 (lambda1 $record ($salary $record))))
+        ))))
+
+; a)
+(= (get-record $emp_name $division $division_recordfile)
+   ((get get-record $division) $emp_name $division_recordfile))
+
+; b)
+(= (get-salary $division $record)
+    ((get get-salary $division) $record))
+
+; c)
+; Let division_recordfiles contain pairs ($division_name . $record_file). Output is the first entry of emp_name in any
+; record file.
+(= (find-employee-record $emp_name Nil)
+    (Error (find-employee-record $emp_name Nil) "No such employee in input record files"))
+(= (find-employee-record $emp_name (Cons ($division_name . $record_file) $tail))
+    (let $get-rec-res (get-record $emp_name $division_name $record_file)
+        (if (== $get-rec-res Nil)
+            (find-employee-record $emp_name $tail)
+            $get-rec-res)))
+; -----------------------End of Exercise 2.74---------------------------
 
 
+; Message passing style:
 
+(= (make-from-real-imag_message $x $y)
+  (let $dispatch (lambda1 $op
+    (if (== $op real-part)
+        $x
+        (if (== $op imag-part)
+            $y
+            (if (== $op magnitude)
+                (sqrt (+ (square $x) (square $y)))
+                (if (== $op angle)
+                    (atan $y $x)
+                    (Error (make-from-real-imag_message $x $y) "Unknown operation"))))))
+  $dispatch))
 
+(= (apply-generic_message $op $arg) ($arg $op))
 
+; Exercise 2.75.  Implement the constructor make-from-mag-ang in
+; message-passing style. This procedure should be analogous to the
+; make-from-real-imag procedure given.
 
+(= (make-from-mag-ang_message $m $a)
+  (let $dispatch (lambda1 $op
+    (if (== $op real-part)
+        (* $m (cos $a))
+        (if (== $op imag-part)
+            (* $m (sin $a))
+            (if (== $op magnitude)
+                $m
+                (if (== $op angle)
+                    $a
+                    (Error (make-from-mag-ang_message $m $a) "Unknown operation"))))))
+  $dispatch))
 
+; Some asserts for those message passing functions:
+!(bind! &m_z1 (make-from-real-imag_message 5 2))
+!(bind! &m_z2 (make-from-mag-ang_message 3 4))
 
+;!(assertEqual
+;    (apply-generic_message real-part &m_z1)
+;    5)
 
+;!(assertEqual
+;    (apply-generic_message real-part &m_z2)
+;    -1.960930862590836)
 
+;!(assertEqual
+;    (apply-generic_message imag-part &m_z1)
+;    2)
 
+;!(assertEqual
+;    (apply-generic_message imag-part &m_z2)
+;    -2.2704074859237844)
 
+;!(assertEqual
+;    (apply-generic_message magnitude &m_z1)
+;    5.385164807134504)
 
+;!(assertEqual
+;    (apply-generic_message magnitude &m_z2)
+;    3)
 
+;!(assertEqual
+;    (apply-generic_message angle &m_z1)
+;    0.3805063771123649)
 
-
-
-
+;!(assertEqual
+;    (apply-generic_message angle &m_z2)
+;    4)
+; -----------------------End of Exercise 2.75---------------------------
