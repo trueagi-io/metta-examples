@@ -38,8 +38,8 @@ def my_glob_atoms():
         'randomint!': OperationAtom("randomint!", getRandInt),
         'timems!': OperationAtom("timems!", getCurTime),
         '//': OperationAtom("//", quotient),
-        'sqrt!': OperationAtom("sqrt!", getSqrt),
-        'atan!': OperationAtom("atan!", getAtan),
-        'cos!': OperationAtom("cos!", getCos),
-        'sin!': OperationAtom("sin!", getSin),
+        'sqrt': OperationAtom("sqrt", getSqrt),
+        'atan': OperationAtom("atan", getAtan),
+        'cos': OperationAtom("cos", getCos),
+        'sin': OperationAtom("sin", getSin),
         }

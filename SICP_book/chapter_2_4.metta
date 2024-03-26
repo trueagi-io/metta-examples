@@ -13,19 +13,6 @@
 
 !(import! &self additional_funcs)
 
-(= (sqrt $x)
-    (sqrt! $x))
-
-(= (atan $x $y)
-    (atan! $x $y))
-
-(= (cos $x)
-    (cos! $x))
-
-(= (sin $x)
-    (sin! $x))
-
-
 (= (real-part (Cons $r $i)) $r)
 
 (= (imag-part (Cons $r $i)) $i)
