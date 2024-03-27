@@ -178,64 +178,64 @@
 ; So now we have three independent parts of whole complex-number's arithmetics program: arithmetics (sub, mul, add, div),
 ; polar representation of complex-number and rectangular representation. Several asserts for current code.
 
-;!(assertEqual
-;    (make-from-real-imag_general 5 2)
-;    (pair rectangular (Cons 5 2)))
+!(assertEqual
+    (make-from-real-imag_general 5 2)
+    (pair rectangular (Cons 5 2)))
 
-;!(assertEqual
-;    (make-from-mag-ang_general 3 4)
-;    (pair polar (Cons 3 4)))
+!(assertEqual
+    (make-from-mag-ang_general 3 4)
+    (pair polar (Cons 3 4)))
 
-;!(bind! &z1 (make-from-real-imag_general 5 2))
-;!(bind! &z2 (make-from-mag-ang_general 3 4))
+!(bind! &z1 (make-from-real-imag_general 5 2))
+!(bind! &z2 (make-from-mag-ang_general 3 4))
 
-;!(assertEqual
-;    (real-part_general &z1)
-;    5)
+!(assertEqual
+    (real-part_general &z1)
+    5)
 
-;!(assertEqual
-;    (real-part_general &z2)
-;    -1.960930862590836)
+!(assertEqual
+    (real-part_general &z2)
+    -1.960930862590836)
 
-;!(assertEqual
-;    (imag-part_general &z1)
-;    2)
+!(assertEqual
+    (imag-part_general &z1)
+    2)
 
-;!(assertEqual
-;    (imag-part_general &z2)
-;    -2.2704074859237844)
+!(assertEqual
+    (imag-part_general &z2)
+    -2.2704074859237844)
 
-;!(assertEqual
-;    (magnitude_general &z1)
-;    5.385164807134504)
+!(assertEqual
+    (magnitude_general &z1)
+    5.385164807134504)
 
-;!(assertEqual
-;    (magnitude_general &z2)
-;    3)
+!(assertEqual
+    (magnitude_general &z2)
+    3)
 
-;!(assertEqual
-;    (angle_general &z1)
-;    0.3805063771123649)
+!(assertEqual
+    (angle_general &z1)
+    0.3805063771123649)
 
-;!(assertEqual
-;    (angle_general &z2)
-;    4)
+!(assertEqual
+    (angle_general &z2)
+    4)
 
-;!(assertEqual
-;    (div-complex &z1 &z2)
-;    (pair polar (Cons 1.7950549357115013 -3.619493622887635)))
+!(assertEqual
+    (div-complex &z1 &z2)
+    (pair polar (Cons 1.7950549357115013 -3.619493622887635)))
 
-;!(assertEqual
-;    (sub-complex &z1 &z2)
-;    (pair rectangular (Cons 6.9609308625908355 4.270407485923784)))
+!(assertEqual
+    (sub-complex &z1 &z2)
+    (pair rectangular (Cons 6.9609308625908355 4.270407485923784)))
 
-;!(assertEqual
-;    (add-complex &z1 &z2)
-;    (pair rectangular (Cons 3.039069137409164 -0.2704074859237844)))
+!(assertEqual
+    (add-complex &z1 &z2)
+    (pair rectangular (Cons 3.039069137409164 -0.2704074859237844)))
 
-;!(assertEqual
-;    (mul-complex &z1 &z2)
-;    (pair polar (Cons 16.15549442140351 4.380506377112365)))
+!(assertEqual
+    (mul-complex &z1 &z2)
+    (pair polar (Cons 16.15549442140351 4.380506377112365)))
 
 ; Data driven programming.
 
@@ -674,35 +674,35 @@
 !(bind! &m_z1 (make-from-real-imag_message 5 2))
 !(bind! &m_z2 (make-from-mag-ang_message 3 4))
 
-;!(assertEqual
-;    (apply-generic_message real-part &m_z1)
-;    5)
+!(assertEqual
+    (apply-generic_message real-part &m_z1)
+    5)
 
-;!(assertEqual
-;    (apply-generic_message real-part &m_z2)
-;    -1.960930862590836)
+!(assertEqual
+    (apply-generic_message real-part &m_z2)
+    -1.960930862590836)
 
-;!(assertEqual
-;    (apply-generic_message imag-part &m_z1)
-;    2)
+!(assertEqual
+    (apply-generic_message imag-part &m_z1)
+    2)
 
-;!(assertEqual
-;    (apply-generic_message imag-part &m_z2)
-;    -2.2704074859237844)
+!(assertEqual
+    (apply-generic_message imag-part &m_z2)
+    -2.2704074859237844)
 
-;!(assertEqual
-;    (apply-generic_message magnitude &m_z1)
-;    5.385164807134504)
+!(assertEqual
+    (apply-generic_message magnitude &m_z1)
+    5.385164807134504)
 
-;!(assertEqual
-;    (apply-generic_message magnitude &m_z2)
-;    3)
+!(assertEqual
+    (apply-generic_message magnitude &m_z2)
+    3)
 
-;!(assertEqual
-;    (apply-generic_message angle &m_z1)
-;    0.3805063771123649)
+!(assertEqual
+    (apply-generic_message angle &m_z1)
+    0.3805063771123649)
 
-;!(assertEqual
-;    (apply-generic_message angle &m_z2)
-;    4)
+!(assertEqual
+    (apply-generic_message angle &m_z2)
+    4)
 ; -----------------------End of Exercise 2.75---------------------------
