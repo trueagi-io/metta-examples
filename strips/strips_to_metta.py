@@ -1,10 +1,9 @@
 import pddl.parser.domain
 from pddl.action import Action
 from pddl.logic.predicates import Predicate
-from pddl.logic.terms import Term
-from pddl.logic.effects import Effect, AndEffect
-from pddl.logic.base import Formula, And, Variable, Not
-from pddl import parse_domain, parse_problem
+from pddl.logic.effects import AndEffect
+from pddl.logic.base import Formula, And, Not
+from pddl import parse_domain
 from pddl.parser.domain import Domain
 
 
@@ -13,12 +12,12 @@ def predicate_to_metta(p: Predicate) -> str:
         f"(arity {p.name} {p.arity}) \n"
     for i in range(p.arity):
         if p.terms[i].type_tags:
-            print("uhu")
-            for t in p.terms[i].type_tags: # show every different type tag in a new statement, not sure about this
+            for t in p.terms[i].type_tags:  # show every different type tag in a new statement, not sure about this
                 s += f"(var {p.name} {i + 1} {t}) \n"
         else:
             s += f"(var {p.name} {i + 1} untyped) \n"
     return s
+
 
 """
 def term_to_metta(t: Term, object, index):
@@ -31,12 +30,20 @@ def term_to_metta(t: Term, object, index):
 """
 
 
+def types_to_metta(type_dict: dict['name', 'Optional[name]']) -> str:
+    s = "(type object) \n"     # in PDDL, 'object' is the default type, all other types are also objects
+    for subtype, type in type_dict.items():
+        s += f"(type {subtype}) \n"
+        s += f"(isa {subtype} {type})\n"
+    return s
+
+
 def action_to_metta(a: Action) -> str:
     s = f"(action {a.name}) \n"
 
     for p in a.parameters:
         if p.type_tags:
-            for t in p.type_tags: # show every different type tag in a new statement, not sure about this
+            for t in p.type_tags:  # show every different type tag in a new statement, not sure about this
                 s += f"(var {a.name} {p.name} {t}) \n"
         else:
             s += f"(var {a.name} {p.name} untyped) \n"
@@ -53,7 +60,9 @@ def precondition_to_metta(p: Formula, action_name: str) -> str:
                 return f"(precondition {action_name} {f.name} {''.join([f'{t.name} ' for t in f.terms])}) \n"
             case And():
                 return "".join([match_formula(op) for op in f.operands])
-            case _: raise NotImplementedError("So far, only conjunctions and predicates are allowed in preconditions")
+            case _:
+                raise NotImplementedError("So far, only conjunctions and predicates are allowed in preconditions")
+
     return match_formula(p)
 
 
@@ -70,6 +79,7 @@ def effect_to_metta(e: Formula, action_name: str) -> str:
                             op2 = op.argument
                             s += f"(negative_effect {action_name} {op2.name} {''.join([f'{t.name} ' for t in op2.terms])}) \n"
         return s
+
     return match_formula(e)
 
 
@@ -77,10 +87,11 @@ def domain_to_metta(domain: Domain) -> str:
     s = f"(domain {domain.name}) \n"
 
     for r in domain.requirements:
-        assert r == pddl.parser.domain.Requirements.STRIPS
+        assert r in {pddl.parser.domain.Requirements.STRIPS, pddl.parser.domain.Requirements.TYPING}
         # We do not support other requirements yet
 
-    assert len(domain.types) == 0  # we do not support types yet
+    s += types_to_metta(domain.types)
+
     assert len(domain.constants) == 0  # we do not support constants yet
 
     for p in domain.predicates:
@@ -95,6 +106,5 @@ def domain_to_metta(domain: Domain) -> str:
 
 
 if __name__ == '__main__':
-    domain: Domain = parse_domain("blocks.pddl")
+    domain: Domain = parse_domain("logistics.pddl")
     print(domain_to_metta(domain))
-
