@@ -1,5 +1,8 @@
 ; PDDL domain from the 2nd International Planning Competition, 2000
+; authors: Bart Selman, Henry Kautz (based on an earlier domain by Manuela Veloso)
 ; https://github.com/potassco/pddl-instances/blob/master/ipc-2000/domains/logistics-strips-typed/domain.pddl
+
+
 ;; logistics domain Typed version.
 ;;
 
