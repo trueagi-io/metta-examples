@@ -38,7 +38,7 @@ def action_to_metta(a: Action) -> str:
             for t in p.type_tags:  # show every different type tag in a new statement, not sure about this
                 s += f"(var {a.name} {p.name} {t}) \n"
         else:
-            s += f"(var {a.name} {p.name} untyped) \n"
+            s += f"(var {a.name} {p.name} object) \n"  # in PDDL, 'object' is the default type, all other types are also objects
 
     s += precondition_to_metta(a.precondition, a.name)
     s += effect_to_metta(a.effect, a.name)
