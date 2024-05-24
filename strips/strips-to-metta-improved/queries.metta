@@ -36,7 +36,9 @@
 
 ; SAVE NEW STATE
 !(bind! state# (new-state 1))
+(= (idx) (- (get-state state#) 1))
 
+; TODO add only save if the state does not exist yet, otherwise give state index
 (= (save $conditions)
    (let* (($current_id (get-state state#))
           ($_1 (add-atom &self (= (valuation (state $current_id))
@@ -51,6 +53,25 @@
 !(valuation (state 1))                      ; > [(on a b), (holding b)]
 !(valuation (state 2))                      ; > [(on smt smt), (holding smt)]
 
-# GET ALL STATE NUMBERS
+; GET ALL STATE NUMBERS AS SANITY CHECK
 !(match &self (= (valuation (state $n)) $r) $n)     ; > [0, 1, 2]
 
+
+; EXAMPLE STACK BLOCKS A AND B
+
+!(valuation (state (save (collapse (eval (state 0) (pick-up A))))))
+!(valuation (state (save (collapse (eval (state (idx)) (stack A B))))))
+
+
+; EXAMPLE MAKE TOWER A on B on C
+(= (step $idx $action)
+  (save (collapse (eval (state $idx) $action)))
+)
+
+!(step (state 0) (pick-up A))
+
+!(valuation (state (step (step (step (step 0
+                    (pick-up B))
+                    (stack B C))
+                    (pick-up A))
+                    (stack A B))))
