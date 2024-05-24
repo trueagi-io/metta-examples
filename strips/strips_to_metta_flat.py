@@ -138,7 +138,7 @@ def problem_to_metta(problem: Problem):
 if __name__ == '__main__':
     domain: Domain = parse_domain("logistics/domain.pddl")
     problem: Problem = parse_problem("logistics/instance-1.pddl")
-    with open("logistics-i-1.metta", "w") as f:
+    with open("logistics-i-1_flat.metta", "w") as f:
         f.write(domain_to_metta(domain))
         f.write('\n')
         f.write(problem_to_metta(problem))

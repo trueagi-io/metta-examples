@@ -37,7 +37,7 @@ We support typed variables in the predicate and action specifications.
 Shortly, we plan to support the full PDDL language. 
 
 As example cases we show 
-* the blocks domain ([PDDL](blocks/domain.pddl), [MeTTa](blocks-domain.metta))
-* the logistics domain together with an instance ([PDDL](logistics), [MeTTa](logistics-i-1.metta))
+* the blocks domain ([PDDL](blocks/domain.pddl), [MeTTa](blocks-domain_flat.metta))
+* the logistics domain together with an instance ([PDDL](logistics), [MeTTa](logistics-i-1_flat.metta))
 
 We plan to explore other translations soon. 
