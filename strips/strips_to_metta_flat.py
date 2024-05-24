@@ -109,12 +109,12 @@ def object_to_metta(obj: Constant) -> str:
 def state_to_metta(state: AbstractSet[Formula], statename: str):
     s = ""
     for p in state:
-        s += f"(holds {statename} ({p.name} {''.join([str(t) for t in p.terms])})) \n"
+        s += f"(holds {statename} ({p.name} {' '.join([str(t) for t in p.terms])})) \n"
     return s
 
 
 def goal_to_metta(g: Formula):
-    return formula_to_metta(g, "holdsin", "goal")
+    return formula_to_metta(g, "holds", "goal")
 
 
 def problem_to_metta(problem: Problem):
