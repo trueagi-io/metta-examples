@@ -25,11 +25,32 @@
 ; apply an action on a state and get the resulting state
 ; TODO check whether preconditions are met
 ; TODO unique union
-(= (eval state $idx $action)
+(= (eval (state $idx) $action)
   (union (subtract (valuation (state $idx)) (collapse (eff-neg $action))) (eff-pos $action))
 )
 
 !(eff-pos (pick-up A))          ; > [(holding A)]
 !(eff-neg (pick-up A))          ; > [(ontable A), (clear A), (handempty)]
-!(eval state 0 (pick-up A))     ; > [(holding A), (ontable C), (clear B), (clear D), (ontable B), (ontable D), (clear C)]
+!(eval (state 0) (pick-up A))     ; > [(holding A), (ontable C), (clear B), (clear D), (ontable B), (ontable D), (clear C)]
+
+
+; SAVE NEW STATE
+!(bind! state# (new-state 1))
+
+(= (save $conditions)
+   (let* (($current_id (get-state state#))
+          ($_1 (add-atom &self (= (valuation (state $current_id))
+                               (superpose $conditions))))
+          ($_2 (change-state! state# (+ (get-state state#) 1))))
+    $current_id))
+
+; !(save (superpose ((test A) (test B))))
+!(save ((on a b) (holding b)))
+!(save ((on smt smt) (holding smt)))
+
+!(valuation (state 1))                      ; > [(on a b), (holding b)]
+!(valuation (state 2))                      ; > [(on smt smt), (holding smt)]
+
+# GET ALL STATE NUMBERS
+!(match &self (= (valuation (state $n)) $r) $n)     ; > [0, 1, 2]
 
