@@ -1,16 +1,6 @@
 ; !(import! &self logistics-i-1)
 !(import! &self blocks-i-1)
 
-; UTILITY FUNCTIONS
-(= (eq? $x $y) (== $x $y))
-(= (union $x $y) $x)
-(= (union $x $y) $y)
-(= (intersection $x $x) $x)
-(= (intersection $x $y) (empty))
-(= (right-only $c $u) (if (right-only_ $c $u) $u (empty)))
-(= (right-only_ $c $u) (eq? () (collapse (intersection $u (superpose $c)))))
-(= (subtract $x $y) (right-only $y $x))
-
 
 !(valuation (state 0))
 ; > [(clear A), (ontable C), (clear B), (clear D), (ontable A), (ontable B), (handempty), (ontable D), (clear C)]
