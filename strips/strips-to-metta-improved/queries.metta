@@ -18,7 +18,7 @@
 ; TODO check whether preconditions are met
 ; TODO unique union
 (= (eval (state $idx) $action)
-  (union (subtraction (valuation (state $idx)) (collapse (eff-neg $action))) (eff-pos $action))
+  (union (subtraction (valuation (state $idx)) (eff-neg $action)) (eff-pos $action))
 )
 
 !(eff-pos (pick-up A))          ; > [(holding A)]
@@ -49,7 +49,7 @@
 !(match &self (= (valuation (state $n)) $r) $n)     ; > [0, 1, 2]
 
 
-; EXAMPLE STACK BLOCKS A AND B
+; EXAMPLE: STACK BLOCKS A AND B
 
 !(valuation (state (save (collapse (eval (state 0) (pick-up A))))))
 !(unique (valuation (state (save (collapse (eval (state (idx)) (stack A B)))))))
