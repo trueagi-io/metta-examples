@@ -1,6 +1,8 @@
 ; !(import! &self logistics-i-1)
 !(import! &self blocks-i-1)
 
+; UTILITY
+(= (fmap $f ($a $x $y) ) ($a ($f $x) ($f $y)))
 
 !(valuation (state 0))
 ; > [(clear A), (ontable C), (clear B), (clear D), (ontable A), (ontable B), (handempty), (ontable D), (clear C)]
@@ -50,7 +52,7 @@
 ; EXAMPLE STACK BLOCKS A AND B
 
 !(valuation (state (save (collapse (eval (state 0) (pick-up A))))))
-!(valuation (state (save (collapse (eval (state (idx)) (stack A B))))))
+!(unique (valuation (state (save (collapse (eval (state (idx)) (stack A B)))))))
 
 
 ; EXAMPLE MAKE TOWER A on B on C
@@ -86,12 +88,29 @@
 !(can-apply (state 0) (stack A B))      ; > False
 
 ; FIND ALL ACTIONS
+(= (all-actions) (match &self (action $name) $name))
+!(all-actions)                          ; > [put-down, pick-up, unstack, stack]
 
 
 ; FIND ALL OBJECTS OF GIVEN TYPE
+; TODO transitivity of types
+(= (oftype $type) (match &self (isa $name $type) $name))
+!(oftype object)                        ; > [A, C, B, D]
 
 
-; GROUND ALL ACTIONS
+; GROUND ACTIONS
+!(action (oftype object) (oftype object))       ; > [(action A A), (action A C), (action A B), (action A D), (action C A), (action C C), (action C B), (action C D), (action B A), (action B C), (action B B), (action B D), (action D A), (action D C), (action D B), (action D D)]
+
+
+; (= (ground $action) (fmap oftype (match &self (types $action ($x $y)) ($action $x $y))))
+
+(= (ground $action) (match &self (types $action ()) ($action)))
+(= (ground $action) (match &self (types $action ($x)) ($action (oftype $x))))
+(= (ground $action) (match &self (types $action ($x $y)) ($action (oftype $x) (oftype $y))))
+(= (ground $action) (match &self (types $action ($x $y $z)) ($action (oftype $x) (oftype $y) (oftype $z))))
+
+!(ground pick-up)           ; > [(pick-up A), (pick-up C), (pick-up B), (pick-up D)]
+!(ground stack)             ; > [(stack A A), (stack A C), (stack A B), (stack A D), (stack C A), (stack C C), (stack C B), (stack C D), (stack B A), (stack B C), (stack B B), (stack B D), (stack D A), (stack D C), (stack D B), (stack D D)]
 
 
 ; FIND ALL ACTIONS THAT CAN BE APPLIED TO A STATE
