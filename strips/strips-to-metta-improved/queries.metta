@@ -16,7 +16,7 @@
 ; TODO check whether preconditions are met
 ; TODO unique union
 (= (eval (state $idx) $action)
-  (union (subtract (valuation (state $idx)) (collapse (eff-neg $action))) (eff-pos $action))
+  (union (subtraction (valuation (state $idx)) (collapse (eff-neg $action))) (eff-pos $action))
 )
 
 !(eff-pos (pick-up A))          ; > [(holding A)]
