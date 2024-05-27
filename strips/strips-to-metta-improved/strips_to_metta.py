@@ -18,7 +18,7 @@ def predicate_to_metta(p: Predicate) -> str:
             for t in p.terms[i].type_tags:  # show every different type tag in a new statement, not sure about this
                 s += f"(var {p.name} {i + 1} {t}) \n"
         else:
-            s += f"(var {p.name} {i + 1} untyped) \n"
+            s += f"(var {p.name} {i + 1} object) \n"
     return s
 
 
@@ -33,7 +33,15 @@ def types_to_metta(type_dict: dict['name', 'Optional[name]']) -> str:
 def action_to_metta(a: Action) -> str:
     s = f"(action {a.name}) \n"
 
-    # TODO type arguments of the action
+    def get_type(param):
+        if len(param.type_tags) == 1:
+            return param.type_tags[0]
+        if len(param.type_tags) > 1:
+            raise NotImplementedError
+        else:
+            return "object"  # in PDDL, 'object' is the default type, all other types are also objects
+
+    s += f"(types {a.name} ({' '.join([get_type(v) for v in a.terms])})) \n"
 
     s += precondition_to_metta(a.precondition, a)
     s += effect_to_metta(a.effect, a)
@@ -121,7 +129,7 @@ def domain_to_metta(domain: Domain) -> str:
 
 def object_to_metta(obj: Constant) -> str:
     return f"(object {obj.name})\n" \
-           f"(isa {obj.name} {obj.type_tag})\n"
+           f"(isa {obj.name} {obj.type_tag if obj.type_tag else "object"})\n"
 
 
 # (= (valuation (state 1)) (superpose ((clear a)
@@ -158,16 +166,16 @@ def problem_to_metta(problem: Problem):
 def to_file():
     domain: Domain = parse_domain("blocks/domain.pddl")
     problem: Problem = parse_problem("blocks/instance-1.pddl")
-    with open("blocks-i-1.metta", "w") as f:
+    with open("strips-to-metta-improved/blocks-i-1.metta", "w") as f:
         f.write(domain_to_metta(domain))
         f.write('\n')
         f.write(problem_to_metta(problem))
 
 
 if __name__ == '__main__':
-    domain: Domain = parse_domain("blocks/domain.pddl")
-    problem: Problem = parse_problem("blocks/instance-1.pddl")
-    action = next(iter(domain.actions))
-    print(effect_to_metta(action.effect, action))
+    # domain: Domain = parse_domain("blocks/domain.pddl")
+    # problem: Problem = parse_problem("blocks/instance-1.pddl")
+    # action = next(iter(domain.actions))
+    # print(effect_to_metta(action.effect, action))
 
-    # to_file()
+    to_file()
