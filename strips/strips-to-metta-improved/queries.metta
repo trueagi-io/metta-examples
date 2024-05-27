@@ -1,5 +1,5 @@
-; !(import! &self logistics-i-1.metta)
-!(import! &self blocks-i-1.metta)
+; !(import! &self logistics-i-1)
+!(import! &self blocks-i-1)
 
 ; UTILITY FUNCTIONS
 (= (eq? $x $y) (== $x $y))
@@ -75,3 +75,33 @@
                     (stack B C))
                     (pick-up A))
                     (stack A B))))
+
+
+; CHECK WHETHER AN ACTION CAN BE APPLIED TO A STATE
+
+; output True if $subset ⊆ $set, otherwise False
+(= (subset $subset $set) (if (== (collapse (subtraction (superpose $subset) (intersection (superpose $set) (superpose $subset)))) ()) True False))
+
+!(subset (a b) (a b c))         ; > True
+!(subset (a b c) (a b d))       ; > False
+!(subset  (collapse (pre (pick-up A))) (collapse (valuation (state 0))))        ; > True
+
+
+; output True if $action can be applied in state $idx, otherwise False
+(= (can-apply (state $idx) $action) (subset (collapse (pre $action)) (collapse (valuation (state $idx)))))
+
+!(pre (pick-up A))
+!(valuation (state 0))
+!(can-apply (state 0) (pick-up A))      ; > True
+!(can-apply (state 0) (stack A B))      ; > False
+
+; FIND ALL ACTIONS
+
+
+; FIND ALL OBJECTS OF GIVEN TYPE
+
+
+; GROUND ALL ACTIONS
+
+
+; FIND ALL ACTIONS THAT CAN BE APPLIED TO A STATE
