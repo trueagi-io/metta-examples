@@ -92,9 +92,7 @@
 !(assertEqual (find_state (a b c))
               (empty))
 
-; TODO how to make this equality work?
-; now: > [(Error (empty) NoValidAlternatives)]
-; !(==  (find_state (a b c)) (empty))
+!(==  (Empty (find_state (a b c))) True)
 
 
 ; only save a state if the it does not exist yet, otherwise return state index
@@ -223,7 +221,7 @@
 
 
 (= (partial-apply $a) (if (can-apply (state 0) $a) ($a (collapse (eval (state 0) $a))) (empty)))
-;!(partial-apply (ground (all-actions)))
+!(partial-apply (ground (all-actions)))
 
 
 
