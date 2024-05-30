@@ -1,11 +1,33 @@
 ; !(import! &self logistics-i-1)
 !(import! &self blocks-i-1)
 
-; UTILITY
+; UTILITY FUNCTIONS
 (= (fmap $f ($a $x $y) ) ($a ($f $x) ($f $y)))
 
+; return True if $subset ⊆ $set, otherwise False
+(= (subset $subset $set) (if (== (collapse (subtraction (superpose $subset) (intersection (superpose $set) (superpose $subset)))) ()) True False))
+
+!(assertEqual (subset (a b) (a b c))
+              True)
+!(assertEqual (subset (a b c) (a b d))
+              False)
+!(assertEqual (subset (collapse (pre (pick-up A))) (collapse (valuation (state 0))))
+              True)
+
+; equality of two sets, returns True iff s1 == s2
+(= (seteq $set1 $set2) (and (subset $set1 $set2) (subset $set2 $set1)))
+
+!(assertEqual (seteq (a b c) (b c a))
+               True)
+
+!(assertEqual (seteq (a b c d) (b c a))
+               False)
+
+
+; GET PROPOSTITIONS THAT HOLD IN A STATE
 !(assertEqual (valuation (state 0))
               (superpose ((ontable A) (ontable B) (ontable C) (ontable D) (clear A) (clear B) (clear C) (clear D) (handempty))))
+
 
 ; GET ARITY OF A PROPOSITION
 (= (arity $prop) (match &self (arity $prop $n) $n))
@@ -15,8 +37,7 @@
 
 ; EXECUTE ACTION ON STATE
 ; apply an action on a state and get the resulting state
-; TODO check whether preconditions are met
-; TODO unique union
+
 (= (eval (state $idx) $action)
   (union (subtraction (valuation (state $idx)) (eff-neg $action)) (eff-pos $action))
 )
@@ -28,11 +49,12 @@
 !(assertEqual (eval (state 0) (pick-up A))
               (superpose ((holding A) (ontable C) (clear B) (clear D) (ontable B) (ontable D) (clear C))))
 
+
 ; SAVE NEW STATE
 !(bind! state# (new-state 1))
 (= (idx) (- (get-state state#) 1))
 
-; TODO add only save if the state does not exist yet, otherwise give state index
+; adds the state atom to the atom space (also if it already exists)
 (= (save $conditions)
    (let* (($current_id (get-state state#))
           ($_1 (add-atom &self (= (valuation (state $current_id))
@@ -40,19 +62,64 @@
           ($_2 (change-state! state# (+ (get-state state#) 1))))
     $current_id))
 
-; !(save (superpose ((test A) (test B))))
-!(save ((on a b) (holding b)))
-!(save ((on smt smt) (holding smt)))
+!(save ((test s1) (holding b)))
+!(save ((test s2) (on smt smt)))
 
 !(assertEqual (valuation (state 1))
-              (superpose ((on a b) (holding b))))
+              (superpose ((test s1) (holding b))))
 !(assertEqual (valuation (state 2))
-              (superpose ((on smt smt) (holding smt))))
+              (superpose ((test s2) (on smt smt))))
+
+!(assertEqual (seteq (collapse (valuation (state 0)))
+                     ((ontable A) (ontable B) (ontable C) (ontable D) (clear A) (clear B) (clear C) (clear D) (handempty)))
+               True)
+
+!(assertEqual (match &self (= (valuation (state $idx)) $props) (if (seteq (collapse $props) (collapse (valuation (state 0)))) $idx (empty)))
+               0)
+
+
+; return index of the state in which certain propositions hold
+(= (find_state $props) (match &self (= (valuation (state $idx)) $props2)
+                       (if (seteq $props (collapse $props2)) $idx (empty))))
+
+
+!(assertEqual (find_state (collapse (valuation (state 0))))
+               0)
+
+!(assertEqual (find_state ((ontable A) (ontable B) (ontable C) (ontable D) (clear A) (clear B) (clear C) (clear D) (handempty)))
+              0)
+
+!(assertEqual (find_state (a b c))
+              (empty))
+
+; TODO how to make this equality work?
+; now: > [(Error (empty) NoValidAlternatives)]
+; !(==  (find_state (a b c)) (empty))
+
+
+; only save a state if the it does not exist yet, otherwise return state index
+(= (save_if_new $conditions)
+    (case (find_state $conditions)
+         ((Empty (save $conditions))
+          ($idx $idx))
+    )
+)
+
+!(assertEqual (save_if_new ((test s3)))
+              (- (get-state state#) 1))
+
+!(assertEqual (valuation (state (- (get-state state#) 1)))
+              (superpose ((test s3))))
+
+
+!(assertEqual (save_if_new ((ontable A) (ontable B) (ontable C) (ontable D) (clear A) (clear B) (clear C) (clear D) (handempty)))
+              0)
+
 
 
 ; GET ALL STATE NUMBERS AS SANITY CHECK
 !(assertEqual (match &self (= (valuation (state $n)) $r) $n)
-              (superpose (0 1 2)))
+              (superpose (0 1 2 3)))
 
 
 ; EXAMPLE: STACK BLOCKS A AND B
@@ -73,7 +140,7 @@
 )
 
 !(assertEqual (step (state 0) (pick-up A))
-              (superpose (5)))
+              6)
 
 !(assertEqual (valuation (state (step (step (step (step 0
                                 (pick-up B))
@@ -84,17 +151,6 @@
 
 
 ; CHECK WHETHER AN ACTION CAN BE APPLIED TO A STATE
-
-; output True if $subset ⊆ $set, otherwise False
-(= (subset $subset $set) (if (== (collapse (subtraction (superpose $subset) (intersection (superpose $set) (superpose $subset)))) ()) True False))
-
-!(assertEqual (subset (a b) (a b c))
-              True)
-!(assertEqual (subset (a b c) (a b d))
-              False)
-!(assertEqual (subset (collapse (pre (pick-up A))) (collapse (valuation (state 0))))
-              True)
-
 
 ; output True if $action can be applied in state $idx, otherwise False
 (= (can-apply (state $idx) $action) (subset (collapse (pre $action)) (collapse (valuation (state $idx)))))
@@ -158,3 +214,6 @@
 
 
 ; FIND ALL ACTIONS THAT CAN BE APPLIED TO A STATE
+
+; CONSTRUCT TRANSITION SYSTEM
+
