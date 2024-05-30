@@ -214,6 +214,18 @@
 
 
 ; FIND ALL ACTIONS THAT CAN BE APPLIED TO A STATE
+(= (apply-safe (state $idx) $action) (if (can-apply (state $idx) $action) (eval (state $idx) $action) (empty)))
+
+!(assertEqual (apply-safe (state 0) (pick-up A))
+              (superpose ((ontable B) (clear D) (clear C) (ontable D) (ontable C) (clear B) (holding A))))
+!(assertEqual (apply-safe (state 0) (stack A B))
+              (empty))
+
+
+(= (partial-apply $a) (if (can-apply (state 0) $a) ($a (collapse (eval (state 0) $a))) (empty)))
+;!(partial-apply (ground (all-actions)))
+
+
 
 ; CONSTRUCT TRANSITION SYSTEM
 
