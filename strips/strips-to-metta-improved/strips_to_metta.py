@@ -32,10 +32,9 @@ def types_to_metta(type_dict: dict['name', 'Optional[name]']) -> str:
 
 def action_to_metta(a: Action) -> str:
     s = f"(action {a.name}) \n"
-
     def get_type(param):
         if len(param.type_tags) == 1:
-            return param.type_tags[0]
+            return " ".join(t for t in param.type_tags)
         if len(param.type_tags) > 1:
             raise NotImplementedError
         else:
@@ -163,10 +162,10 @@ def problem_to_metta(problem: Problem):
     return s
 
 
-def to_file():
-    domain: Domain = parse_domain("blocks/domain.pddl")
-    problem: Problem = parse_problem("blocks/instance-1.pddl")
-    with open("strips-to-metta-improved/blocks-i-1.metta", "w") as f:
+def to_file(domainfile, problemfile, outputfile):
+    domain: Domain = parse_domain(domainfile)
+    problem: Problem = parse_problem(problemfile)
+    with open(outputfile, "w") as f:
         f.write(domain_to_metta(domain))
         f.write('\n')
         f.write(problem_to_metta(problem))
@@ -177,5 +176,5 @@ if __name__ == '__main__':
     # problem: Problem = parse_problem("blocks/instance-1.pddl")
     # action = next(iter(domain.actions))
     # print(effect_to_metta(action.effect, action))
-
-    to_file()
+    to_file("blocks/domain.pddl", "blocks/instance-1.pddl", "strips-to-metta-improved/blocks-i-1.metta")
+    to_file("logistics/domain.pddl", "logistics/instance-1.pddl", "strips-to-metta-improved/logistics-i-1.metta")
