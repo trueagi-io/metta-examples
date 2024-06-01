@@ -34,10 +34,9 @@ All the PDDL domains and instances we use for testing originate from the IPC ben
 For now, we focussed on translating STRIPS environments, specified in PDDL files, to MeTTa. 
 We support typed variables in the predicate and action specifications.
 
-Shortly, we plan to support the full PDDL language. 
-
 As example cases we show 
-* the blocks domain ([PDDL](blocks/domain.pddl), [MeTTa](strips-to-metta-flat/blocks-domain_flat.metta))
-* the logistics domain together with an instance ([PDDL](logistics), [MeTTa](strips-to-metta-flat/logistics-i-1_flat.metta))
+* the blocks domain ([PDDL](blocks/domain.pddl), [MeTTa](strips-to-metta-improved/blocks-i-1.metta))
+* the logistics domain together with an instance ([PDDL](logistics), [MeTTa](strips-to-metta-improved/logistics-i-1.metta))
 
-We plan to explore other translations soon. 
+MeTTa queries and tests on the blocks domain can be found [here](strips-to-metta-improved/queries.metta). 
+We managed to use the MeTTa language to construct a transition system graph from the domain. 
