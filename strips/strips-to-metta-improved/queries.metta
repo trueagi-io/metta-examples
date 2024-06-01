@@ -1,5 +1,6 @@
 ; !(import! &self logistics-i-1)
-!(import! &self blocks-i-1)
+; !(import! &self blocks-i-1)
+!(import! &self blocks-i-0)
 
 ; UTILITY FUNCTIONS
 (= (fmap $f ($a $x $y) ) ($a ($f $x) ($f $y)))
@@ -26,7 +27,7 @@
 
 ; GET PROPOSTITIONS THAT HOLD IN A STATE
 !(assertEqual (valuation (state 0))
-              (superpose ((ontable A) (ontable B) (ontable C) (ontable D) (clear A) (clear B) (clear C) (clear D) (handempty))))
+              (superpose ((ontable A) (ontable B) (ontable C) (clear A) (clear B) (clear C) (handempty))))
 
 
 ; GET ARITY OF A PROPOSITION
@@ -47,7 +48,7 @@
 !(assertEqual (eff-neg (pick-up A))
               (superpose ((ontable A) (clear A) (handempty))))
 !(assertEqual (eval (state 0) (pick-up A))
-              (superpose ((holding A) (ontable C) (clear B) (clear D) (ontable B) (ontable D) (clear C))))
+              (superpose ((holding A) (ontable C) (clear B) (ontable B) (clear C))))
 
 
 ; SAVE NEW STATE
@@ -62,16 +63,16 @@
           ($_2 (change-state! state# (+ (get-state state#) 1))))
     $current_id))
 
-!(save ((test s1) (holding b)))
-!(save ((test s2) (on smt smt)))
+!(save ((holding A) (ontable B) (ontable C) (clear B) (clear C)))
+;!(save ((test s2) (on smt smt)))
 
 !(assertEqual (valuation (state 1))
-              (superpose ((test s1) (holding b))))
-!(assertEqual (valuation (state 2))
-              (superpose ((test s2) (on smt smt))))
+              (superpose ((holding A) (ontable B) (ontable C) (clear B) (clear C))))
+;!(assertEqual (valuation (state 2))
+;              (superpose ((test s2) (on smt smt))))
 
 !(assertEqual (seteq (collapse (valuation (state 0)))
-                     ((ontable A) (ontable B) (ontable C) (ontable D) (clear A) (clear B) (clear C) (clear D) (handempty)))
+                     ((ontable A) (ontable B) (ontable C) (clear A) (clear B) (clear C) (handempty)))
                True)
 
 !(assertEqual (match &self (= (valuation (state $idx)) $props) (if (seteq (collapse $props) (collapse (valuation (state 0)))) $idx (empty)))
@@ -86,13 +87,13 @@
 !(assertEqual (find_state (collapse (valuation (state 0))))
                0)
 
-!(assertEqual (find_state ((ontable A) (ontable B) (ontable C) (ontable D) (clear A) (clear B) (clear C) (clear D) (handempty)))
+!(assertEqual (find_state ((ontable A) (ontable B) (ontable C) (clear A) (clear B) (clear C) (handempty)))
               0)
 
-!(assertEqual (find_state (a b c))
-              (empty))
+; !(assertEqual (find_state (a b c))
+;              (empty))
 
-!(==  (Empty (find_state (a b c))) True)
+; !(==  (Empty (find_state (a b c))) True)
 
 
 ; only save a state if the it does not exist yet, otherwise return state index
@@ -103,33 +104,33 @@
     )
 )
 
-!(assertEqual (save_if_new ((test s3)))
-              (- (get-state state#) 1))
+; !(assertEqual (save_if_new ((test s3)))
+;               (- (get-state state#) 1))
 
-!(assertEqual (valuation (state (- (get-state state#) 1)))
-              (superpose ((test s3))))
+; !(assertEqual (valuation (state (- (get-state state#) 1)))
+;               (superpose ((test s3))))
 
 
-!(assertEqual (save_if_new ((ontable A) (ontable B) (ontable C) (ontable D) (clear A) (clear B) (clear C) (clear D) (handempty)))
+!(assertEqual (save_if_new ((ontable A) (ontable B) (ontable C) (clear A) (clear B) (clear C) (handempty)))
               0)
 
 
 
 ; GET ALL STATE NUMBERS AS SANITY CHECK
 !(assertEqual (match &self (= (valuation (state $n)) $r) $n)
-              (superpose (0 1 2 3)))
+              (superpose (0 1)))
 
 
 ; EXAMPLE: STACK BLOCKS A AND B
 ; in the initial state all blocks lie on the table
 ; pick up A
 !(assertEqual (valuation (state (save (collapse (eval (state 0) (pick-up A))))))
-              (superpose ((holding A) (ontable B) (ontable C) (ontable D) (clear B) (clear C) (clear D))))
+              (superpose ((holding A) (ontable B) (ontable C) (clear B) (clear C))))
 ; stack A on B
 !(assertEqual (valuation (state (save (collapse (eval (state (idx)) (stack A B))))))
               (superpose ((on A B) (handempty)
-                          (clear A) (clear C) (clear D)
-                          (ontable B) (ontable C) (ontable D))))
+                          (clear A) (clear C)
+                          (ontable B) (ontable C))))
 
 
 ; CHAIN ACTIONS: EXAMPLE MAKE TOWER A on B on C
@@ -138,14 +139,14 @@
 )
 
 !(assertEqual (step (state 0) (pick-up A))
-              6)
+              4)
 
 !(assertEqual (valuation (state (step (step (step (step 0
                                 (pick-up B))
                                 (stack B C))
                                 (pick-up A))
                                 (stack A B))))
-              (superpose ((on A B) (on B C) (clear A) (clear D) (ontable C) (ontable D) (handempty))))
+              (superpose ((on A B) (on B C) (clear A) (ontable C) (handempty))))
 
 
 ; CHECK WHETHER AN ACTION CAN BE APPLIED TO A STATE
@@ -156,7 +157,7 @@
 !(assertEqual (pre (pick-up A))
               (superpose ((clear A) (ontable A) (handempty))))
 !(assertEqual (valuation (state 0))
-              (superpose ((ontable A) (ontable B) (ontable C) (ontable D) (clear A) (clear B) (clear C) (clear D) (handempty))))
+              (superpose ((ontable A) (ontable B) (ontable C) (clear A) (clear B) (clear C) (handempty))))
 
 !(assertEqual (can-apply (state 0) (pick-up A))
               True)
@@ -173,7 +174,7 @@
 ; TODO transitivity of types
 (= (oftype $type) (match &self (isa $name $type) $name))
 !(assertEqual (oftype object)
-              (superpose (A B C D)))
+              (superpose (A B C)))
 
 
 ; GROUND ACTIONS
@@ -188,42 +189,79 @@
 (= (ground $action) (match &self (types $action ($x $y $z)) ($action (oftype $x) (oftype $y) (oftype $z))))
 
 !(assertEqual (ground pick-up)
-              (superpose ((pick-up A) (pick-up B) (pick-up C) (pick-up D))))
+              (superpose ((pick-up A) (pick-up B) (pick-up C))))
 
 !(assertEqual (ground stack)
-              (superpose ((stack A A) (stack A B) (stack A C) (stack A D)
-                          (stack B A) (stack B C) (stack B B) (stack B D)
-                          (stack C A) (stack C B) (stack C C) (stack C D)
-                          (stack D A) (stack D B) (stack D C) (stack D D))))
+              (superpose ((stack A A) (stack A B) (stack A C)
+                          (stack B A) (stack B C) (stack B B)
+                          (stack C A) (stack C B) (stack C C))))
 
 
 ; GET ALL GROUNDED ACTIONS
 !(assertEqual (ground (all-actions))
-              (superpose ((pick-up A) (pick-up B) (pick-up C) (pick-up D)
-                          (put-down A) (put-down B) (put-down C) (put-down D)
-                          (stack A A) (stack A B) (stack A C) (stack A D)
-                          (stack B A) (stack B C) (stack B B) (stack B D)
-                          (stack C A) (stack C B) (stack C C) (stack C D)
-                          (stack D A) (stack D B) (stack D C) (stack D D)
-                          (unstack A A) (unstack A B) (unstack A C) (unstack A D)
-                          (unstack B A) (unstack B C) (unstack B B) (unstack B D)
-                          (unstack C A) (unstack C B) (unstack C C) (unstack C D)
-                          (unstack D A) (unstack D B) (unstack D C) (unstack D D))))
+              (superpose ((pick-up A) (pick-up B) (pick-up C)
+                          (put-down A) (put-down B) (put-down C)
+                          (stack A A) (stack A B) (stack A C)
+                          (stack B A) (stack B C) (stack B B)
+                          (stack C A) (stack C B) (stack C C)
+                          (unstack A A) (unstack A B) (unstack A C)
+                          (unstack B A) (unstack B C) (unstack B B)
+                          (unstack C A) (unstack C B) (unstack C C))))
 
 
 ; FIND ALL ACTIONS THAT CAN BE APPLIED TO A STATE
 (= (apply-safe (state $idx) $action) (if (can-apply (state $idx) $action) (eval (state $idx) $action) (empty)))
 
 !(assertEqual (apply-safe (state 0) (pick-up A))
-              (superpose ((ontable B) (clear D) (clear C) (ontable D) (ontable C) (clear B) (holding A))))
+              (superpose ((ontable B) (clear C) (ontable C) (clear B) (holding A))))
 !(assertEqual (apply-safe (state 0) (stack A B))
               (empty))
 
 
-(= (partial-apply $a) (if (can-apply (state 0) $a) ($a (collapse (eval (state 0) $a))) (empty)))
-!(partial-apply (ground (all-actions)))
-
+(= (partial-apply-test $a) (if (can-apply (state 0) $a) ($a (collapse (eval (state 0) $a))) (empty)))
+; !(partial-apply-test (ground (all-actions)))
 
 
 ; CONSTRUCT TRANSITION SYSTEM
+
+; for a state s and an action a, if the a can be applied in s, resulting in state s',
+; add an edge from s to s'
+; if s' does not exist yet, also add it
+
+(= (add-edge (state $idx) $a)
+    (if (can-apply (state $idx) $a)
+        (let* (($idx2 (save_if_new (collapse (eval (state $idx) $a))))
+              ($_1 (add-atom &self (edge (state $idx) (state $idx2) $a))))
+              (edge (state $idx) (state $idx2) $a))
+        (empty)
+    )
+)
+
+
+
+; starting from state 0, iteratively apply all possible actions and add transition edges
+; actions are applied to states based on increasing state number
+
+; TODO method does not work when there are states on which no action can be applied
+; because that causes partial-apply to be empty, assigns empty to a variable in let*, which makes the whole let* empty
+; Therefore, make sure no "dummy" states are saved in the self space
+
+!(bind! expand# (new-state 0))
+(= (expand) (if (< (get-state expand#) (get-state state#))
+                (let* (($_1 (add-edge (state (get-state expand#))(ground (all-actions))))
+                      ($_2 (change-state! expand# (+ (get-state expand#) 1)))
+                      ($_3 (expand)))
+                      (get-state expand#)
+                )
+             ()
+            )
+)
+
+!(expand)
+
+!(get-state expand#)
+!(get-state state#)
+
+; show all edges of the transition system
+!(match &self (edge $x $y $z) (edge $x $y $z))
 
