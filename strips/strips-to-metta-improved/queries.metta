@@ -257,7 +257,8 @@
             )
 )
 
-!(expand)
+; BUILD TRANSITION SYSTEM
+;!(expand)         ; !building the transition system can take a minute
 
 !(get-state expand#)
 !(get-state state#)
