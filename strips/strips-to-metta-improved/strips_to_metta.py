@@ -10,15 +10,19 @@ from pddl.parser.domain import Domain
 from pddl.parser.problem import Problem
 
 
+def get_type(param):
+    if len(param.type_tags) == 1:
+        return " ".join(t for t in param.type_tags)
+    if len(param.type_tags) > 1:
+        raise NotImplementedError
+    else:
+        return "object"  # in PDDL, 'object' is the default type, all other types are also objects
+
+
 def predicate_to_metta(p: Predicate) -> str:
     s = f"(predicate {p.name}) \n" \
         f"(arity {p.name} {p.arity}) \n"
-    for i in range(p.arity):
-        if p.terms[i].type_tags:
-            for t in p.terms[i].type_tags:  # show every different type tag in a new statement, not sure about this
-                s += f"(var {p.name} {i + 1} {t}) \n"
-        else:
-            s += f"(var {p.name} {i + 1} object) \n"
+    s += f"(types {p.name} ({', '.join([get_type(t) for t in p.terms])})) \n"
     return s
 
 
@@ -32,13 +36,6 @@ def types_to_metta(type_dict: dict['name', 'Optional[name]']) -> str:
 
 def action_to_metta(a: Action) -> str:
     s = f"(action {a.name}) \n"
-    def get_type(param):
-        if len(param.type_tags) == 1:
-            return " ".join(t for t in param.type_tags)
-        if len(param.type_tags) > 1:
-            raise NotImplementedError
-        else:
-            return "object"  # in PDDL, 'object' is the default type, all other types are also objects
 
     s += f"(types {a.name} ({' '.join([get_type(v) for v in a.terms])})) \n"
 
@@ -136,7 +133,7 @@ def object_to_metta(obj: Constant) -> str:
 #                                     (on b c))))
 def state_to_metta(state: AbstractSet[Predicate], idx: int):
     props = " ".join([f"({p.name} {' '.join([str(t) for t in p.terms])})" for p in state])
-    return f"(= (valuation (state {idx})) (superpose ({props})))"
+    return f"(= (valuation (state {idx})) (superpose ({props}))) \n"
 
 
 def goal_to_metta(g: Formula):
@@ -177,4 +174,5 @@ if __name__ == '__main__':
     # action = next(iter(domain.actions))
     # print(effect_to_metta(action.effect, action))
     to_file("blocks/domain.pddl", "blocks/instance-1.pddl", "strips-to-metta-improved/blocks-i-1.metta")
+    to_file("blocks/domain.pddl", "blocks/instance-0.pddl", "strips-to-metta-improved/blocks-i-0.metta")
     to_file("logistics/domain.pddl", "logistics/instance-1.pddl", "strips-to-metta-improved/logistics-i-1.metta")
