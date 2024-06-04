@@ -39,4 +39,4 @@ As example cases we show
 * the logistics domain together with an instance ([PDDL](logistics), [MeTTa](strips-to-metta-improved/logistics-i-1.metta))
 
 MeTTa queries and tests on the blocks domain can be found [here](strips-to-metta-improved/queries.metta). 
-We managed to use the MeTTa language to construct a transition system graph from the domain. 
+We managed to use the MeTTa language to construct a transition system graph from the domain specification. 
