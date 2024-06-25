@@ -8,7 +8,7 @@
 (= (different $x $y) (if (== $x $y) (empty) $x))
 
 ; GENERATE EXTRA INDICES
-!(match &self (parent $x $y) (child $y $x))
+!(match &self (parent $x $y) (add-atom &self (child $y $x)))
 
 !(match &self (male $x) (add-atom &self (person $x)))
 !(match &self (female $x) (add-atom &self (person $x)))

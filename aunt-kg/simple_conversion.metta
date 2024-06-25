@@ -42,16 +42,13 @@
 )
 
 !(transform_ (,
-        (Individuals $i (Id $id))
         (Relations $r (Husband $id))
-        (Relations $r (Children $lci $cid))
-        (Individuals $ci (Id $cid)))
+        (Relations $r (Children $lci $cid)))
     (parent $id $cid)
 )
 
 !(transform_ (,
         (Relations $r (Wife $id))
-        (Relations $r (Children $lci $cid))
-        (Individuals $ci (Id $cid)))
+        (Relations $r (Children $lci $cid)))
     (parent $id $cid)
 )
