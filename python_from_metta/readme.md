@@ -10,5 +10,3 @@
 
 To implement:
 - (untill $value $do) operator. (currently I can detect EOS token in while loop, but not able to break out of it.)
-
-- ...
