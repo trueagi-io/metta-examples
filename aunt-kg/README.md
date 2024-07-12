@@ -26,6 +26,7 @@ Using the MeTTa script [simple_conversion.metta]().
 The benchmark is to do every query (parent, mother, sister, aunt, predecessor) for every person.
 
 ### Hyperon-Experimental
+WARNING: Outdated
 
 Simpsons Dataset (11 people)  
 [simple_conversion.metta]() 0m0.113s  
