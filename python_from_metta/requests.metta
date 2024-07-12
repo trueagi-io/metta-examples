@@ -30,6 +30,23 @@
 ; >> i.e. the below snippets are basically the same. - not good ;-)
 ; >> how to overcome?
 
+; ...with non-deterministic types ?
+
+(: Index String)
+(: Index Number)
+
+(get-type Index)
+
+;; (: uni (-> f JsonAtom Index JsonAtom))
+;; (= (uni $f $dict $key)
+;;     ((py-dot (py-atom $dict) $f) $key))
+;--
+;; (= (get $dict $key)
+;;     (uni get $dict $key))
+
+;; (= (get_index $list $index)
+;;     (uni __getitem__ $list $index))
+
 (: get (-> JsonAtom String JsonAtom))
 (= (get $dict $key)
     ((py-dot (py-atom $dict) get) $key))
@@ -38,7 +55,8 @@
 (= (get_index $list $index)
     ((py-dot (py-atom $list) __getitem__) $index))
 
-;(: uni_get (-> JsonAtom (String Number) String))
+
+
 
 
 ; -----------------------
@@ -57,7 +75,6 @@
     (get $dict $path))
 (= (rget $dict (:: $x $xs))
     (rget (get $dict $x) $xs))
-
 
 ; > python inspect function
 ; -------------------------
