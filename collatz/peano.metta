@@ -1,3 +1,5 @@
+; WIP
+
 (= (halfr (S (S $x)) $y) (halfr $x (S $y)))
 (= (halfr (S Z) $y) (Odd $y))
 (= (halfr Z $y) (Even $y))
