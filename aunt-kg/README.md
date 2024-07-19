@@ -1,7 +1,7 @@
 # Aunt Knowledge Graph
 
 An exploration in knowledge graphs, raised by
-[https://github.com/trueagi-io/metta-examples/issues/40]()
+[https://github.com/trueagi-io/metta-examples/issues/40](https://github.com/trueagi-io/metta-examples/issues/40)
 
 The goal is to evaluate how expressive, intuitive, and performant MeTTa is for dealing with regular labeled graphs.
 
