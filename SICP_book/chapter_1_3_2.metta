@@ -7,17 +7,17 @@
 
 (: lambda1 (-> Variable Atom (-> $a $t)))
 (= ((lambda1 $var $body) $val)
-    (let (quoted $var) (quoted $val) $body) )
+    (let (quote ($v $b)) (sealed ($var) (quote ($var $body))) (let (quote $v) (quote $val) $b)) )
 
 ; For lambda with two inputs
 (= ((lambda2 $var1 $var2 $body) $val1 $val2)
-    (let (quoted ($var1 $var2)) (quoted ($val1 $val2)) $body))
+    (let (quote ($v1 $v2 $b)) (sealed ($var1 $var2) (quote ($var1 $var2 $body))) (let (quote ($v1 $v2)) (quote ($val1 $val2)) $b)) )
 
 ; For lambda with three inputs. But actually we will use it to bypass recursive limitation while
 ; defining function using let
 (: lambda3 (-> Variable Variable Variable Atom (-> $a $b $c $t)))
 (= ((lambda3 $var1 $var2 $var3 $body) $val1 $val2 $val3)
-    (let (quoted ($var1 $var2 $var3)) (quoted ($val1 $val2 $val3)) $body))
+    (let (quote ($v1 $v2 $v3 $b)) (sealed ($var1 $var2 $var3) (quote ($var1 $var2 $var3 $body))) (let (quote ($v1 $v2 $v3)) (quote ($val1 $val2 $val3)) $b)) )
 
 (= (sqr $x) (* $x $x))
 
@@ -29,8 +29,7 @@
 (= (dec $x) (- $x 1))
 
 ; Since metta currently doesn't support '+', '*' etc with 3+ parameters:
-(= (+4 $a $b $c $d) (+ (+ $a $b) (+ $c $d)))
-(= (+3 $a $b $c) (+ (+ $a $b) $c))
+(= (p4 $a $b $c $d) (+ (+ $a $b) (+ $c $d)))
 
 (= (remainder $x $y) (% $x $y))
 
@@ -179,7 +178,7 @@
 ; --------------------------------------------------------
 
 (= (cubic $a $b $c)
-  (lambda1 $x (+4 (cube $x) (* $a (sqr $x)) (* $b $x) $c)))
+  (lambda1 $x (p4 (cube $x) (* $a (sqr $x)) (* $b $x) $c)))
 
 !(assertEqual
     (newtons-method (cubic 1 2 3) 1)

@@ -307,7 +307,7 @@
 
 (: lambda1 (-> Variable Atom (-> $a $t)))
 (= ((lambda1 $var $body) $val)
-    (let (quote $var) (quote $val) $body))
+    (let (quote ($v $b)) (sealed ($var) (quote ($var $body))) (let (quote $v) (quote $val) $b)) )
 
 (= (cons $x $y)
   (let $dispatch (lambda1 $m
@@ -344,7 +344,7 @@
 
 (: lambda2 (-> Variable Variable Atom (-> $a $b $t)))
 (= ((lambda2 $var1 $var2 $body) $val1 $val2)
-    (let (quote ($var1 $var2)) (quote ($val1 $val2)) $body))
+    (let (quote ($v1 $v2 $b)) (sealed ($var1 $var2) (quote ($var1 $var2 $body))) (let (quote ($v1 $v2)) (quote ($val1 $val2)) $b)) )
 
 (= (cons2 $x $y)
   (lambda1 $m ($m $x $y)))
@@ -395,7 +395,7 @@
 
 (: lambda3 (-> Variable Variable Variable Atom (-> $a $b $c $t)))
 (= ((lambda3 $var1 $var2 $var3 $body) $val1 $val2 $val3)
-    (let (quote ($var1 $var2 $var3)) (quote ($val1 $val2 $val3)) $body))
+    (let (quote ($v1 $v2 $v3 $b)) (sealed ($var1 $var2 $var3) (quote ($var1 $var2 $var3 $body))) (let (quote ($v1 $v2 $v3)) (quote ($val1 $val2 $val3)) $b)) )
 
 (= (inc $x) (+ $x 1))
 
