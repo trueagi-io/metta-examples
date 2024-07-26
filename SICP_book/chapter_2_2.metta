@@ -281,7 +281,7 @@
 
 (: lambda1 (-> Variable Atom (-> $a $t)))
 (= ((lambda1 $var $body) $val)
-    (let (quote $var) (quote $val) $body) )
+    (let (quote ($v $b)) (sealed ($var) (quote ($var $body))) (let (quote $v) (quote $val) $b)) )
 
 (= (square $x)
     (* $x $x))
@@ -571,12 +571,21 @@
     (tree (10 (20 (30 40) 50) (60 70))))
 
 ; Scale tree but using map for definition
+; TODO: this version of scale-tree-m more preferable but it is not working in current metta's state.
+;(= (scale-tree-m $tree $factor)
+;    (map (lambda1 $sub-tree
+;        (case $sub-tree
+;            (((Cons $x $xs) (scale-tree-m $sub-tree $factor))
+;            ($_ (* $sub-tree $factor)))))
+;            $tree))
+
+; This is the stub-version of scale-tree-m. I don't think it is quite right to do so. But let it be till problem with normal version persists.
 (= (scale-tree-m $tree $factor)
     (map (lambda1 $sub-tree
-        (case $sub-tree
-            (((Cons $x $xs) (scale-tree-m $sub-tree $factor))
-            ($_ (* $sub-tree $factor)))))
-            $tree))
+        (if (== (get-metatype $sub-tree) Expression)
+            (scale-tree-m $sub-tree $factor)
+            (* $sub-tree $factor))) $tree))
+
 !(assertEqual
     (scale-tree-m (list (1 (list (2 (list (3 4)) 5)) (list (6 7)))) 10)
     (tree (10 (20 (30 40) 50) (60 70))))
@@ -608,13 +617,19 @@
     (tree (1 (4 (9 16) 25) (36 49))))
 
 ;Using map function
+; Same problem as with scale-tree-m. Something with using case inside lambda body which then used as an input to function map.
+;(= (square-tree-m $tree)
+;    (map (lambda1 $sub-tree
+;        (case $sub-tree
+;            (((Cons $x $xs) (square-tree-m $sub-tree))
+;            ($_ (* $sub-tree $sub-tree)))))
+;            $tree))
 
 (= (square-tree-m $tree)
     (map (lambda1 $sub-tree
-        (case $sub-tree
-            (((Cons $x $xs) (square-tree-m $sub-tree))
-            ($_ (* $sub-tree $sub-tree)))))
-            $tree))
+        (if (== (get-metatype $sub-tree) Expression)
+            (square-tree-m $sub-tree)
+            (* $sub-tree $sub-tree))) $tree))
 
 !(assertEqual
     (square-tree-m (list (1 (list (2 (list (3 4)) 5)) (list (6 7)))))
@@ -791,7 +806,7 @@
 
 (: lambda2 (-> Variable Variable Atom (-> $a $b $t)))
 (= ((lambda2 $var1 $var2 $body) $val1 $val2)
-    (let (quote ($var1 $var2)) (quote ($val1 $val2)) $body))
+    (let (quote ($v1 $v2 $b)) (sealed ($var1 $var2) (quote ($var1 $var2 $body))) (let (quote ($v1 $v2)) (quote ($val1 $val2)) $b)) )
 
 (= (acc-map $p $sequence)
   (accumulate (lambda2 $x $y (Cons ($p $x) $y)) Nil $sequence))
@@ -883,9 +898,6 @@
       Nil
       (Cons (accumulate $op $init (map (lambda1 $x (car-list $x)) $seqs))
             (accumulate-n $op $init (map (lambda1 $x (cdr-list $x)) $seqs)))))
-
-
-; This one takes long time to complete
 
 !(assertEqual
     (accumulate-n + 0 (tree ((1 2 3) (4 5 6) (7 8 9) (10 11 12))))
@@ -983,7 +995,7 @@
 
 (: lambda3 (-> Variable Variable Variable Atom (-> $a $b $c $t)))
 (= ((lambda3 $var1 $var2 $var3 $body) $val1 $val2 $val3)
-    (let (quote ($var1 $var2 $var3)) (quote ($val1 $val2 $val3)) $body))
+    (let (quote ($v1 $v2 $v3 $b)) (sealed ($var1 $var2 $var3) (quote ($var1 $var2 $var3 $body))) (let (quote ($v1 $v2 $v3)) (quote ($val1 $val2 $val3)) $b)) )
 
 (= (fold-left $op $initial $sequence)
   (let $iter (lambda3 $result $rest $self
@@ -1248,24 +1260,9 @@
           ($self (- $k 1) $self)))))
   ($queen-cols $board-size $queen-cols)))
 
-;it works but I wasn't able to wait till it finishes calculations for (queens 4), though I've waited for ~12 hours.
-;!(queens 4)
-
-;Since (queens 4) is tough enough for current state of metta interpreter I've tried to run first two iterations to see
-;if everything is fine. Below is the second iteration and it gives right result:
-;(((1 1) (2 3)) ((1 1) (2 4)) ((1 2) (2 4)) ((1 3) (2 1)) ((1 4) (2 1)) ((1 4) (2 2)))
-;but it takes ~1.5 hours to compute so I'll leave it commented out.
-
-;!(assertEqual
-;    (filter
-;     (lambda1 $positions (safe? 2 $positions))
-;     (flatmap
-;      (lambda1 $rest-of-queens
-;        (map (lambda1 $new-row
-;               (adjoin-position $new-row 2 $rest-of-queens))
-;             (enumerate-interval 1 4)))
-;      (tree (((1 1)) ((1 2)) ((1 3)) ((1 4))))))
-;    (tree (((1 1) (2 3)) ((1 1) (2 4)) ((1 2) (2 4)) ((1 3) (2 1)) ((1 4) (2 1)) ((1 4) (2 2)))))
+!(assertEqual
+    (queens 4)
+    (tree (((1 2) (2 4) (3 1) (4 3)) ((1 3) (2 1) (3 4) (4 2)))))
 
 ; -----------------------End of Exercise 2.42---------------------------
 

@@ -12,16 +12,14 @@
 ; and use it like this:
 ; (let $sum (lambda ($a $b $c) (+ (+ $a $b) $c)) ($sum (1 2 3))
 
-; quoted prevents wrapped atom from being interpreted
-(: quoted (-> Atom Atom))
-
-; Note: quoted is used in lambda implementations below to prevent $body to be
+; Note: quote is used in lambda implementations below to prevent $body to be
 ; evaluated inside let.
 
 ; Needed for putting lambda functions as input to functions
 (: lambda1 (-> Variable Atom (-> $a $t)))
 (= ((lambda1 $var $body) $val)
-    (let (quoted $var) (quoted $val) $body) )
+    (let (quote ($v $b)) (sealed ($var) (quote ($var $body))) (let (quote $v) (quote $val) $b)) )
+
 
 ; For lambda without any input
 (: lambda0 (-> Atom (-> $t)))
@@ -30,13 +28,13 @@
 ; For lambda with two inputs
 (: lambda2 (-> Variable Variable Atom (-> $a $b $t)))
 (= ((lambda2 $var1 $var2 $body) $val1 $val2)
-    (let (quoted ($var1 $var2)) (quoted ($val1 $val2)) $body))
+    (let (quote ($v1 $v2 $b)) (sealed ($var1 $var2) (quote ($var1 $var2 $body))) (let (quote ($v1 $v2)) (quote ($val1 $val2)) $b)) )
 
 ; For lambda with three inputs. But actually we will use it to bypass recursive limitation while
 ; defining function using let
 (: lambda3 (-> Variable Variable Variable Atom (-> $a $b $c $t)))
 (= ((lambda3 $var1 $var2 $var3 $body) $val1 $val2 $val3)
-    (let (quoted ($var1 $var2 $var3)) (quoted ($val1 $val2 $val3)) $body))
+    (let (quote ($v1 $v2 $v3 $b)) (sealed ($var1 $var2 $var3) (quote ($var1 $var2 $var3 $body))) (let (quote ($v1 $v2 $v3)) (quote ($val1 $val2 $val3)) $b)) )
 
 ; Sum from $a to $b with pre-defined transition from $a to $(a+1) $next and function $term applied to $a
 (= (sum $term $a $next $b)
@@ -101,13 +99,13 @@
 (= (inc2 $x) (+ $x 2))
 
 ; Since metta currently doesn't support '+', '*' etc with 3+ parameters:
-(= (+4 $a $b $c $d) (+ (+ $a $b) (+ $c $d)))
-(= (+3 $a $b $c) (+ (+ $a $b) $c))
+(= (p4 $a $b $c $d) (+ (+ $a $b) (+ $c $d)))
+(= (p3 $a $b $c) (+ (+ $a $b) $c))
 
 (= (integral-simpson $f $a $b $n)
     (let $func-h (lambda0 (/ (- $b $a) $n))
         (let $element-y (lambda1 $x ($f (+ $a (* $x ($func-h)))))
-            (/ (* ($func-h) (+4 ($element-y 0) ($element-y $n)
+            (/ (* ($func-h) (p4 ($element-y 0) ($element-y $n)
                                                 (* 4 (sum $element-y 1 inc2 (dec $n)))
                                                 (* 2 (sum $element-y 2 inc2 (dec $n))))) 3))))
 
@@ -602,7 +600,7 @@
 
 (= (smooth $f)
   (lambda1 $y
-    (/ (+3 ($f $y) ($f (- $y (dx))) ($f (+ $y (dx)))) 3)))
+    (/ (p3 ($f $y) ($f (- $y (dx))) ($f (+ $y (dx)))) 3)))
 
 !(assertEqual
     ((smooth sqr) 5)

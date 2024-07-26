@@ -7,8 +7,8 @@
 (= (sqr $x) (* $x $x))
 
 ; Since +,/,*,- in metta takes only two arguments as input:
-(= (+3 $a $b $c) (+ $a (+ $b $c)))
-(= (*3 $a $b $c) (* $a (* $b $c)))
+(= (p3 $a $b $c) (+ $a (+ $b $c)))
+(= (m3 $a $b $c) (* $a (* $b $c)))
 
 ; Recursive factorial evaluation
 (= (factorial $n)
@@ -93,7 +93,7 @@
 (= (exercise_1_11r $n)
     (if (< $n 3)
         $n
-        (+3 (exercise_1_11r (dec $n))
+        (p3 (exercise_1_11r (dec $n))
             (exercise_1_11r (- $n 2))
             (exercise_1_11r (- $n 3)))))
 
@@ -298,9 +298,9 @@
             (lfib-iter  $a
                         $b
                         (+ (sqr $p) (sqr $q))
-                        (+ (sqr $q) (*3 2 $p $q))
+                        (+ (sqr $q) (m3 2 $p $q))
                         (/ $count 2))
-            (lfib-iter  (+3 (* $b $q) (* $a $q) (* $a $p))
+            (lfib-iter  (p3 (* $b $q) (* $a $q) (* $a $p))
                         (+ (* $b $p) (* $a $q))
                         $p
                         $q
@@ -569,8 +569,10 @@
 ; test with a procedure analogous to fermat-test. Check your procedure by testing various known primes and non-primes.
 ; Hint: One convenient way to make expmod signal is to have it return 0.
 
+(= (and3 $a $b $c) (and $a (and $b $b)))
+
 (= (remainder-with-check $cur $m)
-    (if (and (not (== $cur 1))
+    (if (and3 (not (== $cur 1))
              (not (== $cur (dec $m)))
              (== (remainder $cur $m) 1))
         0
