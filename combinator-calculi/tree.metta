@@ -26,11 +26,27 @@
 (= (AND) (d ((K) ((K) (I)))))
 (= (OR) ((d ((K) (K))) (I)))
 (= (IMPLIES) (d ((K) (K))))
-; todo: not, iff
+(= (NOT) ((d ((K) (K))) ((d ((K) ((K) (I)))) (I))))
+(= (IFF) ((Δ ((Δ (I)) (NOT))) Δ))
+!(assertEqual (((OR) (TRUE)) y) (TRUE))
+!(assertEqual (((OR) (FALSE)) y) y)
 !(assertEqual (((AND) (TRUE)) (FALSE)) (FALSE))
-
-; todo ...
-
+!(assertEqual (((IFF) (TRUE)) (FALSE)) (FALSE))
+!(assertEqual (((IMPLIES) ((NOT) (FALSE))) (TRUE)) (TRUE))
+; pairs
+(= (PAIR) Δ)
+(= (first $p) (((Δ $p) Δ) (K)))
+(= (second $p) (((Δ $p) Δ) ((K) (I))))
+!(assertEqual (first (((PAIR) x) y)) x)
+!(assertEqual (second (((PAIR) x) y)) y)
+; natural numbers
+(= (isZero) ((d ((K) ^ 4 (I))) ((d ((K) (K))) Δ)))
+!(assertEqual ((isZero) Δ) (TRUE))
+!(assertEqual ((isZero) ((K) Δ)) (FALSE))
+(= (SUCCESSOR) (K))
+(= (PREDECESSOR) ((d ((K) ^ 2 (I))) ((d ((K) Δ)) Δ)))
+!(assertEqual ((isZero) ((SUCCESSOR) ((PREDECESSOR) ((SUCCESSOR) Δ)))) (FALSE))
+!(assertEqual ((isZero) ((PREDECESSOR) ((PREDECESSOR) ((SUCCESSOR) ((SUCCESSOR) Δ))))) (TRUE))
 ; reflection
 (= (query $is0 $is1 $is2) ((d ((K) $is1)) ((d ((K) ^ 2 (I))) ((d ((K) ^ 5 $is2)) ((d ((K) ^ 3 $is0)) Δ)))))
 (= (isLeaf) (query (K) ((K) (I)) ((K) (I))))
@@ -39,11 +55,10 @@
 !(assertEqual ((isLeaf) Δ) (TRUE))
 !(assertEqual ((isLeaf) (Δ x)) (FALSE))
 !(assertEqual ((isLeaf) ((Δ x) y)) (FALSE))
-
 !(assertEqual ((isStem) Δ) (FALSE))
 !(assertEqual ((isStem) (Δ x)) (TRUE))
 !(assertEqual ((isStem) ((Δ x) y)) (FALSE))
-
 !(assertEqual ((isFork) Δ) (FALSE))
 !(assertEqual ((isFork) (Δ x)) (FALSE))
 !(assertEqual ((isFork) ((Δ x) y)) (TRUE))
+; todo (but it's getting slow) star-abstraction and self-evaluation
