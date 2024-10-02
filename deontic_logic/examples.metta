@@ -1,4 +1,4 @@
-(has-agent usr1)
+(= (has-agent usr1) True)
 
 (= (Eventuality Pay) usr1)
 (= (Eventuality Seal) usr1)
@@ -9,7 +9,9 @@
 (Unseal $x)
 
 
-(= (eus $x) (match (Eventuality Seal) $x $x))
-(= (euu $x) (match (Eventuality Unseal) $x $x))
-(= (eup $x) (match (Eventuality Pay) $x $x))
-(= (eo $x) (or (eus $x) (and (euu $x) (eup $x))))
+(= (eus $x) (Eventuality Seal))
+(= (euu $x) (Eventuality Unseal))
+(= (eup $x) (Eventuality Pay))
+(= (eo $x) (or (has-agent (eus $x)) (== (euu $x) (eup $x))))
+
+!(eo $x)
