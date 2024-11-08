@@ -10,29 +10,29 @@
 (= (cdr $x) (cdr-atom $x))
 
 
-(= (make-pop-rec $size ($from $to) $iter)
-    (if (>= $iter $size)
+(= (make-pop-rec ($from $to) $iter)
+    (if (>= $iter &popsize)
         ()
-        (cons (random-float $from $to) (make-pop-rec $size ($from $to) (+ $iter 1)))))
+        (cons (random-float $from $to) (make-pop-rec ($from $to) (+ $iter 1)))))
 
 ; I thought this one will be faster (see SICP book, p 41) but no. I'll leave it just for info.
-(= (make-pop-iter $size ($from $to) $iter $result)
-    (if (>= $iter $size)
+(= (make-pop-iter ($from $to) $iter $result)
+    (if (>= $iter &popsize)
         $result
-        (make-pop-iter $size ($from $to) (+ $iter 1) (cons (random-float $from $to) $result))))
+        (make-pop-iter ($from $to) (+ $iter 1) (cons (random-float $from $to) $result))))
 
-(= (make-pop $size ($from $to))
-    (make-pop-rec $size ($from $to) 0))
+(= (make-pop ($from $to))
+    (make-pop-rec ($from $to) 0))
 
-(= (choose-second-parent-random $id-first $popsize)
-    (let $id-second (random-int 0 $popsize)
+(= (choose-second-parent-random $id-first)
+    (let $id-second (random-int 0 &popsize)
         (if (== $id-first $id-second)
-            (choose-second-parent-random $id-first $popsize)
+            (choose-second-parent-random $id-first)
             $id-second)))
 
-(= (choose-parents $set $popsize)
-    (let $first-id (random-int 0 $popsize)
-        (let $second (index-atom $set (choose-second-parent-random $first-id $popsize))
+(= (choose-parents $set)
+    (let $first-id (random-int 0 &popsize)
+        (let $second (index-atom $set (choose-second-parent-random $first-id))
             (let $first (index-atom $set $first-id)
                 ($first . $second)))))
 
@@ -40,13 +40,13 @@
     (let $eps (random-float 0 1)
         (+ (* $eps $p1) (* (- 1 $eps) $p2))))
 
-(= (make-children-rec $population $popsize $num_of_children $iter)
-    (if (>= $iter $num_of_children)
+(= (make-children-rec $population $iter)
+    (if (>= $iter &num_of_children)
         ()
-        (cons (make-child (choose-parents $population $popsize)) (make-children-rec $population $popsize $num_of_children (+ $iter 1)))))
+        (cons (make-child (choose-parents $population)) (make-children-rec $population (+ $iter 1)))))
 
-(= (make-children $population $popsize $num_of_children)
-    (make-children-rec $population $popsize $num_of_children 0))
+(= (make-children $population)
+    (make-children-rec $population 0))
 
 (= (mutate-population $population)
     (if (== () $population)
@@ -96,16 +96,16 @@
         (cons (/ (car $weights) $max_fit) (weighted_fit (cdr $weights) $max_fit))))
 
 ; (- 1 (car $weighted_fit_for_population)) since we are looking for minimum of fitness function
-(= (select_new_population $population $weighted_fit_for_population $popsize $selected)
-    (if (or (== () $population) (>= $selected $popsize))
+(= (select_new_population $population $weighted_fit_for_population $selected)
+    (if (or (== () $population) (>= $selected &popsize))
         ()
         (if (> (- 1 (car $weighted_fit_for_population)) (random-float 0 1))
-            (cons (car $population) (select_new_population (cdr $population) (cdr $weighted_fit_for_population) $popsize (+ $selected 1)))
-            (select_new_population (cdr $population) (cdr $weighted_fit_for_population) $popsize (+ $selected 1)))))
+            (cons (car $population) (select_new_population (cdr $population) (cdr $weighted_fit_for_population) (+ $selected 1)))
+            (select_new_population (cdr $population) (cdr $weighted_fit_for_population) (+ $selected 1)))))
 
-(= (extend_pop_if_needed $new-pop $old-pop $popsize $newpopsize)
-    (if (< $newpopsize $popsize)
-        (extend_pop_if_needed (cons (car $old-pop) $new-pop) (cdr $old-pop) $popsize (+ 1 $newpopsize))
+(= (extend_pop_if_needed $new-pop $old-pop $newpopsize)
+    (if (< $newpopsize &popsize)
+        (extend_pop_if_needed (cons (car $old-pop) $new-pop) (cdr $old-pop) (+ 1 $newpopsize))
         $new-pop))
 
 (= (choose-best $population $fit_for_population $bestfit $bestbreed)
@@ -115,34 +115,26 @@
             (choose-best (cdr $population) (cdr $fit_for_population) $bestfit $bestbreed)
             (choose-best (cdr $population) (cdr $fit_for_population) (car $fit_for_population) (car $population)))))
 
-(= (evolution-strat $iter $max-rec $population $popsize $num_of_children)
+(= (evolution-strat $iter $max-rec $population)
     (if (>= $iter $max-rec)
         (let $fit_for_population (calc_fit_for_population $population)
             (choose-best $population $fit_for_population (car $fit_for_population) (car $population)))
         (let*
             (
-                ($children (make-children $population $popsize $num_of_children))
+                ($children (make-children $population))
                 ($mutated_children (mutate-population $children))
                 ($fit_for_population (calc_fit_for_population $mutated_children))
                 ($max_fit (max_element $fit_for_population))
                 ($weighted_fit_for_population (weighted_fit $fit_for_population $max_fit))
-                ($new-population (select_new_population $mutated_children $weighted_fit_for_population $popsize 0))
-                ($new-population-ext (extend_pop_if_needed $new-population $population $popsize (sizeof $new-population)))
+                ($new-population (select_new_population $mutated_children $weighted_fit_for_population 0))
+                ($new-population-ext (extend_pop_if_needed $new-population $population (sizeof $new-population)))
                 ($fit_for_new_population (calc_fit_for_population $new-population-ext))
                 ($best (choose-best $new-population-ext $fit_for_new_population (car $fit_for_new_population) (car $new-population-ext)))
-                (() (println! $population))
-                (() (println! $children))
-                (() (println! $mutated_children))
-                (() (println! $fit_for_population))
-                (() (println! $max_fit))
-                (() (println! $weighted_fit_for_population))
-                (() (println! $new-population))
-                (() (println! $new-population-ext))
                 (() (println! $best))
-;                (() (evolution-strat (+ $iter 1) $max-rec $new-population-ext $popsize $num_of_children))
+                (() (evolution-strat (+ $iter 1) $max-rec $new-population-ext))
             )
             ())))
 
-!(bind! &population (make-pop &popsize (-100 100)))
+!(bind! &population (make-pop (-100 100)))
 
-!(evolution-strat 0 10 &population &popsize &num_of_children)
+!(evolution-strat 0 10 &population)
