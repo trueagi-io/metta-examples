@@ -111,7 +111,7 @@
                 ($fit_for_new_population (calc_fit_for_population $new-population-ext $convert-func))
                 ($best (choose-best $new-population-ext $fit_for_new_population (car $fit_for_new_population) (car $new-population-ext)))
                 (() (println! $best))
-                (() (genetic-algorithm (+ $iter 1) $max-rec $new-population-ext))
+                (() (genetic-algorithm (+ $iter 1) $max-rec $new-population-ext $convert-func))
             )
             ())))
 
