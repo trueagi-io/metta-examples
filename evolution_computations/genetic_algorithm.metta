@@ -1,9 +1,9 @@
 !(import! &self get-rand)
 
-!(bind! &popsize 2)
+!(bind! &popsize 15)
 !(bind! &mut_probability 0.5)
 !(bind! &num_of_children (* 3 &popsize))
-!(bind! &barr_len 7)
+!(bind! &barr_len 7) ; first bit actually used as a sign in bintodec function. Optional.
 
 (= (func $x) (* $x $x))
 
@@ -56,54 +56,66 @@
         (cons (inverse-bin (car $breed)) (cdr $breed))
         (cons (car $breed) (mutate-breed (cdr $breed) $mut-idx (+ $iter 1)))))
 
+; randomint! is currently used here instead of random-int due to some issues with == between rust_number (produced by random-int)
+; and python_number (when launching script using "metta script.metta" every number is a python_number). Because of this
+; issue mutate-breed holds forever since (== $mut-idx $iter) is never True.
 (= (mutate-population $population)
     (if (== () $population)
         ()
         (if (> (random-float 0 1) &mut_probability)
             (cons (car $population) (mutate-population (cdr $population)))
-            (cons (mutate-breed (car $population) (random-int 0 &barr_len) 0) (mutate-population (cdr $population))))))
+            (cons (mutate-breed (car $population) (randomint! 0 (- &barr_len 1)) 0) (mutate-population (cdr $population))))))
 
 (= (calc_fit_for_population $population $convert-func)
     (if (== () $population)
         ()
         (cons (func ($convert-func (car $population))) (calc_fit_for_population (cdr $population) $convert-func))))
 
-(= (max_element_iter $set $max)
-    (if (== () $set)
-        $max
-        (if (> $max (car $set))
-            (max_element_iter (cdr $set) $max)
-            (max_element_iter (cdr $set) (car $set)))))
-
-(= (max_element $set)
-    (if (== () $set)
+(= (weighted_fit $fits $max_fit)
+    (if (== () $fits)
         ()
-        (max_element_iter (cdr $set) (car $set))))
+        (cons (/ (car $fits) $max_fit) (weighted_fit (cdr $fits) $max_fit))))
 
-(= (min_element_iter $set $min)
-    (if (== () $set)
-        $min
-        (if (< $min (car $set))
-            (min_element_iter (cdr $set) $min)
-            (min_element_iter (cdr $set) (car $set)))))
-
-(= (min_element $set)
-    (if (== () $set)
+(= (select_new_population $population $weighted_fit_for_population $selected)
+    (if (or (== () $population) (>= $selected &popsize))
         ()
-        (min_element_iter (cdr $set) (car $set))))
+        (if (> (- 1 (car $weighted_fit_for_population)) (random-float 0 1))
+            (cons (car $population) (select_new_population (cdr $population) (cdr $weighted_fit_for_population) (+ $selected 1)))
+            (select_new_population (cdr $population) (cdr $weighted_fit_for_population) (+ $selected 1)))))
 
-(= (sizeof $set)
-    (if (== $set ())
-        0
-        (+ 1 (sizeof (cdr $set)))))
+(= (extend_pop_if_needed $new-pop $old-pop $newpopsize)
+    (if (< $newpopsize &popsize)
+        (extend_pop_if_needed (cons (car $old-pop) $new-pop) (cdr $old-pop) (+ 1 $newpopsize))
+        $new-pop))
 
-(= (weighted_by_fit_population $weights $max_fit)
-    (if (== () $weights)
-        ()
-        (cons (/ (car $weights) $max_fit) (weighted_by_fit_population (cdr $weights) $max_fit))))
+(= (choose-best $population $fit_for_population $bestfit $bestbreed)
+    (if (== () $population)
+        (Breed $bestbreed with fitness function $bestfit is best in current population)
+        (if (< $bestfit (car $fit_for_population))
+            (choose-best (cdr $population) (cdr $fit_for_population) $bestfit $bestbreed)
+            (choose-best (cdr $population) (cdr $fit_for_population) (car $fit_for_population) (car $population)))))
+
+(= (genetic-algorithm $iter $max-rec $population $convert-func)
+    (if (>= $iter $max-rec)
+        (let $fit_for_population (calc_fit_for_population $population $convert-func)
+            (choose-best $population $fit_for_population (car $fit_for_population) (car $population)))
+        (let*
+            (
+                ($children (make-children $population))
+                ($mutated_children (mutate-population $children))
+                ($fit_for_population (calc_fit_for_population $mutated_children $convert-func))
+                ($max_fit (max-atom $fit_for_population))
+                ($weighted_fit (weighted_fit $fit_for_population $max_fit))
+                ($new-population (select_new_population $mutated_children $weighted_fit 0))
+                ($new-population-ext (extend_pop_if_needed $new-population $population (size-atom $new-population)))
+                ($fit_for_new_population (calc_fit_for_population $new-population-ext $convert-func))
+                ($best (choose-best $new-population-ext $fit_for_new_population (car $fit_for_new_population) (car $new-population-ext)))
+                (() (println! $best))
+                (() (genetic-algorithm (+ $iter 1) $max-rec $new-population-ext))
+            )
+            ())))
+
 
 !(bind! &population (make-pop))
-!(&population)
-!(mutate-breed (0 1 1 0 1 0 1) 5 0)
-;mutate-population is not working right now for some reason. This exact part to be precise, though mutate-breed works. I'm investigating it.
-;!(chain (eval (random-int 0 &barr_len)) $mut_idx (mutate-breed (0 1 1 0 1 0 1) $mut_idx 0))
+
+!(genetic-algorithm 0 10 &population bintodec!)

@@ -19,13 +19,24 @@ def getRandBinaryArray(len):
 
 def binToDec(*args):
     barr = args[0].iterate()
-    res = sum(int(val.get_object().value) * (2 ** idx) for idx, val in enumerate(reversed(barr)))
+    sign = barr[0]
+    res = sum(int(val.get_object().value) * (2 ** idx) for idx, val in enumerate(reversed(barr[1:])))
+    if sign.get_object().value == 1:
+        res *= -1
     return [ValueAtom(res)]
 
 def decToBin(dec):
-    binstr = "{0:b}".format(dec.get_object().value)
+    binstr = "{:b}".format(dec.get_object().value)
+    if binstr[0] == "-":
+        binstr = binstr.replace("-", "1")
+    else:
+        binstr = "0" + binstr
     res = (ValueAtom(int(c)) for c in binstr)
     return [E(*res)]
+
+def getRandInt(start, end):
+    updateSeed()
+    return random.randint(start, end)
 
 def getCurTime():
     return time.time_ns() / (10 ** 6)
@@ -33,6 +44,7 @@ def getCurTime():
 @register_atoms
 def my_glob_atoms():
     return {
+        'randomint!': OperationAtom("randomint!", getRandInt),
         'randombarr!': OperationAtom("randombarr!", getRandBinaryArray, unwrap=False),
         'bintodec!': OperationAtom("bintodec!", binToDec, unwrap=False),
         'dectobin!': OperationAtom("dectobin!", decToBin, unwrap=False)

@@ -9,7 +9,6 @@
 (= (car $x) (car-atom $x))
 (= (cdr $x) (cdr-atom $x))
 
-
 (= (make-pop-rec ($from $to) $iter)
     (if (>= $iter &popsize)
         ()
@@ -60,36 +59,6 @@
         ()
         (cons (func (car $population)) (calc_fit_for_population (cdr $population)))))
 
-; TODO: max, min and size will be replaced after PR #792 in hyperon-experimental will be merged and, hopefully, it will increase performance
-(= (max_element_iter $set $max)
-    (if (== () $set)
-        $max
-        (if (> $max (car $set))
-            (max_element_iter (cdr $set) $max)
-            (max_element_iter (cdr $set) (car $set)))))
-
-(= (max_element $set)
-    (if (== () $set)
-        ()
-        (max_element_iter (cdr $set) (car $set))))
-
-(= (min_element_iter $set $min)
-    (if (== () $set)
-        $min
-        (if (< $min (car $set))
-            (min_element_iter (cdr $set) $min)
-            (min_element_iter (cdr $set) (car $set)))))
-
-(= (min_element $set)
-    (if (== () $set)
-        ()
-        (min_element_iter (cdr $set) (car $set))))
-
-(= (sizeof $set)
-    (if (== $set ())
-        0
-        (+ 1 (sizeof (cdr $set)))))
-
 (= (weighted_fit $weights $max_fit)
     (if (== () $weights)
         ()
@@ -124,10 +93,10 @@
                 ($children (make-children $population))
                 ($mutated_children (mutate-population $children))
                 ($fit_for_population (calc_fit_for_population $mutated_children))
-                ($max_fit (max_element $fit_for_population))
+                ($max_fit (max-atom $fit_for_population))
                 ($weighted_fit_for_population (weighted_fit $fit_for_population $max_fit))
                 ($new-population (select_new_population $mutated_children $weighted_fit_for_population 0))
-                ($new-population-ext (extend_pop_if_needed $new-population $population (sizeof $new-population)))
+                ($new-population-ext (extend_pop_if_needed $new-population $population (size-atom $new-population)))
                 ($fit_for_new_population (calc_fit_for_population $new-population-ext))
                 ($best (choose-best $new-population-ext $fit_for_new_population (car $fit_for_new_population) (car $new-population-ext)))
                 (() (println! $best))
