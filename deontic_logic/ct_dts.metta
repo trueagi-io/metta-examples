@@ -51,6 +51,11 @@
 ; same action/state with the same thematic roles) but for at least one thematic role,
 ; for which it is asserted that one of the two eventualities
 ; has a certain value on that thematic role while the other one does not,
-; then the two eventualities are connected by the ":not" property.
+; then the two eventualities are connected by the "not" property.
+
+(: not1 Eventuality)
+(: and1 Eventuality)
+(: and2 Eventuality)
 
 
+!(match )

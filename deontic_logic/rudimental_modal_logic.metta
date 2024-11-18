@@ -1,4 +1,6 @@
-Rudimental Informal 
+;Rudimental Informal Modal Logic
+
+;==================================
 
 (: a Object)
 
@@ -30,5 +32,8 @@ Rudimental Informal
 
 (= (non-contingent &p) (or (necessary &p) (impossible &p)))
 
+;==================================
+
 ;!(get-type (necessary a))
 !(necessary 5)
+
