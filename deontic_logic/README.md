@@ -16,7 +16,9 @@
 
 [Priority Structures in Deontic Logic](https://home.hvl.no/prosjekter/easllc2012/docs/liu/vanBenthem-Grossi-Liu-2012-priotity%20structure.pdf)
 
-## Tuorials
+[Deontic Equilibrium Logic with eXplicit negation](https://www.dc.fi.udc.es/~cabalar/DELX.pdf)
+
+## Tutorials
 
 [Specification and Analysis of Contracts](https://www.cse.chalmers.se/~gersch/slides-talks/course-SEFM08/5-deontic-logic.pdf)
 
