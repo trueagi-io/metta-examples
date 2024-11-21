@@ -38,3 +38,12 @@
                      (rdf-type $a2 $c))
                   (NOT $a1 $a2)))
 
+;REXIST?
+
+(= (false_if_undefined $input)
+(if (== (get-type $input) %Undefined%) False True))
+
+!(false_if_undefined a)
+!(false_if_undefined 5)
+
+

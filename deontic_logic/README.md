@@ -26,6 +26,8 @@
 
 [Sharif University](https://sharif.edu/~amini/files/presentations/DeonticLogic.pdf)
 
+[A Preliminary Study on Deontic Answer Set Programming](https://www.dc.fi.udc.es/~cabalar/ACLAI22/Cabalar-deontic.pdf)
+
 
 ## Other language implementations
 
