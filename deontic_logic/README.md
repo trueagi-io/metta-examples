@@ -31,9 +31,24 @@
 
 ## Other language implementations
 
-[python](https://github.com/ovidiomanteiga/deolingo)
+### Python
 
-[haskell](https://github.com/shaunazzopardi/deontic-logic-with-unknowns-haskell)
+[Deolingo](https://github.com/ovidiomanteiga/deolingo)
 
-[C#](https://github.com/shaunazzopardi/deontic-logic-with-unknowns)
+[Naive Preferences Solver](https://github.com/alabecki/Defeasible-Conditional-Deontic-Logic-Solver)
 
+### Haskell
+
+[Deontic logic with unknowns haskell](https://github.com/shaunazzopardi/deontic-logic-with-unknowns-haskell)
+
+### C#
+
+[Deontic logic with unknowns C#](https://github.com/shaunazzopardi/deontic-logic-with-unknowns)
+
+### Java
+
+[conflict-tolerant Deontic Traditional Scheme](https://github.com/liviorobaldo/conflict-tolerantDeonticTraditionalScheme)
+
+### ASP (clingo)
+
+[Defeasible Deontic Logic](https://github.com/gvdgdo/Defeasible-Deontic-Logic)
