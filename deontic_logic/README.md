@@ -4,6 +4,9 @@
 
 [A Formal Theory of Commonsense Psychology](https://www.cambridge.org/core/books/formal-theory-of-commonsense-psychology/20289940AFB026AB3EF31EBCF8875628)
 
+[Handbook of Deontic Logic and Normative Systems](https://www.amazon.com/dp/1848901321)
+
+
 ## Papers
 
 [A Deontic Logic Reasoning Infrastructure](https://page.mi.fu-berlin.de/cbenzmueller/papers/C69.pdf)
@@ -17,6 +20,18 @@
 [Priority Structures in Deontic Logic](https://home.hvl.no/prosjekter/easllc2012/docs/liu/vanBenthem-Grossi-Liu-2012-priotity%20structure.pdf)
 
 [Deontic Equilibrium Logic with eXplicit negation](https://www.dc.fi.udc.es/~cabalar/DELX.pdf)
+
+[Model Checking Propositional Deontic Temporal
+Logic via a µ-calculus Characterization](https://nmaguirre.github.io/assets/pdf/sbmf2012b.pdf)
+
+[Handling irresolvable conflicts in the Semantic Web:
+an RDF-based conflict-tolerant version of
+the Deontic Traditional Scheme](https://arxiv.org/pdf/2411.19918)
+
+[Automated Reasoning in Deontic Logic](https://arxiv.org/pdf/1411.4823)
+
+[Deontic Logics based on Boolean Algebra](https://philpapers.org/archive/CASDLB.pdf)
+
 
 ## Tutorials
 
