@@ -29,10 +29,10 @@
 (take-action DAO AD1)
 
 (= (obliged  (take-action $dao $ad))
-    (and (== (Facilitator $dao) True) (== (misaligned $ac) True)))
+    (and (== (Facilitator $dao) True) (== (misaligned $ad) True)))
 
 (= (obliged  (be-penalized $dao $ad))
-    (and (and (== (Facilitator $dao) True) (== (misaligned $ac) True))
+    (and (and (== (Facilitator $dao) True) (== (misaligned $ad) True))
     (not (== (match &self (take-action $dao $ad) $ad) $ad))))
 
 !(obliged (take-action DAO AD1))
