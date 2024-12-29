@@ -92,6 +92,8 @@
 (= (permissible (remove $m))
     (== (paid-work-under-last-year $m) False))
 
+!(permissible (remove m3))
+
 ;How to remove a member from support council?
 ;Store a predicate for every potential member and turn them false?
 ;Or do an atomspace rewrite?
