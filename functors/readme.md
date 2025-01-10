@@ -35,7 +35,7 @@ M has the special property that you can apply any function to the wrapped value 
 !((mkM 1) add1) ; outputs [(mkM 2)]
 ```
 
-Since `((mkM A) B) == (mkM (A B))` under all circumstances, instances of `M` are functors, in particular when B is a morphism from `(get-type A)` to any type.
+Since `((mkM A) B) == (mkM (B A))` under all circumstances, instances of `M` are functors, in particular when B is a morphism from `(get-type A)` to any type.
 
 # Use cases
 
