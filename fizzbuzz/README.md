@@ -1,4 +1,5 @@
 # FizzBuzz
+
 [FizzBuzz](https://en.wikipedia.org/wiki/Fizz_buzz) solved in three ways.
 
 **[classical.metta](classical.metta)**
