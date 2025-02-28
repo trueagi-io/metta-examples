@@ -23,11 +23,16 @@
 
 (= (spk_holder h5) 0.5)
 
+(= (propose thresh) 0.1)
+
 
 (= (operational_facilitator o1) True)
 
 (= (proposal_alignment prop1) True)
 (= (proposal_alignment prop2) False)
+
+(= (acc prop1) 0.1)
+(= (acc prop2) 0.2)
 
 (= (stake-size $participants)
    (let $lst (collapse (spk_holder (superpose $participants)))
@@ -44,7 +49,22 @@
 (= (obliged (align_with_atlas $artifacts))
     ((== (proposal_alignment $artifacts) True) ))
 
+(= (obliged (align_with_atlas $artifacts))
+    (if (<= (acc $artifacts) (propose thresh))
+    (== (proposal_alignment $artifacts)
+    (stake-size $artifacts)) True))
+
+(= (ob (align_with_atlas $artifacts))
+    ((== (proposal_alignment $artifacts) True) ))
+
+(= (ob (align_with_atlas $artifacts))
+    (if (<= (acc $artifacts) (propose thresh))
+    (== (proposal_alignment $artifacts)
+    (stake-size $artifacts)) True))
+
 (= (vote $participants)
     True)
 
 !(size-atom (h1 h3 h5))
+
+!(obliged (align_with_atlas prop2))

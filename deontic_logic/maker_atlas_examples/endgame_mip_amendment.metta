@@ -30,5 +30,5 @@
 (= (permissible (remove $mip))
     (== (inactive $mip) True))
 
-!(permissible (modify amendment1 mip1))
-!(permissible (remove mip1))
+!(permissible (modify amendment2 mip1))
+!(permissible (remove mip2))

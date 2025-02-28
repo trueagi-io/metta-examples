@@ -26,6 +26,11 @@
    )
 )
 
+;(Normally) there must be no fence
+;But if you do put a fence, it must be white
+;By the sea, you can put a fence
+;You decide to put a fence
+
 (:-- (Fence fence-001) True)
 (:-- (Fence fence-002) True)
 
