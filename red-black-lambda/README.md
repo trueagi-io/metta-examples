@@ -158,40 +158,131 @@ object RedBlackLambda extends RedLambda with BlackLambda {
 
 ### Explaining Red and Black Lambda Calculus at a Middle School Level
 
-Hey there! Let’s talk about something cool called "Red and Black Lambda Calculus." Don’t let the fancy name scare you—it’s just a fun way to think about building things, kind of like playing with two different sets of Lego blocks: one red and one black.
+Hey there! Let's talk about something cool called "Red and Black Lambda Calculus." Don't let the fancy name scare you—it's just a fun way to think about building things, kind of like playing with two different sets of Lego blocks: one red and one black.
 
-#### What’s It All About?
-Imagine you have two teams: the Red Team and the Black Team. Each team has its own set of building blocks (we’ll call them "terms"), and they use these blocks to create stuff—like little structures or machines. These blocks can be simple or fancy:
+#### What's It All About?
+Imagine you have two teams: the Red Team and the Black Team. Each team has its own set of building blocks (we'll call them "terms"), and they use these blocks to create stuff—like little structures or machines. These blocks can be simple or fancy:
 
-- **Simple Blocks** (called "ground terms"): These are like plain pieces that don’t change, like a solid red square or a solid black triangle.
+- **Simple Blocks** (called "ground terms"): These are like plain pieces that don't change, like a solid red square or a solid black triangle.
 - **Naming Blocks** (called "mentions"): These are like labels, such as "x" or "y," that stand for something else.
 - **Function Blocks** (called "abstractions"): These are like instructions that say, "Take this piece and do something with it."
 - **Combo Blocks** (called "applications"): These are when you stick two blocks together to make something new.
 
-So far, it’s like each team is building their own creations with their own colored blocks. But here’s the twist!
+So far, it's like each team is building their own creations with their own colored blocks. But here's the twist!
 
 #### The Cool Twist: Mixing Colors
-The Red Team and the Black Team don’t just stay separate—they mix things up! A red block can have a black block inside it, and a black block can have a red block inside it. Picture this:
+The Red Team and the Black Team don't just stay separate—they mix things up! A red block can have a black block inside it, and a black block can have a red block inside it. Picture this:
 
 - A red box with a black box inside it.
-- Then, inside that black box, there’s another red box.
+- Then, inside that black box, there's another red box.
 - And it could keep going like that!
 
-It’s like a game of hide-and-seek with boxes inside boxes, where the colors keep switching back and forth.
+It's like a game of hide-and-seek with boxes inside boxes, where the colors keep switching back and forth.
 
 #### Making the Rules
-To keep everything organized, we use a kind of "rulebook" written in a computer language called MeTTa. Here’s what the rulebook does:
+To keep everything organized, we use a kind of "rulebook" written in a computer language called MeTTa. Here's what the rulebook does:
 
-1. **Sets Up the Teams**: It says, “Red Team has red blocks, and Black Team has black blocks.” Each team’s blocks are special and different from the other team’s.
-2. **Keeps Them Unique**: We add little tags—like “RC” for Red and “BC” for Black—so we don’t mix up the colors by accident.
-3. **Explains the Mixing**: It tells us that a red block can hold a black block inside, and a black block can hold a red block. That’s the fun part!
-4. **Works with Both**: Sometimes we want to talk about a block without caring about its color. The rulebook lets us say, “This is just a block—it could be red or black.”
+1. **Sets Up the Teams**: It says, "Red Team has red blocks, and Black Team has black blocks." Each team's blocks are special and different from the other team's.
+2. **Keeps Them Unique**: We add little tags—like "RC" for Red and "BC" for Black—so we don't mix up the colors by accident.
+3. **Explains the Mixing**: It tells us that a red block can hold a black block inside, and a black block can hold a red block. That's the fun part!
+4. **Works with Both**: Sometimes we want to talk about a block without caring about its color. The rulebook lets us say, "This is just a block—it could be red or black."
 5. **Plays with the Blocks**:
-   - We can check if two blocks are the same, but only if they’re the same color (no comparing red to black directly!).
-   - We can also "simplify" a block. If it’s a red block with a black block inside, we look at the black block next, and keep switching colors as we go.
+   - We can check if two blocks are the same, but only if they're the same color (no comparing red to black directly!).
+   - We can also "simplify" a block. If it's a red block with a black block inside, we look at the black block next, and keep switching colors as we go.
 
 #### Why Does This Matter?
-Think of this like a puzzle game where red and black pieces depend on each other. It’s a way to figure out how things—like instructions or machines—work together when they’re connected in tricky ways. People who study computers and math use ideas like this to understand how to build programs or solve big problems.
+Think of this like a puzzle game where red and black pieces depend on each other. It's a way to figure out how things—like instructions or machines—work together when they're connected in tricky ways. People who study computers and math use ideas like this to understand how to build programs or solve big problems.
 
 #### The Big Idea
-At its heart, Red and Black Lambda Calculus is like playing with two colorful teams of building blocks that can fit inside each other. It’s a fun, creative way to explore how parts of a system can team up and switch roles, all while following some simple rules. Cool, right?
+At its heart, Red and Black Lambda Calculus is like playing with two colorful teams of building blocks that can fit inside each other. It's a fun, creative way to explore how parts of a system can team up and switch roles, all while following some simple rules. Cool, right?
+
+# Red-Black Lambda Calculus Example
+
+Welcome to the Red-Black Lambda Calculus example! This is a fun way to learn about lambda calculus using two different colors: red and black. Let's break it down in simple terms.
+
+## What is Lambda Calculus?
+
+Lambda calculus is like a super simple programming language that helps us understand how functions work. Think of it like a recipe:
+- You have ingredients (variables)
+- You have instructions (functions)
+- You can combine them to make something new
+
+## The Red-Black Magic
+
+In this example, we have two special types of lambda calculus:
+1. **Red Lambda** - Uses black terms
+2. **Black Lambda** - Uses red terms
+
+It's like having two different colored notebooks:
+- In the red notebook, you write with black ink
+- In the black notebook, you write with red ink
+
+## How It Works
+
+Let's look at some simple examples:
+
+```metta
+; This creates a red lambda that uses black terms
+!(RedLambda BTheory String)
+
+; This creates a black lambda that uses red terms
+!(BlackLambda String RTheory)
+
+; We can convert theories into objects
+(= (objectify (RTheory $x)) (RC $x))
+(= (objectify (BTheory $x)) (BC $x))
+```
+
+## The Building Blocks
+
+The lambda calculus has several important parts:
+
+1. **Ground** - Basic values (like numbers or strings)
+2. **Mention** - Using a variable
+3. **Abstraction** - Creating a function (like writing a recipe)
+4. **Application** - Using a function (like following a recipe)
+
+Here's how they're defined:
+
+```metta
+(LambdaTheory ($B $V) (: Ground (-> $B Term)))
+(LambdaTheory ($B $V) (: Mention (-> $V Term)))
+(LambdaTheory ($B $V) (: Abstraction (-> $V (-> Term Term))))
+(LambdaTheory ($B $V) (: Application (-> Term (-> Term Term))))
+```
+
+## Fun Example
+
+Let's say we want to create a simple function that adds 1 to a number:
+
+```metta
+; In red lambda (using black terms)
+(RedLambda BTheory String)
+(= add-one (Abstraction x (Application (Mention x) (Ground 1))))
+
+; In black lambda (using red terms)
+(BlackLambda String RTheory)
+(= add-one (Abstraction x (Application (Mention x) (Ground 1))))
+```
+
+## Why Is This Cool?
+
+1. **Separation of Concerns**: Red and black lambdas help us keep different types of computations separate
+2. **Type Safety**: The system makes sure we're using the right colors in the right places
+3. **Learning Tool**: It's a fun way to understand how lambda calculus works
+
+## Try It Yourself!
+
+You can experiment with this example by:
+1. Creating your own functions using either red or black lambda
+2. Mixing and matching terms between red and black
+3. Seeing how the system helps prevent mistakes
+
+Remember: Just like you wouldn't mix red and black ink in your notebooks, the system helps make sure we're using the right colors in the right places!
+
+## Need Help?
+
+If you get stuck or want to learn more:
+1. Look at the example code in `red-black.metta`
+2. Check out the lambda theory definitions in `lambda-theory.metta`
+3. Try creating your own simple functions and see how they work
