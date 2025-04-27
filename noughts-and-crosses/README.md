@@ -54,9 +54,8 @@ The game ended in a **draw**.
 | MeTTaLog Interpreter  | 6.21s      | `mettalog tic-tac-toe.metta`               |
 | Hyperon Experimental  | 62.06s     | `metta tic-tac-toe.metta`                  |
 
-- **Compiler** is extremely fast.
-- **Interpreter** is slower but playable.
-- **Hyperon Experimental** is 1500x slower (on 4/26/2025)
+- **Compiled Version** is 1500x faster than **Hyperon Experimental** (on 4/26/2025)
+- **MeTTaLog Interpreter** is slower but playable.
 
 ---
 
