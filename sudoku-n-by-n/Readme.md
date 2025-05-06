@@ -1,6 +1,7 @@
 # MeTTa Sudoku Solver
 
-This is a Sudoku solver written in MeTTa. It solves 4x4 or 9x9 Sudoku, and could easily be expanded to deal with larger sizes
+This is a Sudoku solver written in MeTTa. It solves 4x4 or 9x9 Sudoku, and could easily be expanded to deal with larger sizes.
+
 Written by Roy Ward, roy@orange-kiwi.com
 
 ## Usage: 
