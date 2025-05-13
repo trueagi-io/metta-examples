@@ -57,5 +57,24 @@
 (: and1 Eventuality)
 (: and2 Eventuality)
 
+(= (NOT_EXIST_stb $x)
+ (if (== $x (match &self $x $x)) True False)
+)
 
-!(match )
+(= (FILTER_stb $p $set $x)
+    (match &self
+    (, ($p $set $x)
+       ($p aint-my-set $x))
+    $x)
+)
+
+(= (CONSTRUCT_stb $x $y)
+   (add-atom &self (match &self $x $y))
+)
+
+;Inference rules at the 1st level (the level of the eventualities)
+
+;“not(en, e)” states that en and e are opposite eventualities; e.g., if e refers
+;to the fact that “John leaves”, en may refer to the fact that “John does not
+;leave”.
+
