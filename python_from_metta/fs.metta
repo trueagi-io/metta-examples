@@ -40,8 +40,6 @@
 (= (inspect $x) (getattr $x "__dict__"))        
 
 
-
-
 (= (Popen) ( open ( Kwargs 
     (args (shell-command))
     (stdout (py-atom (PIPE)))
@@ -79,7 +77,7 @@
 
 !(import b'' as _stop)
 
-
+;; these type signatures don't do much, yet.
 (: _stop StopIteration)
 (: (read $n) (-> Number (IO Byte)))
 
